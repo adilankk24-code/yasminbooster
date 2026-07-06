@@ -822,7 +822,7 @@ class Component extends DCLogic {
     theme: 'pro',
     authTab: 'login',
     tab: 'new',
-    balance: 1250,
+    balance: 0,
     ledger: [],
     platform: 'instagram',
     serviceId: 'ig_follow',
@@ -862,13 +862,7 @@ class Component extends DCLogic {
     confirm: null,
     rates: {},
     svcOff: [],
-    orders: [
-      { id: 5821, pf:'tiktok', user:'น้อง สตูดิโอ', service:'ผู้ติดตาม TikTok', link:'@nong_studio', qty:2000, status:'สำเร็จ', progress:100, price:84, time:'วันนี้ 09:12' },
-      { id: 5817, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ไลก์ Instagram', link:'instagram.com/p/Cx9...', qty:500, status:'กำลังทำ', progress:64, price:6, time:'วันนี้ 08:40' },
-      { id: 5810, pf:'youtube', user:'ช่อง รีวิวของกิน', service:'ยอดวิว YouTube', link:'youtu.be/aB3kd', qty:10000, status:'กำลังทำ', progress:38, price:300, time:'วันนี้ 07:55' },
-      { id: 5804, pf:'facebook', user:'ร้าน My Cafe BKK', service:'ถูกใจเพจ Facebook', link:'fb.com/mycafe.bkk', qty:1000, status:'รอดำเนินการ', progress:8, price:45, time:'เมื่อวาน 22:10' },
-      { id: 5799, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ผู้ติดตาม Instagram', link:'@fern.makeup', qty:3000, status:'สำเร็จ', progress:100, price:114, time:'เมื่อวาน 19:03' },
-    ],
+    orders: [],
   };
 
   PLATFORMS = [
@@ -1033,23 +1027,37 @@ class Component extends DCLogic {
   ];
 
   componentDidMount(){
-    const o=this._load('ym_orders'); if(o){ this.setState({orders:o}); } else { this._save('ym_orders', this.state.orders); }
-    const b=this._load('ym_balance'); if(b!=null){ this.setState({balance:b}); } else { this._save('ym_balance', this.state.balance); }
+    // บัญชีจริง → ยึดยอด/ออเดอร์จาก backend เท่านั้น (กันข้อมูลตัวอย่างเก่าใน localStorage โผล่ให้ลูกค้าใหม่งง)
+    if(this.isReal()){
+      this.setState({ orders:[], balance:0 });
+    } else {
+      const o=this._load('ym_orders'); if(o){ this.setState({orders:o}); } else { this._save('ym_orders', this.state.orders); }
+      const b=this._load('ym_balance'); if(b!=null){ this.setState({balance:b}); } else { this._save('ym_balance', this.state.balance); }
+    }
     const rr=this._load('ym_rates'); if(rr) this.setState({rates:rr});
     const so=this._load('ym_svcoff'); if(so) this.setState({svcOff:so});
     this._onStorage=(e)=>{
-      if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l) this.setState({orders:l}); }
-      if(e.key==='ym_balance'){ const v=this._load('ym_balance'); if(v!=null) this.setState({balance:v}); }
+      // บัญชีจริง (ต่อ backend) → เครดิต/ออเดอร์ยึดจากเซิร์ฟเวอร์ ไม่ให้ localStorage ทับ
+      if(!this.isReal()){
+        if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l) this.setState({orders:l}); }
+        if(e.key==='ym_balance'){ const v=this._load('ym_balance'); if(v!=null) this.setState({balance:v}); }
+      }
       if(e.key==='ym_rates'){ const l=this._load('ym_rates'); if(l) this.setState({rates:l}); }
       if(e.key==='ym_svcoff'){ const l=this._load('ym_svcoff'); if(l) this.setState({svcOff:l}); }
     };
     window.addEventListener('storage', this._onStorage);
+    this._pollN=0;
     this._poll=setInterval(()=>{
       if(document.hidden) return;
-      const l=this._load('ym_orders'); if(l && JSON.stringify(l)!==JSON.stringify(this.state.orders)) this.setState({orders:l});
-      const v=this._load('ym_balance'); if(v!=null && v!==this.state.balance) this.setState({balance:v});
       const rz=this._load('ym_rates'); if(rz && JSON.stringify(rz)!==JSON.stringify(this.state.rates)) this.setState({rates:rz});
       const sz=this._load('ym_svcoff'); if(sz && JSON.stringify(sz)!==JSON.stringify(this.state.svcOff)) this.setState({svcOff:sz});
+      if(this.isReal()){
+        // ดึงยอด/ออเดอร์/ประวัติจริงจาก backend ทุก ~5.4 วิ (เซิร์ฟเวอร์ = แหล่งความจริง)
+        if((this._pollN++ % 3)===0){ this.refreshBalance(); this.refreshOrders(); this.refreshLedger(); }
+        return;
+      }
+      const l=this._load('ym_orders'); if(l && JSON.stringify(l)!==JSON.stringify(this.state.orders)) this.setState({orders:l});
+      const v=this._load('ym_balance'); if(v!=null && v!==this.state.balance) this.setState({balance:v});
     }, 1800);
     // เช็คว่า backend ตื่นอยู่ไหม — ถ้าต่อไม่ติด จะโชว์ปุ่ม "บัญชีทดลอง" ให้พรีวิวได้
     if(this.apiBase()){
@@ -1064,6 +1072,7 @@ class Component extends DCLogic {
     }
   }
   componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearInterval(this._realPoll); this._stopPpTimer&&this._stopPpTimer(); clearTimeout(this._t); }
+  isReal(){ return !!(this.apiBase() && this.state.authToken && this.state.authToken!=='DEMO'); }
   _load(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
   _save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 
@@ -1110,7 +1119,7 @@ class Component extends DCLogic {
 
   curService(){ return (this.SERVICES[this.state.platform]||[]).find(s=>s.id===this.state.serviceId) || this.SERVICES[this.state.platform][0]; }
   curPlatform(){ return this.PLATFORMS.find(p=>p.id===this.state.platform); }
-  cost(){ const s=this.curService(); return (Number(this.state.qty)||0)/1000*this.custRate(s); }
+  cost(){ const s=this.curService(); return Math.round((Number(this.state.qty)||0)/1000*this.custRate(s)*100)/100; }
   custRate(s){ const v=this.state.rates && this.state.rates[s.id]; return (v!==undefined && v!=='' && v!==null && !isNaN(Number(v))) ? Number(v) : s.rate; }
   svcList(pf){ return (this.SERVICES[pf]||[]).filter(s=>!(this.state.svcOff||[]).includes(s.id)); }
 
@@ -1133,7 +1142,9 @@ class Component extends DCLogic {
         const o=d.order;
         const order={ id:o.id, pf:o.platform, user:(this.state.authUser&&this.state.authUser.name)||'คุณ', service:o.service_name, link:o.link, qty:o.qty, status:o.status||'รอดำเนินการ', progress:o.progress||0, price:o.price, time:'เพิ่งสั่ง' };
         const newList=[order, ...this.state.orders];
-        this.setState({ orders:newList, balance:(typeof d.balance==='number'?d.balance:this.state.balance-o.price), link:'', orderError:'', orderBusy:false });
+        const nb=(typeof d.balance==='number'?d.balance:this.state.balance-o.price);
+        this._save('ym_balance', nb); this._save('ym_orders', newList);   // กัน poll ดึงค่าเก่าใน localStorage มาทับ
+        this.setState({ orders:newList, balance:nb, link:'', orderError:'', orderBusy:false });
         this.toast('สั่งซื้อสำเร็จ! ตัดเครดิต '+this.fmt(o.price)+' เครดิต');
       }catch(e){
         this.setState({orderBusy:false, orderError: e.message || 'สั่งซื้อไม่สำเร็จ'});
@@ -1142,7 +1153,7 @@ class Component extends DCLogic {
     }
 
     // ── โหมดตัวอย่าง (ยังไม่ต่อ backend) — ทำงานในเครื่อง ──
-    const order={ id: 5822 + this.state.orders.length, pf, user:'คุณสมชาย ใจดี', service: s.name, link:this.state.link, qty:q, status:'รอดำเนินการ', progress:5, price:c, time:'เพิ่งสั่ง' };
+    const order={ id: 5822 + this.state.orders.length, pf, user:(this.state.authUser&&this.state.authUser.name)||'ลูกค้า', service: s.name, link:this.state.link, qty:q, status:'รอดำเนินการ', progress:5, price:c, time:'เพิ่งสั่ง' };
     const newList=[order, ...this.state.orders];
     const nb=this.state.balance - c;
     this._save('ym_orders', newList); this._save('ym_balance', nb);
@@ -1199,10 +1210,25 @@ class Component extends DCLogic {
   submitWalletSlip(){
     const st=this.state;
     if(st.tmStage==='sent') return;
-    const amt=Number(st.topupAmount)||0;
+    const amt=Math.floor(Number(st.topupAmount)||0);
     if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
     if(!st.slipData){ this.toast('กรุณาแนบสลิปการโอนก่อน'); return; }
-    const dep={ id:'d'+Date.now(), user:'คุณสมชาย ใจดี', method:'TrueMoney Wallet', methodImg:'assets/truemoney.png', amount:amt, time:'เพิ่งแจ้งโอน', status:'pending', slip:st.slipData };
+    // ── บัญชีจริง: ยิงสลิปเข้า backend → แอดมินอนุมัติแล้วเครดิตเข้า DB (ไม่หายตอนรีเฟรช + ประวัติขึ้น) ──
+    if(this.isReal()){
+      this.setState({ tmStage:'sent' });
+      this.apiCall('/api/deposits/truemoney', { amount:amt, slipUrl:st.slipData })
+        .then(()=>{
+          this.toast('ส่งสลิปเรียบร้อย รอแอดมินยืนยันเครดิต');
+          this.refreshLedger();
+          clearTimeout(this._tmReset);
+          this._tmReset=setTimeout(()=>this.setState({ tmStage:'idle', slipData:'', slipName:'' }), 4500);
+        })
+        .catch(e=>{ this.setState({ tmStage:'idle' }); this.toast(e.message || 'ส่งสลิปไม่สำเร็จ'); });
+      return;
+    }
+    // ── โหมดตัวอย่าง (ยังไม่ต่อ backend) ──
+    const uname=(st.authUser&&st.authUser.name)||'ลูกค้า';
+    const dep={ id:'d'+Date.now(), user:uname, method:'TrueMoney Wallet', methodImg:'assets/truemoney.png', amount:amt, time:'เพิ่งแจ้งโอน', status:'pending', slip:st.slipData };
     this._save('ym_deposits', [dep, ...(this._load('ym_deposits')||[])]);
     this.setState({ tmStage:'sent' });
     this.toast('ส่งสลิปเรียบร้อย รอแอดมินยืนยันเครดิต');

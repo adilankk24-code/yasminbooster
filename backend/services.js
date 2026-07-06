@@ -60,7 +60,7 @@ function priceOrder({ platform, serviceId, qty, link }) {
   if (!/^https?:\/\/[^\s]+$/i.test(link)) throw new Error('ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://');
   if (link.length > 2048) throw new Error('ลิงก์ยาวเกินไป');
 
-  const price = Math.ceil((qty / 1000) * svc.rate);
+  const price = Math.round((qty / 1000) * svc.rate * 100) / 100;   // ตัดตามจริง 2 ตำแหน่ง (ไม่ปัดขึ้น)
   return { platform, service_id: serviceId, service_name: svc.name, qty, price, link };
 }
 
