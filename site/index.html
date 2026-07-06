@@ -560,6 +560,10 @@
                     <div style="font-size:12.5px;color:#ffb066;margin-bottom:10px;">สแกน QR หรือโอนเข้าวอลเล็ท TrueMoney แล้วแนบสลิป</div>
                     <div style="width:180px;height:180px;margin:0 auto 10px;background:#fff;border-radius:14px;padding:8px;"><img src="assets/truemoney-qr.png" alt="TrueMoney QR" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"></div>
                     <div style="font-size:13.5px;font-weight:600;">วนิดา อิสอ</div>
+                    <div style="margin-top:11px;padding:11px 12px;background:rgba(255,140,0,.09);border:1px solid rgba(255,140,0,.3);border-radius:11px;text-align:center;">
+                      <div style="font-size:11.5px;color:#ffb066;line-height:1.55;margin-bottom:5px;">สำหรับลูกค้าที่แสกนไม่ได้ โอนเข้าเบอร์นี้แทน</div>
+                      <div style="font-family:Sora;font-weight:700;font-size:20px;letter-spacing:.03em;color:#fff;">098-038-5598</div>
+                    </div>
                   </div>
                   <label style="{{ slipBoxStyle }}">
                     <input type="file" accept="image/*" onChange="{{ onSlip }}" style="display:none;">
@@ -1169,7 +1173,7 @@ class Component extends DCLogic {
         const amt=Number(st.topupAmount)||0;
         if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
         if(real){
-          const email=(st.topupEmail||'').trim();
+          const email=(st.topupEmail || (st.authUser&&st.authUser.email) || (st.loginId&&st.loginId.indexOf('@')>-1?st.loginId:'') || '').trim();
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.toast('กรุณากรอกอีเมลให้ถูกต้องก่อนสร้าง QR'); return; }
           this.startRealPromptPay(amt, email); return;
         }
@@ -1249,7 +1253,7 @@ class Component extends DCLogic {
     const amt=Number(st.topupAmount)||0;
     if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
     if(!this.apiBase()){ this.confirmTopup(); return; } // โหมดสาธิต
-    const email=(st.topupEmail||'').trim();
+    const email=(st.topupEmail || (st.authUser&&st.authUser.email) || (st.loginId&&st.loginId.indexOf('@')>-1?st.loginId:'') || '').trim();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.setState({cardError:'กรุณากรอกอีเมลให้ถูกต้อง'}); return; }
     if(!this._card){ this.setState({cardError:'กรุณากรอกข้อมูลบัตร'}); return; }
     this.setState({ cardBusy:true, cardError:'' });
