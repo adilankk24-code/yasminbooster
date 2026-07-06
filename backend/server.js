@@ -331,7 +331,22 @@ app.post('/api/admin/deposits/:id/reject', requireAuth, requireAdmin, wrap(async
   res.json({ deposit: deposits.reject(req.params.id) });
 }));
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.get('/api/health', (req, res) => {
+  // ── ตัวเช็คหลัง deploy: เปิด URL นี้ในเบราว์เซอร์แล้วดูค่า ──
+  const dbPath = process.env.DB_PATH || '(ไม่ได้ตั้ง → ใช้ที่ตั้งชั่วคราวในเครื่อง)';
+  const persistent = /^\/data(\/|$)/.test(process.env.DB_PATH || '');   // ถาวรก็ต่อเมื่อ DB อยู่บนดิสก์ /data
+  let userCount = null, ledgerCount = null;
+  try { userCount = users.all().length; } catch (e) {}
+  try { ledgerCount = ledger.recent(100000).length; } catch (e) {}
+  res.json({
+    ok: true,
+    version: '2026-07-06-settle',   // ⭐ ถ้าเห็นค่านี้ = server.js เวอร์ชันใหม่ขึ้นแล้ว
+    dbPath,
+    persistentDisk: persistent,     // ⭐ true = ข้อมูลไม่หายหลัง redeploy | false = ต้องตั้งดิสก์ + DB_PATH
+    userCount,                      // จำนวนบัญชีในฐานข้อมูลตอนนี้
+    ledgerCount,                    // จำนวนรายการเคลื่อนไหวเครดิตทั้งหมด
+  });
+});
 
 /* ═══════════════════════════════════════════════════════════
  * ตรวจ ENV ก่อนเปิดใช้งาน — เตือนของที่ยังไม่ปลอดภัย
