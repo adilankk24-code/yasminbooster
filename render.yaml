@@ -1,0 +1,51 @@
+# Render Blueprint — BoostHub backend + Persistent Disk
+# วิธีใช้: Render Dashboard → New → Blueprint → เลือก repo นี้ → Apply
+# ดิสก์ 1GB ที่ /data จะไม่ถูกล้างเวลา deploy → ข้อมูลลูกค้า/เครดิต/ออเดอร์อยู่ครบ
+services:
+  - type: web
+    name: ym-booster-api           # ⭐ ชื่อนี้ → URL = https://ym-booster-api.onrender.com (ตรงกับที่หน้าเว็บฝังไว้ในพร็อพ stripeBackendUrl)
+    runtime: node
+    rootDir: backend
+    plan: starter            # ต้อง starter ขึ้นไป — free tier ไม่รองรับ Persistent Disk
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: boosthub-data
+      mountPath: /data       # ดิสก์ถาวร — ไฟล์ในนี้อยู่ข้าม deploy
+      sizeGB: 1
+    envVars:
+      - key: DB_PATH
+        value: /data/boosthub.db   # ⭐ หัวใจ — ชี้ DB ไปไว้บนดิสก์ถาวร
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production          # เปิดโหมด production → checkEnv จะหยุดถ้าขาด ENV สำคัญ
+      - key: JWT_SECRET
+        generateValue: true        # Render สุ่มให้ครั้งเดียว ถาวร
+      # ── ค่าที่ต้องกรอกเองใน Dashboard (Environment) ──
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false           # อีเมลแอดมินตัวแรก — สร้างบัญชีแอดมินตอน boot
+      - key: ADMIN_PASSWORD
+        sync: false           # ⚠️ รหัสแอดมินที่แข็งแรง — เปลี่ยน + เปิด 2FA ทันทีหลังล็อกอินครั้งแรก
+
+  # ── หน้าเว็บ (static) — ลูกค้า: / , แอดมิน: /admin.html ──
+  - type: web
+    name: ym-booster-web
+    runtime: static
+    staticPublishPath: site
+    buildCommand: ""
+    routes:
+      - type: rewrite
+        source: /admin
+        destination: /admin.html

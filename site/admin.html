@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#7c5cff"/><text x="50" y="62" font-family="sans-serif" font-size="42" font-weight="800" fill="#fff" text-anchor="middle">YM</text></svg></template>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#07080f; --panel:#0a0b16; --raised:#12131f;
+    --text:#e9eaf3; --muted:#8a8ca8; --muted2:#9a9cb8; --muted3:#c7c9e0;
+    --surface:rgba(255,255,255,.03); --surface2:rgba(255,255,255,.05); --field:rgba(255,255,255,.04);
+    --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.1);
+  }
+  body{background:var(--bg);font-family:'Noto Sans Thai','Sora',sans-serif;-webkit-font-smoothing:antialiased}
+  input,button,select,textarea{font-family:inherit}
+  button{color:inherit}
+  input:focus,textarea:focus{outline:none}
+  ::placeholder{color:#5a5d78}
+  @keyframes floatUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}
+  @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes badgePop{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .sc-scroll::-webkit-scrollbar{width:8px;height:8px}
+  .sc-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:8px}
+  /* ---- responsive: มือถือ / แท็บเล็ต ---- */
+  .ym-nav>button{transition:background .2s ease,color .2s ease,transform .12s ease}
+  .ym-nav>button:active{transform:scale(.93)}
+  @media (max-width:920px){
+    .ym-shell{grid-template-columns:1fr !important}
+    .ym-sidebar{position:fixed !important;top:auto !important;bottom:0;left:0;right:0;height:auto !important;flex-direction:row !important;align-items:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom)) !important;border-right:none !important;border-top:1px solid var(--border) !important;background:color-mix(in srgb, var(--bg) 95%, transparent) !important;backdrop-filter:blur(14px);z-index:60;overflow-x:auto;overflow-y:hidden}
+    .ym-brand,.ym-divider,.ym-hide-sm{display:none !important}
+    .ym-nav{flex-direction:row !important;gap:2px !important;flex:1 1 auto}
+    .ym-nav>button{flex:1 0 auto;min-width:60px;flex-direction:column !important;gap:4px !important;padding:8px 5px !important;font-size:10px !important;font-weight:600 !important;border-radius:13px !important;justify-content:center !important;text-align:center !important}
+    .ym-nav>button>span{flex:none !important;text-align:center !important;line-height:1.1 !important}
+    .ym-credit{margin-top:0 !important;background:transparent !important;border:none !important;padding:2px !important;gap:6px !important;flex:0 0 auto}
+    .ym-main{max-height:none !important;overflow:visible !important}
+    .ym-topbar{padding:12px 16px !important}
+    .ym-content{padding:18px 16px 116px !important}
+    .ym-cols{grid-template-columns:1fr !important}
+    [style*="top:96px"]{position:static !important;top:auto !important}
+    .ym-table{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+    .ym-table>div{min-width:680px}
+    /* orders → การ์ดต่อแถวบนมือถือ (ไม่ซ้อนกัน) */
+    .ym-ohead{display:none !important}
+    .ym-ocards{overflow-x:visible !important}
+    .ym-ocards>div{min-width:0 !important}
+    .ym-orow{grid-template-columns:auto 1fr auto !important;gap:7px 10px !important;padding:14px 16px !important}
+    .ym-orow>div:nth-child(1){grid-column:1;grid-row:1}
+    .ym-orow>div:nth-child(3){grid-column:2;grid-row:1;min-width:0}
+    .ym-orow>div:nth-child(7){grid-column:3;grid-row:1;text-align:right}
+    .ym-orow>div:nth-child(2){grid-column:1/-1;grid-row:2;color:var(--muted);font-size:12px}
+    .ym-orow>div:nth-child(4){grid-column:1/-1;grid-row:3;min-width:0}
+    .ym-orow>div:nth-child(5){grid-column:1/-1;grid-row:4}
+    .ym-orow>div:nth-child(6){grid-column:1/-1;grid-row:5}
+    .ym-orow>div:nth-child(8){grid-column:1/-1;grid-row:6;justify-content:flex-start !important}
+    /* users → การ์ด */
+    .ym-uhead{display:none !important}
+    .ym-urow{grid-template-columns:1fr 1fr !important;gap:6px 12px !important;min-width:0 !important;padding:14px 16px !important}
+    .ym-urow>div:nth-child(1){grid-column:1/-1;grid-row:1}
+    .ym-urow>div:nth-child(2){grid-column:1/-1;grid-row:2}
+    .ym-urow>div:nth-child(3){grid-column:1;grid-row:3;text-align:left !important}
+    .ym-urow>div:nth-child(4){grid-column:2;grid-row:3;text-align:left !important}
+    .ym-urow>div:nth-child(5){grid-column:1/-1;grid-row:4;text-align:left !important}
+    .ym-urow>div:nth-child(6){grid-column:1/-1;grid-row:5;justify-content:flex-start !important}
+    .ym-urow>div:nth-child(3)::before{content:'เครดิต ';color:var(--muted);font-weight:400;font-family:'Noto Sans Thai'}
+    .ym-urow>div:nth-child(4)::before{content:'ออเดอร์ ';color:var(--muted);font-weight:400;font-family:'Noto Sans Thai'}
+    .ym-urow>div:nth-child(5)::before{content:'ใช้จ่าย ';color:var(--muted);font-weight:400;font-family:'Noto Sans Thai'}
+    /* services → การ์ด */
+    .ym-srow{grid-template-columns:1fr auto !important;gap:8px 12px !important;min-width:0 !important;padding:14px 16px !important}
+    .ym-srow>div:nth-child(1){grid-column:1;grid-row:1}
+    .ym-srow>div:nth-child(4){grid-column:2;grid-row:1;text-align:right !important}
+    .ym-srow>div:nth-child(2){grid-column:1/-1;grid-row:2}
+    .ym-srow>div:nth-child(3){grid-column:1/-1;grid-row:3}
+    /* deposit history → การ์ด */
+    .ym-dhrow{grid-template-columns:1fr auto !important;gap:5px 12px !important;min-width:0 !important;padding:13px 16px !important}
+    .ym-dhrow>div:nth-child(1){grid-column:1;grid-row:1}
+    .ym-dhrow>div:nth-child(4){grid-column:2;grid-row:1}
+    .ym-dhrow>div:nth-child(2){grid-column:1/-1;grid-row:2}
+    .ym-dhrow>div:nth-child(3){grid-column:1/-1;grid-row:3}
+  }
+</style>
+</helmet>
+<div style="--accent: {{ accentVar }}; --glow: {{ glowVar }}; min-height:100vh; color:var(--text); background:radial-gradient(1200px 800px at 88% -12%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 60%), radial-gradient(900px 700px at -6% 112%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%), var(--bg);">
+  <!-- ===== LOGIN GATE ===== -->
+  <sc-if value="{{ notAuthed }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div style="width:100%;max-width:400px;animation:floatUp .4s ease both;">
+      <div style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:26px;">
+        <div style="width:40px;height:40px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:Sora;color:#fff;box-shadow:var(--glow);font-size:15px;">YM</div>
+        <div style="line-height:1.15;"><div style="font-family:Sora;font-weight:700;font-size:18px;">YM booster</div><div style="font-size:11px;color:var(--muted);letter-spacing:.14em;font-weight:600;">ระบบหลังบ้าน</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px 26px;">
+
+        <sc-if value="{{ stepLogin }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:Sora;font-weight:700;font-size:18px;margin-bottom:4px;">เข้าสู่ระบบแอดมิน</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:20px;">เฉพาะผู้ดูแลระบบเท่านั้น</div>
+          <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">อีเมล</label>
+          <input value="{{ loginEmail }}" onInput="{{ onLoginEmail }}" onKeyDown="{{ onLoginKey }}" type="email" placeholder="admin@boosthub.local" style="width:100%;height:44px;padding:0 14px;margin-bottom:14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+          <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">รหัสผ่าน</label>
+          <input value="{{ loginPassword }}" onInput="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" type="password" placeholder="••••••••" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+          <sc-if value="{{ hasAuthError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:13px;font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.25);border-radius:9px;padding:9px 12px;">{{ authError }}</div></sc-if>
+          <button onClick="{{ doLogin }}" style="width:100%;height:46px;margin-top:20px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">{{ loginBtnLabel }}</button>
+          <button onClick="{{ forgotHint }}" style="width:100%;margin-top:12px;background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;font-family:inherit;">ลืมรหัสผ่าน?</button>
+
+          <sc-if value="{{ showDemoLogin }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted);font-size:12px;">
+              <div style="flex:1;height:1px;background:var(--border);"></div>หรือ<div style="flex:1;height:1px;background:var(--border);"></div>
+            </div>
+            <button onClick="{{ demoLoginAdmin }}" style="width:100%;height:46px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">เข้าดูด้วยบัญชีทดลองแอดมิน</button>
+            <div style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;line-height:1.6;">โหมดพรีวิว · admin@boosthub.local / admin1234<br>ปุ่มนี้จะหายไปเมื่อเชื่อมต่อเซิร์ฟเวอร์จริง</div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ stepOtp }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:Sora;font-weight:700;font-size:18px;margin-bottom:4px;">ยืนยันตัวตน 2 ชั้น</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:20px;line-height:1.6;">กรอกรหัส 6 หลักจากแอป <b style="color:var(--muted3);">Google Authenticator</b> ในมือถือของคุณ</div>
+          <input value="{{ otpCode }}" onInput="{{ onOtp }}" onKeyDown="{{ onOtpKey }}" inputmode="numeric" placeholder="000000" style="width:100%;height:56px;text-align:center;letter-spacing:.5em;font-family:Sora;font-weight:700;font-size:24px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:12px;color:#fff;">
+          <sc-if value="{{ hasAuthError }}" hint-placeholder-val="{{ false }}"><div style="margin-top:13px;font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.25);border-radius:9px;padding:9px 12px;">{{ authError }}</div></sc-if>
+          <button onClick="{{ doVerifyOtp }}" style="width:100%;height:46px;margin-top:18px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">{{ otpBtnLabel }}</button>
+          <button onClick="{{ backToLogin }}" style="width:100%;margin-top:12px;background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;font-family:inherit;">← ย้อนกลับ</button>
+        </sc-if>
+
+      </div>
+      <div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.6;">🔒 การเข้าถึงถูกป้องกันด้วยรหัสผ่าน + ยืนยัน 2 ชั้น</div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== APP (หลังล็อกอิน) ===== -->
+  <sc-if value="{{ authed }}" hint-placeholder-val="{{ false }}">
+  <div class="ym-shell" style="display:grid;grid-template-columns:242px 1fr;min-height:100vh;">
+
+    <!-- sidebar -->
+    <aside class="ym-sidebar" style="border-right:1px solid var(--border);padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;background:color-mix(in srgb, var(--bg) 60%, transparent);">
+      <div class="ym-brand" style="display:flex;align-items:center;gap:11px;padding:0 8px;margin-bottom:6px;">
+        <div style="width:34px;height:34px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:Sora;color:#fff;box-shadow:var(--glow);font-size:13px;">YM</div>
+        <div style="line-height:1.1;"><div style="font-family:Sora;font-weight:700;font-size:16px;">YM booster</div><div style="font-size:11px;color:var(--muted);letter-spacing:.14em;font-weight:600;">ระบบหลังบ้าน</div></div>
+      </div>
+      <div class="ym-divider" style="height:1px;background:var(--border);margin:16px 4px 14px;"></div>
+      <nav class="ym-nav" style="display:flex;flex-direction:column;gap:3px;">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="7">
+          <button onClick="{{ n.onClick }}" style="{{ n.style }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.icon }}"></path></svg>
+            <span style="flex:1;text-align:left;">{{ n.label }}</span>
+            <sc-if value="{{ n.badge }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;font-family:Sora;display:inline-flex;align-items:center;justify-content:center;animation:badgePop 1.6s ease-in-out infinite;">{{ n.badge }}</span></sc-if>
+          </button>
+        </sc-for>
+      </nav>
+      <div class="ym-credit" style="margin-top:auto;display:flex;align-items:center;gap:11px;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div class="ym-hide-sm" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#25c9e0);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">A</div>
+        <div class="ym-hide-sm" style="flex:1;min-width:0;line-height:1.25;"><div style="font-size:13px;font-weight:600;">Admin ญาณัน</div><div style="font-size:11.5px;color:var(--muted);">ผู้ดูแลระบบ</div></div>
+        <a href="BoostHub SMM.dc.html" title="ไปหน้าเว็บลูกค้า" style="width:30px;height:30px;border-radius:9px;background:var(--field);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--muted2);flex-shrink:0;text-decoration:none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"></path></svg>
+        </a>
+        <button onClick="{{ logoutAdmin }}" title="ออกจากระบบ" style="width:30px;height:30px;border-radius:9px;background:var(--field);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--muted2);flex-shrink:0;cursor:pointer;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- main -->
+    <main class="sc-scroll ym-main" style="overflow-y:auto;max-height:100vh;">
+      <div class="ym-topbar" style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--border);background:color-mix(in srgb, var(--bg) 82%, transparent);backdrop-filter:blur(12px);">
+        <div>
+          <div style="font-family:Sora;font-weight:700;font-size:19px;">{{ pageTitle }}</div>
+          <div style="font-size:12.5px;color:var(--muted);">{{ pageSub }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="ym-hide-sm" style="display:flex;align-items:center;gap:8px;height:38px;padding:0 13px;border:1px solid var(--border2);border-radius:11px;background:var(--surface);font-size:12.5px;color:var(--muted2);"><span style="width:7px;height:7px;border-radius:50%;background:#25e0a8;animation:pulseDot 1.6s infinite;"></span>เชื่อมต่อหน้าเว็บแบบเรียลไทม์</div>
+          <div style="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:13px;font-family:Sora;box-shadow:var(--glow);">฿{{ todayRevenue }} วันนี้</div>
+        </div>
+      </div>
+
+      <div class="ym-content" style="padding:26px 30px 70px;max-width:1180px;">
+
+        <sc-if value="{{ showOffline }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:11px;background:rgba(255,138,60,.1);border:1px solid rgba(255,138,60,.35);border-radius:12px;padding:12px 15px;margin-bottom:18px;">
+            <span style="font-size:16px;line-height:1;">⚠️</span>
+            <div style="flex:1;font-size:12.5px;color:var(--muted3);line-height:1.5;">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ · การเปลี่ยนแปลงอาจยังไม่ถูกบันทึกขึ้นระบบจริง</div>
+            <button onClick="{{ retryConn }}" style="flex-shrink:0;height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">ลองใหม่</button>
+          </div>
+        </sc-if>
+
+        <!-- ===== OVERVIEW ===== -->
+        <sc-if value="{{ tabOverview }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin-bottom:22px;">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+              <div onClick="{{ k.onClick }}" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;{{ k.clickStyle }}">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                  <span style="font-size:12.5px;color:var(--muted);">{{ k.label }}</span>
+                  <span style="width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb, {{ k.color }} 16%, transparent);color:{{ k.color }};">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ k.icon }}"></path></svg>
+                  </span>
+                </div>
+                <div style="font-family:Sora;font-weight:800;font-size:27px;letter-spacing:-.02em;">{{ k.value }}</div>
+                <div style="font-size:12px;color:{{ k.color }};margin-top:4px;">{{ k.delta }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div class="ym-cols" style="display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start;">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+                <div style="font-family:Sora;font-weight:700;font-size:15px;">{{ chartTitle }}</div>
+                <div style="display:flex;gap:7px;flex-wrap:wrap;">
+                  <sc-for list="{{ chartRanges }}" as="r" hint-placeholder-count="4">
+                    <button onClick="{{ r.onClick }}" style="{{ r.style }}">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="font-size:12.5px;color:var(--muted);margin-bottom:20px;">รวม <b style="color:var(--text);font-family:Sora;">฿{{ yearRevenue }}</b></div>
+              <div style="display:flex;align-items:flex-end;gap:7px;height:170px;">
+                <sc-for list="{{ chart }}" as="d" hint-placeholder-count="12">
+                  <div title="{{ d.tip }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;">
+                    <div style="font-size:10.5px;color:var(--muted2);font-family:Sora;font-weight:600;">{{ d.valText }}</div>
+                    <div style="width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 35%, transparent));height:{{ d.h }};min-height:6px;"></div>
+                    <div style="font-size:10.5px;color:var(--muted);">{{ d.month }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+              <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:15px;">ต้องดำเนินการ</div>
+              <div style="display:flex;flex-direction:column;gap:11px;">
+                <sc-for list="{{ actionQueue }}" as="a" hint-placeholder-count="3">
+                  <button onClick="{{ a.onClick }}" style="display:flex;align-items:center;gap:13px;width:100%;padding:14px;border-radius:13px;background:var(--field);border:1px solid var(--border);cursor:pointer;font-family:inherit;text-align:left;">
+                    <span style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Sora;font-weight:800;font-size:17px;background:color-mix(in srgb, {{ a.color }} 16%, transparent);color:{{ a.color }};">{{ a.count }}</span>
+                    <span style="flex:1;"><span style="display:block;font-size:13.5px;font-weight:600;color:var(--text);">{{ a.label }}</span><span style="display:block;font-size:12px;color:var(--muted);margin-top:2px;">{{ a.sub }}</span></span>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div class="ym-table" style="margin-top:22px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);">
+              <div style="font-family:Sora;font-weight:700;font-size:15px;">ออเดอร์ล่าสุด</div>
+              <button onClick="{{ goOrders }}" style="font-size:12.5px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;">ดูทั้งหมด →</button>
+            </div>
+            <sc-for list="{{ recentOrders }}" as="o" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:70px 1fr 1fr 110px 130px;gap:12px;padding:13px 20px;border-bottom:1px solid var(--field);align-items:center;">
+                <div style="color:var(--muted);font-size:12.5px;">#{{ o.id }}</div>
+                <div style="display:flex;align-items:center;gap:9px;"><span style="width:24px;height:24px;border-radius:7px;background:{{ o.color }};display:inline-flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0;"><img src="{{ o.logo }}" alt="" style="width:100%;height:100%;object-fit:contain;"></span><span style="font-size:13px;">{{ o.service }}</span></div>
+                <div style="font-size:12.5px;color:var(--muted2);">{{ o.user }}</div>
+                <div style="font-family:Sora;font-weight:600;font-size:13px;">฿{{ o.priceText }}</div>
+                <div><span style="{{ o.statusStyle }}">{{ o.status }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== ORDERS ===== -->
+        <sc-if value="{{ tabOrders }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ orderFilters }}" as="f" hint-placeholder-count="4">
+                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }} <span style="opacity:.6;">{{ f.count }}</span></button>
+              </sc-for>
+            </div>
+            <div style="font-size:12.5px;color:var(--muted);">ติ๊ก ✓ เพื่อทำเครื่องหมายว่าเสร็จ — อัปเดตขึ้นหน้าเว็บลูกค้าทันที</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <div style="position:relative;flex:1;min-width:200px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+              <input value="{{ orderQuery }}" onInput="{{ onOrderQuery }}" placeholder="ค้นหา #ID, บริการ, ลูกค้า, ลิงก์..." style="width:100%;height:38px;padding:0 12px 0 34px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;">
+            </div>
+            <span style="font-size:12px;color:var(--muted);flex-shrink:0;">เรียง:</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <sc-for list="{{ orderSorts }}" as="s" hint-placeholder-count="4">
+                <button onClick="{{ s.onClick }}" style="{{ s.style }}">{{ s.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ hasBulk }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:color-mix(in srgb,var(--accent) 10%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);border-radius:12px;padding:11px 15px;margin-bottom:12px;">
+              <div style="font-size:13px;color:var(--muted3);">มี <b style="color:var(--text);font-family:Sora;">{{ bulkCount }}</b> ออเดอร์ที่ยังทำไม่เสร็จในมุมมองนี้</div>
+              <button onClick="{{ bulkDone }}" style="height:36px;padding:0 16px;border-radius:9px;border:none;background:#25e0a8;color:#06281d;font-size:13px;font-weight:700;cursor:pointer;font-family:Sora;">✓ ทำทั้งหมดให้เสร็จ</button>
+            </div>
+          </sc-if>
+          <div class="ym-table ym-ocards" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+            <div class="ym-ohead" style="display:grid;grid-template-columns:44px 66px 1.3fr 1.2fr 90px 120px 96px 150px;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);font-weight:600;">
+              <div>เสร็จ</div><div>#</div><div>บริการ</div><div>ลิงก์ / ลูกค้า</div><div>จำนวน</div><div>สถานะ</div><div style="text-align:right;">ราคา</div><div style="text-align:right;">จัดการ</div>
+            </div>
+            <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+              <sc-for list="{{ skeleton }}" as="s" hint-placeholder-count="6">
+                <div style="padding:17px 18px;border-bottom:1px solid var(--field);"><div style="height:15px;border-radius:6px;background:linear-gradient(90deg,var(--field) 0%,var(--surface2) 50%,var(--field) 100%);background-size:400px 100%;animation:shimmer 1.1s infinite linear;"></div></div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ orderRows }}" as="o" hint-placeholder-count="6">
+              <div onClick="{{ o.onOpen }}" class="ym-orow" style="display:grid;grid-template-columns:44px 66px 1.3fr 1.2fr 90px 120px 96px 150px;gap:12px;padding:14px 18px;border-bottom:1px solid var(--field);align-items:center;cursor:pointer;background:{{ o.rowBg }};">
+                <div onClick="{{ stopProp }}">
+                  <button onClick="{{ o.onToggle }}" title="ทำเครื่องหมายว่าเสร็จ" style="{{ o.checkStyle }}"><sc-if value="{{ o.done }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></sc-if></button>
+                </div>
+                <div style="color:var(--muted);font-size:12.5px;">{{ o.id }}</div>
+                <div style="display:flex;align-items:center;gap:9px;min-width:0;"><span style="width:26px;height:26px;border-radius:7px;background:{{ o.color }};display:inline-flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0;"><img src="{{ o.logo }}" alt="" style="width:100%;height:100%;object-fit:contain;"></span><div style="min-width:0;"><div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ o.service }}</div><div style="font-size:11px;color:var(--muted);">{{ o.time }}</div></div></div>
+                <div style="min-width:0;"><div style="font-size:12.5px;color:var(--muted3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ o.link }}</div><div style="font-size:11.5px;color:var(--muted);">{{ o.user }}</div></div>
+                <div style="font-size:13px;">{{ o.qtyText }}</div>
+                <div><span style="{{ o.statusStyle }}">{{ o.status }}</span><div style="margin-top:6px;height:4px;border-radius:4px;background:var(--border);overflow:hidden;"><div style="height:100%;width:{{ o.progress }};background:{{ o.statusColor }};border-radius:4px;transition:width .3s;"></div></div></div>
+                <div style="text-align:right;font-family:Sora;font-weight:600;font-size:13px;">฿{{ o.priceText }}</div>
+                <div onClick="{{ stopProp }}" style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+                  <sc-for list="{{ o.actions }}" as="ac" hint-placeholder-count="1">
+                    <button onClick="{{ ac.onClick }}" style="{{ ac.style }}">{{ ac.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noOrders }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:40px;text-align:center;color:var(--muted);font-size:13.5px;">ไม่มีออเดอร์ในหมวดนี้</div>
+            </sc-if>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== CLIP QUEUE ===== -->
+        <sc-if value="{{ tabClips }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+            <div style="font-size:12.5px;color:var(--muted);">คิวงานทำคลิปจากลูกค้า · เลื่อนสถานะเมื่อถ่าย/ตัดต่อ/ส่งงานเสร็จ</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap;">
+              <sc-for list="{{ clipFilters }}" as="f" hint-placeholder-count="3">
+                <button onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }} <span style="opacity:.6;">{{ f.count }}</span></button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;">
+            <sc-for list="{{ clipCards }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                  <div style="font-family:Sora;font-weight:700;font-size:15px;">{{ c.id }}</div>
+                  <span style="{{ c.statusStyle }}">{{ c.status }}</span>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                  <span style="font-size:12px;padding:4px 10px;border-radius:8px;background:var(--field);border:1px solid var(--border);color:var(--muted3);">{{ c.structureLabel }}</span>
+                  <span style="font-size:12px;padding:4px 10px;border-radius:8px;background:var(--field);border:1px solid var(--border);color:var(--muted3);">{{ c.lengthLabel }}</span>
+                  <span style="font-size:12px;padding:4px 10px;border-radius:8px;background:var(--field);border:1px solid var(--border);color:var(--muted3);">{{ c.speakLabel }}</span>
+                  <span style="font-size:12px;padding:4px 10px;border-radius:8px;background:color-mix(in srgb, var(--accent) 14%, transparent);color:var(--accent);font-weight:600;">{{ c.qty }} คลิป</span>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:5px;">สไตล์ที่เลือก</div>
+                <div style="font-size:12.5px;color:var(--muted3);line-height:1.6;margin-bottom:12px;">{{ c.stylesText }}</div>
+                <sc-if value="{{ c.note }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:var(--muted2);line-height:1.6;padding:10px 12px;background:var(--field);border-radius:10px;border:1px solid var(--border);margin-bottom:12px;">📝 {{ c.note }}</div>
+                </sc-if>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);margin-bottom:14px;">
+                  <div style="font-size:12px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">✉️ {{ c.email }}</div>
+                  <div style="font-family:Sora;font-weight:700;font-size:15px;color:var(--accent);flex-shrink:0;">{{ c.total }} เครดิต</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <sc-for list="{{ c.actions }}" as="ac" hint-placeholder-count="2">
+                    <button onClick="{{ ac.onClick }}" style="{{ ac.style }}">{{ ac.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noClips }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:40px;text-align:center;color:var(--muted);font-size:13.5px;grid-column:1/-1;">ยังไม่มีงานคลิปเข้ามา</div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== USERS ===== -->
+        <sc-if value="{{ tabUsers }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="position:relative;margin-bottom:14px;max-width:360px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+            <input value="{{ userSearch }}" onInput="{{ onUserSearch }}" placeholder="ค้นหาสมาชิก ชื่อ, อีเมล หรือรหัสผู้ใช้..." style="width:100%;height:42px;padding:0 14px 0 40px;border-radius:11px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13.5px;font-family:inherit;">
+          </div>
+          <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+          <div class="ym-uhead" style="display:grid;grid-template-columns:1.4fr 1.4fr 120px 90px 120px 210px;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);font-weight:600;">
+            <div>สมาชิก</div><div>อีเมล / ติดต่อ</div><div style="text-align:right;">เครดิต</div><div style="text-align:right;">ออเดอร์</div><div style="text-align:right;">ใช้จ่าย</div><div style="text-align:right;">จัดการ</div>
+          </div>
+          <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="5">
+            <div class="ym-urow" style="display:grid;grid-template-columns:1.4fr 1.4fr 120px 90px 120px 210px;gap:12px;padding:14px 20px;border-bottom:1px solid var(--field);align-items:center;">
+              <div style="display:flex;align-items:center;gap:11px;min-width:0;">
+                <span style="width:34px;height:34px;border-radius:50%;background:{{ u.avatarBg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0;">{{ u.initial }}</span>
+                <div style="min-width:0;"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.name }} <sc-if value="{{ u.banned }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;color:#ff6b7a;border:1px solid rgba(255,80,100,.35);border-radius:5px;padding:1px 5px;margin-left:2px;">ระงับ</span></sc-if></div><div style="font-size:11.5px;color:var(--muted);">{{ u.joined }}</div></div>
+              </div>
+              <div style="font-size:12.5px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.email }}</div>
+              <div style="text-align:right;font-family:Sora;font-weight:700;font-size:13.5px;color:var(--accent);">{{ u.balance }}</div>
+              <div style="text-align:right;font-size:13px;">{{ u.orders }}</div>
+              <div style="text-align:right;font-family:Sora;font-weight:600;font-size:13px;">฿{{ u.spent }}</div>
+              <div style="display:flex;gap:7px;justify-content:flex-end;">
+                <button onClick="{{ u.onCredit }}" style="height:32px;padding:0 12px;border-radius:9px;border:1px solid var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer;">+ เครดิต</button>
+                <button onClick="{{ u.onBan }}" style="{{ u.banStyle }}">{{ u.banLabel }}</button>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noUserResults }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:40px;text-align:center;color:var(--muted);font-size:13.5px;">ไม่พบสมาชิกที่ตรงกับ "{{ userSearch }}"</div>
+          </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== SERVICES ===== -->
+        <sc-if value="{{ tabServices }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;display:flex;flex-direction:column;gap:20px;">
+          <div style="font-size:12.5px;color:var(--muted);">แก้ไขเรตราคา (เครดิต / 1,000) และเปิด–ปิดบริการที่แสดงบนหน้าเว็บ</div>
+          <sc-for list="{{ svcGroups }}" as="g" hint-placeholder-count="4">
+            <div>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px;">
+                <div style="width:32px;height:32px;border-radius:9px;background:{{ g.color }};display:flex;align-items:center;justify-content:center;padding:7px;"><img src="{{ g.logo }}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>
+                <div style="font-family:Sora;font-weight:700;font-size:16px;">{{ g.name }}</div>
+              </div>
+              <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+                <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="5">
+                  <div class="ym-srow" style="display:grid;grid-template-columns:1fr 150px 170px 110px;gap:14px;padding:13px 18px;border-bottom:1px solid var(--field);align-items:center;{{ s.dim }}">
+                    <div style="font-size:13.5px;">{{ s.name }}</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <input value="{{ s.rate }}" onInput="{{ s.onRate }}" type="number" style="width:82px;height:36px;padding:0 11px;background:var(--field);border:1px solid var(--border2);border-radius:9px;color:#fff;font-size:13.5px;font-family:Sora;font-weight:600;">
+                      <span style="font-size:11.5px;color:var(--muted);">/1000</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--muted);">ขั้นต่ำ {{ s.minText }} · สูงสุด {{ s.maxText }}</div>
+                    <div style="text-align:right;">
+                      <button onClick="{{ s.onToggle }}" style="{{ s.toggleStyle }}"><span style="{{ s.knobStyle }}"></span></button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- ===== DEPOSITS ===== -->
+        <sc-if value="{{ tabDeposits }}" hint-placeholder-val="{{ false }}">
+        <div class="ym-cols" style="animation:floatUp .4s ease both;display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+          <div>
+            <div style="display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,#25e0a8 8%,transparent);border:1px solid color-mix(in srgb,#25e0a8 30%,transparent);border-radius:13px;padding:14px 16px;margin-bottom:18px;">
+              <span style="font-size:17px;line-height:1.3;">⚡</span>
+              <div style="font-size:12.5px;color:var(--muted3);line-height:1.65;">การจ่ายผ่าน <b style="color:#25e0a8;">Stripe (พร้อมเพย์ QR + บัตร)</b> เติมเครดิตให้ลูกค้า<b style="color:var(--text);">อัตโนมัติ</b>ทันทีที่เงินเข้า — ไม่ต้องกดอนุมัติเอง<br>เฉพาะการเติมผ่าน <b style="color:var(--text);">TrueMoney Wallet (โอนมือ)</b> เท่านั้น ที่ต้องตรวจสอบสลิปก่อนเติมเครดิต</div>
+            </div>
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">รอตรวจสอบ TrueMoney Wallet <span style="color:var(--muted);font-weight:400;font-size:13px;">({{ pendingDepositCount }})</span></div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:26px;">
+              <sc-for list="{{ pendingDeposits }}" as="d" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:15px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 17px;">
+                  <div style="width:52px;height:52px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px;"><img src="{{ d.methodImg }}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:14px;font-weight:600;">{{ d.user }}</div>
+                    <div style="font-size:12px;color:var(--muted);">{{ d.method }} · {{ d.time }}</div>
+                  </div>
+                  <sc-if value="{{ d.hasSlip }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ d.slip }}" target="_blank" title="เปิดสลิปเต็ม" style="flex-shrink:0;line-height:0;"><img src="{{ d.slip }}" alt="สลิป" style="width:44px;height:58px;border-radius:8px;object-fit:cover;border:1px solid var(--border2);display:block;"></a>
+                  </sc-if>
+                  <div style="font-family:Sora;font-weight:800;font-size:19px;color:var(--accent);flex-shrink:0;">฿{{ d.amount }}</div>
+                  <div style="display:flex;gap:7px;flex-shrink:0;">
+                    <button onClick="{{ d.onApprove }}" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:#25e0a8;color:#06281d;font-size:13px;font-weight:700;cursor:pointer;">อนุมัติ</button>
+                    <button onClick="{{ d.onReject }}" style="height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:13px;cursor:pointer;">ปฏิเสธ</button>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noPendingDeposits }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:32px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">ไม่มีสลิปรอตรวจสอบ 🎉</div>
+              </sc-if>
+            </div>
+
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">ประวัติการเติมเงิน</div>
+            <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+              <sc-for list="{{ depositHistory }}" as="d" hint-placeholder-count="5">
+                <div class="ym-dhrow" style="display:grid;grid-template-columns:1.4fr 1fr 100px 120px;gap:12px;padding:13px 18px;border-bottom:1px solid var(--field);align-items:center;">
+                  <div style="font-size:13px;">{{ d.user }}</div>
+                  <div style="font-size:12.5px;color:var(--muted2);display:flex;align-items:center;gap:7px;min-width:0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.method }}</span><span style="{{ d.badgeStyle }}">{{ d.badge }}</span></div>
+                  <div style="font-size:12px;color:var(--muted);">{{ d.time }}</div>
+                  <div style="text-align:right;font-family:Sora;font-weight:600;font-size:13.5px;color:#25e0a8;">+฿{{ d.amount }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="position:sticky;top:96px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:16px;">สรุปการเงิน</div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <sc-for list="{{ financeSummary }}" as="f" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <span style="font-size:13px;color:var(--muted2);">{{ f.label }}</span>
+                  <span style="font-family:Sora;font-weight:700;font-size:15px;color:{{ f.color }};">{{ f.value }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== SETTINGS ===== -->
+        <sc-if value="{{ tabSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;display:flex;flex-direction:column;gap:20px;max-width:720px;">
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
+              <div style="font-family:Sora;font-weight:700;font-size:15px;">ยืนยันตัวตน 2 ชั้น (2FA)</div>
+              <sc-if value="{{ twoFAEnabled }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;color:#25e0a8;background:color-mix(in srgb,#25e0a8 15%,transparent);padding:3px 10px;border-radius:7px;">เปิดใช้งานอยู่</span></sc-if>
+            </div>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:16px;line-height:1.6;">ให้แอดมินกรอกรหัส 6 หลักจากแอป Google Authenticator ทุกครั้งที่ล็อกอิน — ต่อให้รหัสผ่านหลุดก็เข้าไม่ได้</div>
+
+            <sc-if value="{{ twoFAEnabled }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ disable2FA }}" style="height:40px;padding:0 18px;border-radius:10px;border:1px solid rgba(255,80,100,.35);background:rgba(255,80,100,.08);color:#ff6b7a;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">ปิดใช้งาน 2FA</button>
+            </sc-if>
+
+            <sc-if value="{{ show2FASetupBtn }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ start2FA }}" style="height:42px;padding:0 20px;border-radius:11px;border:none;background:var(--accent);color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">ตั้งค่า 2FA</button>
+            </sc-if>
+
+            <sc-if value="{{ twoFASetup }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;padding-top:6px;">
+                <sc-if value="{{ twoFAQr }}" hint-placeholder-val="{{ false }}"><img src="{{ twoFAQr }}" alt="QR" style="width:152px;height:152px;border-radius:12px;background:#fff;padding:8px;flex-shrink:0;"></sc-if>
+                <sc-if value="{{ noQr }}" hint-placeholder-val="{{ true }}"><div style="width:152px;height:152px;border-radius:12px;background:var(--field);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--muted);padding:14px;flex-shrink:0;line-height:1.5;">รัน backend เพื่อสร้าง QR จริง<br>(โหมดตัวอย่าง)</div></sc-if>
+                <div style="flex:1;min-width:220px;">
+                  <div style="font-size:13px;color:var(--muted3);line-height:1.7;margin-bottom:6px;"><b>1.</b> สแกน QR ด้วย Google Authenticator</div>
+                  <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">หรือกรอกคีย์นี้เองในแอป:</div>
+                  <div style="font-family:Sora;font-size:13px;color:var(--accent);word-break:break-all;background:var(--field);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:14px;">{{ twoFASecret }}</div>
+                  <div style="font-size:13px;color:var(--muted3);margin-bottom:8px;"><b>2.</b> กรอกรหัส 6 หลักที่ได้จากแอป</div>
+                  <input value="{{ twoFACode }}" onInput="{{ onTwoFACode }}" inputmode="numeric" placeholder="000000" style="width:160px;height:46px;text-align:center;letter-spacing:.4em;font-family:Sora;font-weight:700;font-size:19px;padding:0 12px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;">
+                  <sc-if value="{{ hasTwoFAErr }}" hint-placeholder-val="{{ false }}"><div style="margin-top:11px;font-size:12.5px;color:#ff6b7a;">{{ twoFAErr }}</div></sc-if>
+                  <div style="margin-top:16px;"><button onClick="{{ confirm2FA }}" style="height:42px;padding:0 22px;border-radius:11px;border:none;background:#25e0a8;color:#06281d;font-size:13.5px;font-weight:700;cursor:pointer;font-family:Sora;">ยืนยันเปิดใช้งาน</button></div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;">
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:4px;">ช่องทางรับเงิน</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:18px;">เปิด–ปิดช่องทางที่แสดงในหน้าเติมเครดิตของลูกค้า</div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ paySettings }}" as="p" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;padding:13px 15px;border-radius:13px;background:var(--field);border:1px solid var(--border);">
+                  <div style="width:44px;height:44px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:7px;"><img src="{{ p.img }}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
+                  <div style="flex:1;"><div style="font-size:14px;font-weight:600;">{{ p.name }}</div><div style="font-size:12px;color:var(--muted);">{{ p.desc }}</div></div>
+                  <button onClick="{{ p.onToggle }}" style="{{ p.toggleStyle }}"><span style="{{ p.knobStyle }}"></span></button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;">
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:18px;">ข้อมูลติดต่อที่แสดงบนเว็บ</div>
+            <div style="display:flex;flex-direction:column;gap:15px;">
+              <div>
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">LINE Official</label>
+                <input value="{{ setLine }}" onInput="{{ onSetLine }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+              </div>
+              <div>
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">อีเมลติดต่อ</label>
+                <input value="{{ setEmail }}" onInput="{{ onSetEmail }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+              </div>
+              <div>
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">TrueMoney (เบอร์รับเงิน)</label>
+                <input value="{{ setTmn }}" onInput="{{ onSetTmn }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+              </div>
+            </div>
+            <button onClick="{{ saveSettings }}" style="margin-top:20px;height:44px;padding:0 22px;border:none;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">บันทึกการตั้งค่า</button>
+          </div>
+        </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+  </sc-if>
+
+  <!-- toast -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:22px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:10px;padding:13px 20px;border-radius:12px;background:var(--raised);border:1px solid var(--accent);box-shadow:0 12px 40px rgba(0,0,0,.5);animation:toastIn .3s ease;">
+      <span style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">✓</span>
+      <span style="font-size:13.5px;font-weight:600;">{{ toast }}</span>
+    </div>
+  </sc-if>
+
+  <!-- add credit -->
+  <sc-if value="{{ creditModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCredit }}" style="position:fixed;inset:0;z-index:72;background:rgba(4,5,12,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;animation:floatUp .18s ease both;">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:380px;background:var(--raised);border:1px solid var(--border2);border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+        <div style="font-family:Sora;font-weight:700;font-size:17px;margin-bottom:5px;">เติมเครดิตให้ลูกค้า</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:18px;">{{ creditUserName }} · ใช้เมื่อลูกค้าเติมเงินไม่เข้าระบบ</div>
+        <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">จำนวนเครดิต</label>
+        <input value="{{ creditAmount }}" onInput="{{ onCreditAmount }}" onKeyDown="{{ onCreditKey }}" inputmode="numeric" placeholder="0" style="width:100%;height:48px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:18px;font-family:Sora;font-weight:700;margin-bottom:12px;">
+        <div style="display:flex;gap:7px;margin-bottom:20px;">
+          <sc-for list="{{ creditChips }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.onClick }}" style="flex:1;height:34px;border:1px solid var(--border2);border-radius:9px;background:var(--surface);color:var(--muted3);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">{{ c.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ closeCredit }}" style="flex:1;height:44px;border-radius:11px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">ยกเลิก</button>
+          <button onClick="{{ confirmCredit }}" style="flex:1;height:44px;border-radius:11px;border:none;background:#25e0a8;color:#06281d;font-weight:700;font-size:14px;cursor:pointer;font-family:Sora;">เติมเครดิต</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- confirm dialog -->
+  <sc-if value="{{ hasConfirm }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ confirmCancel }}" style="position:fixed;inset:0;z-index:70;background:rgba(4,5,12,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;animation:floatUp .18s ease both;">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:360px;background:var(--raised);border:1px solid var(--border2);border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+        <div style="font-family:Sora;font-weight:700;font-size:17px;margin-bottom:8px;">{{ confirmTitle }}</div>
+        <div style="font-size:13.5px;color:var(--muted2);line-height:1.6;margin-bottom:22px;">{{ confirmMsg }}</div>
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ confirmCancel }}" style="flex:1;height:44px;border-radius:11px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">ยกเลิก</button>
+          <button onClick="{{ confirmOk }}" style="{{ confirmBtnStyle }}">{{ confirmLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- order detail -->
+  <sc-if value="{{ hasDetail }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:68;background:rgba(4,5,12,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;animation:floatUp .18s ease both;">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:440px;background:var(--raised);border:1px solid var(--border2);border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:9px;"><div style="font-family:Sora;font-weight:700;font-size:18px;">ออเดอร์ {{ detailId }}</div><button onClick="{{ copyDetailId }}" title="คัดลอกเลขออเดอร์" style="width:26px;height:26px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+          <span style="{{ detailStatusStyle }}">{{ detailStatus }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:13px;">
+          <div style="display:flex;justify-content:space-between;gap:14px;"><span style="font-size:13px;color:var(--muted);">บริการ</span><span style="font-size:13.5px;font-weight:600;text-align:right;">{{ detailService }}</span></div>
+          <div style="display:flex;justify-content:space-between;gap:14px;"><span style="font-size:13px;color:var(--muted);">ลูกค้า</span><span style="font-size:13.5px;text-align:right;">{{ detailUser }}</span></div>
+          <div style="display:flex;justify-content:space-between;gap:14px;align-items:center;"><span style="font-size:13px;color:var(--muted);flex-shrink:0;">ลิงก์</span><span style="display:flex;align-items:center;gap:8px;min-width:0;justify-content:flex-end;"><span style="font-size:13px;color:var(--muted3);text-align:right;word-break:break-all;">{{ detailLink }}</span><button onClick="{{ copyLink }}" title="คัดลอกลิงก์" style="flex-shrink:0;width:28px;height:28px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></span></div>
+          <div style="display:flex;justify-content:space-between;gap:14px;"><span style="font-size:13px;color:var(--muted);">จำนวน</span><span style="font-size:13.5px;font-family:Sora;font-weight:600;">{{ detailQty }}</span></div>
+          <div style="display:flex;justify-content:space-between;gap:14px;"><span style="font-size:13px;color:var(--muted);">เวลา</span><span style="font-size:13px;color:var(--muted2);">{{ detailTime }}</span></div>
+          <div>
+            <div style="display:flex;justify-content:space-between;gap:14px;margin-bottom:7px;"><span style="font-size:13px;color:var(--muted);">ความคืบหน้า</span><span style="font-size:13px;color:var(--muted3);">{{ detailProgress }}</span></div>
+            <div style="height:6px;border-radius:6px;background:var(--border);overflow:hidden;"><div style="height:100%;width:{{ detailProgress }};background:var(--accent);border-radius:6px;transition:width .3s;"></div></div>
+          </div>
+          <div style="height:1px;background:var(--border);margin:2px 0;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;"><span style="font-size:14px;font-weight:600;">ราคา</span><span style="font-family:Sora;font-weight:800;font-size:22px;color:var(--accent);">฿{{ detailPrice }}</span></div>
+        </div>
+        <button onClick="{{ closeDetail }}" style="width:100%;height:44px;margin-top:22px;border-radius:11px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">ปิด</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#7c5cff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ธีม&quot;,&quot;options&quot;:[&quot;#7c5cff&quot;,&quot;#12b981&quot;,&quot;#ff5c8a&quot;,&quot;#2f7bff&quot;,&quot;#ff8a3c&quot;]},&quot;neonGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;ธีม&quot;},&quot;backendUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ym-booster-api-8rhb.onrender.com&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ระบบ (Backend)&quot;}}">
+class Component extends DCLogic {
+  state = {
+    tab: 'overview',
+    // ── auth / login gate ──
+    authToken: (()=>{ try { return localStorage.getItem('ym_admin_token'); } catch(e){ return null; } })(),
+    authUser: null,
+    authStep: 'login',            // 'login' | 'otp'
+    loginEmail: '', loginPassword: '', otpCode: '', tempToken: null,
+    authError: '', authBusy: false,
+    backendReachable: null,        // null=กำลังเช็ค · false=ต่อไม่ติด (โชว์ปุ่มทดลอง) · true=เซิร์ฟเวอร์จริง
+    // ── 2FA setup (หน้า settings) ──
+    twoFAStep: 'idle',            // 'idle' | 'setup'
+    twoFAQr: null, twoFASecret: '', twoFACode: '', twoFAErr: '',
+    orders: [],
+    clips: [],
+    orderFilter: 'all',
+    clipFilter: 'all',
+    chartRange: 'month',
+    toast: null,
+    loading: false, confirm: null, orderQuery: '', orderSort: 'new', orderDetail: null,
+    creditUser: null, creditAmount: '',
+    rates: {},
+    svcOff: [],
+    payOff: [],
+    setLine: 'lin.ee/S35WkT2',
+    setEmail: 'yarnan7480@gmail.com',
+    setTmn: '082-XXX-4471',
+    userSearch: '',
+    users: [
+      { id:'u1', name:'คุณสมชาย ใจดี', email:'somchai.j@gmail.com', joined:'สมาชิก 3 เดือน', balance:1250, orders:14, spent:3820, banned:false },
+      { id:'u2', name:'เฟิร์น เมคอัพ', email:'fern.makeup@gmail.com', joined:'สมาชิก 5 เดือน', balance:640, orders:38, spent:9240, banned:false },
+      { id:'u3', name:'น้อง สตูดิโอ', email:'nong.studio@gmail.com', joined:'สมาชิก 1 เดือน', balance:2100, orders:9, spent:2180, banned:false },
+      { id:'u4', name:'ร้าน My Cafe BKK', email:'mycafe.bkk@gmail.com', joined:'สมาชิก 2 เดือน', balance:80, orders:22, spent:5410, banned:false },
+      { id:'u5', name:'ช่อง รีวิวของกิน', email:'foodreview.ch@gmail.com', joined:'สมาชิก 7 เดือน', balance:410, orders:51, spent:14300, banned:true },
+    ],
+    deposits: [
+      { id:'d1', user:'ร้าน My Cafe BKK', method:'TrueMoney Wallet', methodImg:'assets/truemoney.png', amount:300, time:'วันนี้ 09:15', status:'pending' },
+      { id:'d2', user:'น้อง สตูดิโอ', method:'TrueMoney Wallet', methodImg:'assets/truemoney.png', amount:150, time:'วันนี้ 08:20', status:'pending' },
+    ],
+    depositHistory: [
+      { user:'เฟิร์น เมคอัพ', method:'Stripe (บัตร)', amount:1000, time:'วันนี้ 08:03', auto:true },
+      { user:'คุณสมชาย ใจดี', method:'พร้อมเพย์ QR (Stripe)', amount:200, time:'เมื่อวาน 21:40', auto:true },
+      { user:'ช่อง รีวิวของกิน', method:'พร้อมเพย์ QR (Stripe)', amount:2000, time:'เมื่อวาน 18:22', auto:true },
+      { user:'น้อง สตูดิโอ', method:'TrueMoney Wallet', amount:100, time:'เมื่อวาน 14:10', auto:false },
+      { user:'เฟิร์น เมคอัพ', method:'Stripe (บัตร)', amount:500, time:'2 วันก่อน 11:55', auto:true },
+    ],
+  };
+
+  DEFAULT_ORDERS = [
+    { id:5821, pf:'tiktok', user:'น้อง สตูดิโอ', service:'ผู้ติดตาม TikTok', link:'@nong_studio', qty:2000, status:'สำเร็จ', progress:100, price:84, time:'วันนี้ 09:12' },
+    { id:5817, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ไลก์ Instagram', link:'instagram.com/p/Cx9...', qty:500, status:'กำลังทำ', progress:64, price:6, time:'วันนี้ 08:40' },
+    { id:5810, pf:'youtube', user:'ช่อง รีวิวของกิน', service:'ยอดวิว YouTube', link:'youtu.be/aB3kd', qty:10000, status:'กำลังทำ', progress:38, price:300, time:'วันนี้ 07:55' },
+    { id:5804, pf:'facebook', user:'ร้าน My Cafe BKK', service:'ถูกใจเพจ Facebook', link:'fb.com/mycafe.bkk', qty:1000, status:'รอดำเนินการ', progress:8, price:45, time:'เมื่อวาน 22:10' },
+    { id:5799, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ผู้ติดตาม Instagram', link:'@fern.makeup', qty:3000, status:'สำเร็จ', progress:100, price:114, time:'เมื่อวาน 19:03' },
+  ];
+
+  DEFAULT_CLIPS = [
+    { id:'C-2043', styles:['cb_hold','lc_live','cb_usage'], structure:'sell', speak:'hardsell', length:16, qty:30, email:'shopfern@gmail.com', note:'เน้นจุดขายราคาถูก ส่งไว เก็บปลายทางได้', total:750, status:'กำลังถ่าย', time:'วันนี้ 10:20' },
+    { id:'C-2041', styles:['cb_hand','lc_wh_hand'], structure:'sell', speak:'normal', length:8, qty:50, email:'warehouse.bkk@gmail.com', note:'', total:500, status:'รอทำ', time:'วันนี้ 08:05' },
+    { id:'C-2038', styles:['cb_pro','lc_studio'], structure:'story', speak:'polite', length:24, qty:10, email:'lux.brand@gmail.com', note:'โทนหรู พูดช้า ไม่เร่งขาย', total:400, status:'ส่งแล้ว', time:'เมื่อวาน 16:30' },
+  ];
+
+  PLATFORMS = {
+    facebook:  { name:'Facebook',  logo:'assets/facebook.svg',  color:'#1877F2' },
+    instagram: { name:'Instagram', logo:'assets/instagram.svg', color:'#E1306C' },
+    youtube:   { name:'YouTube',   logo:'assets/youtube.svg',   color:'#FF0000' },
+    tiktok:    { name:'TikTok',    logo:'assets/tiktok.svg',     color:'#111318' },
+  };
+
+  SERVICES = {
+    facebook: [
+      { id:'fb_follow',  name:'เพิ่มผู้ติดตาม เพจ/โปรไฟล์',  rate:54, min:100, max:1000000 },
+      { id:'fb_like',    name:'เพิ่มไลก์ / เลือกอิโมจิได้',   rate:47, min:100, max:10000000 },
+      { id:'fb_view',    name:'เพิ่มยอดวิว คลิป',            rate:6,  min:100, max:100000000 },
+      { id:'fb_share',   name:'เพิ่มการแชร์',               rate:64, min:100, max:1000000 },
+      { id:'fb_group',   name:'เพิ่มสมาชิกในกลุ่ม',          rate:62, min:100, max:500000 },
+      { id:'fb_comment', name:'เพิ่มคอมเมนต์',              rate:1500, min:10, max:5000 },
+    ],
+    instagram: [
+      { id:'ig_follow',  name:'เพิ่มผู้ติดตาม',          rate:42, min:100, max:1000000 },
+      { id:'ig_like',    name:'เพิ่มไลก์',               rate:23, min:100, max:10000000 },
+      { id:'ig_view',    name:'เพิ่มยอดวิว Reels',       rate:5,  min:100, max:100000000 },
+      { id:'ig_repost',  name:'เพิ่มการรีโพส',           rate:65, min:100, max:1000000 },
+      { id:'ig_group',   name:'เพิ่มสมาชิกในกลุ่ม',       rate:74, min:100, max:500000 },
+      { id:'ig_comment', name:'เพิ่มคอมเมนต์',           rate:1500, min:10, max:5000 },
+    ],
+    youtube: [
+      { id:'yt_follow',    name:'เพิ่มผู้ติดตาม',          rate:54,  min:100,  max:1000000 },
+      { id:'yt_like',      name:'เพิ่มไลก์',               rate:110, min:100,  max:10000000 },
+      { id:'yt_view_long', name:'เพิ่มยอดวิว คลิปยาว',     rate:65,  min:100, max:100000000 },
+      { id:'yt_share',     name:'เพิ่มการแชร์',            rate:98,  min:100,  max:1000000 },
+      { id:'yt_view_short',name:'เพิ่มยอดวิว คลิปสั้น',    rate:57,  min:100, max:100000000 },
+      { id:'yt_comment',   name:'เพิ่มคอมเมนต์',           rate:1500, min:10,  max:5000 },
+    ],
+    tiktok: [
+      { id:'tt_follow',  name:'เพิ่มผู้ติดตาม เพจ/โปรไฟล์',  rate:152, min:100, max:1000000 },
+      { id:'tt_like',    name:'เพิ่มการกดใจ',               rate:57,  min:100, max:10000000 },
+      { id:'tt_view',    name:'เพิ่มยอดวิว คลิป',            rate:7,   min:100, max:100000000 },
+      { id:'tt_share',   name:'เพิ่มการแชร์',               rate:27,  min:100, max:1000000 },
+      { id:'tt_repost',  name:'เพิ่มการรีโพส',              rate:75,  min:100, max:1000000 },
+      { id:'tt_comment', name:'เพิ่มคอมเมนต์',              rate:1500, min:10,  max:5000 },
+    ],
+  };
+
+  NAV = [
+    { id:'overview', label:'ภาพรวม',        icon:'M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v6h8V3h-8zM3 21h8v-6H3v6z' },
+    { id:'orders',   label:'ออเดอร์',        icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 14l2 2 4-4' },
+    { id:'clips',    label:'งานคลิป',        icon:'M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M4 6h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z' },
+    { id:'users',    label:'สมาชิก',         icon:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' },
+    { id:'services', label:'จัดการบริการ',   icon:'M4 6h16M4 12h16M4 18h16' },
+    { id:'deposits', label:'การเติมเงิน',    icon:'M3 10h18M7 15h2M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+    { id:'settings', label:'ตั้งค่าระบบ',    icon:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' },
+  ];
+
+  CLIP_LABELS = {
+    sell:'ขายของ', story:'เล่าเรื่อง', teach:'สอน/สาธิต',
+    normal:'พูดปกติ', troll:'กวนตืน', raw:'ดิบๆ', polite:'สุภาพ', hardsell:'ขายแรง', isan:'อีสาน', kammuang:'คำเมือง', rich:'มั่งมี', confident:'มั่นใจ', festival:'เทศกาล',
+    cb_person:'คนธรรมดารีวิว', cb_wear:'สวมใส่เสื้อผ้า', cb_hold:'ถือสินค้ารีวิว', cb_usage:'รีวิวการใช้งาน', cb_prop:'วางเป็น Prop', cb_hand:'เห็นมืออย่างเดียว', cb_pro:'มืออาชีพ', cb_bold:'อลังการ', cb_minimal:'มินิมอล', cb_luxury:'หรูหรา', cb_fun:'สนุกสดใส', cb_modern:'โมเดิร์น',
+    lc_wh_hand:'โกดัง (เห็นมือ)', lc_wh_full:'โกดัง (เต็มตัว)', lc_factory:'โรงงานขายส่ง', lc_live:'ไลฟ์ขายของ', lc_studio:'สตูดิโอขาว', lc_cafe:'คาเฟ่', lc_office:'ออฟฟิศ', lc_beach:'ริมทะเล',
+  };
+
+  componentDidMount(){
+    let o = this._load('ym_orders'); if(!o){ o = this.DEFAULT_ORDERS; this._save('ym_orders', o); }
+    let c = this._load('ym_clips'); if(!c){ c = this.DEFAULT_CLIPS; this._save('ym_clips', c); }
+    let d = this._load('ym_deposits'); if(!d){ d = this.state.deposits; this._save('ym_deposits', d); }
+    this.setState({ orders:o, clips:c, deposits:d });
+    this._knownOrderIds = new Set((o||[]).map(x=>x.id));
+    this._knownDepositIds = new Set((d||[]).map(x=>x.id));
+    const rr = this._load('ym_rates'); const so = this._load('ym_svcoff'); this.setState({ rates: rr||{}, svcOff: so||[] });
+    const stab = this._load('ym_admin_tab'); if(stab) this.setState({ tab:stab });
+    this._onStorage = (e)=>{
+      if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l){ this._detectNew(l, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:l}); } }
+      if(e.key==='ym_clips'){ const l=this._load('ym_clips'); if(l) this.setState({clips:l}); }
+      if(e.key==='ym_deposits'){ const l=this._load('ym_deposits'); if(l){ this._detectNew(l, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:l}); } }
+      if(e.key==='ym_rates'){ const l=this._load('ym_rates'); if(l) this.setState({rates:l}); }
+      if(e.key==='ym_svcoff'){ const l=this._load('ym_svcoff'); if(l) this.setState({svcOff:l}); }
+    };
+    window.addEventListener('storage', this._onStorage);
+    // เช็คว่า backend ตื่นอยู่ไหม — ต่อไม่ติด = โชว์ปุ่ม "บัญชีทดลอง" ให้พรีวิว
+    fetch(this.apiBase()+'/api/health').then(r=>this.setState({backendReachable:r.ok})).catch(()=>this.setState({backendReachable:false}));
+    // restore session: มี token อยู่แล้ว → เช็คกับ backend ว่ายังใช้ได้ (ต่อไม่ได้ = เก็บ token ไว้)
+    if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
+      this.api('/api/auth/me', null, 'GET').then(r=>this.setState({authUser:r.user})).catch(e=>{ if(!this._netErr(e)) this.logoutAdmin(); });
+    }
+    this._poll = setInterval(()=>{
+      if(document.hidden) return;
+      const o=this._load('ym_orders'); if(o && JSON.stringify(o)!==JSON.stringify(this.state.orders)){ this._detectNew(o, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:o}); }
+      const c=this._load('ym_clips'); if(c && JSON.stringify(c)!==JSON.stringify(this.state.clips)) this.setState({clips:c});
+      const d=this._load('ym_deposits'); if(d && JSON.stringify(d)!==JSON.stringify(this.state.deposits)){ this._detectNew(d, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:d}); }
+    }, 1800);
+  }
+  componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearTimeout(this._t); }
+
+  _load(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  _save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  _detectNew(list, known, msg){ if(!known) return; let isNew=false; (list||[]).forEach(x=>{ if(!known.has(x.id)){ isNew=true; known.add(x.id); } }); if(isNew){ this._beep(); this.toast(msg); } }
+  _beep(){ try{ const a=this._ac||(this._ac=new (window.AudioContext||window.webkitAudioContext)()); if(a.state==='suspended') a.resume(); const o=a.createOscillator(), g=a.createGain(); o.connect(g); g.connect(a.destination); o.type='sine'; o.frequency.setValueAtTime(880,a.currentTime); o.frequency.setValueAtTime(1180,a.currentTime+0.12); g.gain.setValueAtTime(0.0001,a.currentTime); g.gain.exponentialRampToValueAtTime(0.16,a.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.3); o.start(); o.stop(a.currentTime+0.32); }catch(e){} }
+  copy(text, label){ try{ navigator.clipboard.writeText(String(text||'')); this.toast('คัดลอก'+(label?' '+label:'')+'แล้ว'); }catch(e){ this.toast('คัดลอกไม่สำเร็จ'); } }
+  markAllDone(ids){ const set=new Set(ids); const list=this.state.orders.map(o=> set.has(o.id) ? { ...o, status:'สำเร็จ', progress:100 } : o ); this.saveOrders(list); this.toast('✓ ทำเครื่องหมายเสร็จ '+ids.length+' ออเดอร์ · ขึ้นหน้าเว็บแล้ว'); }
+  retryConn(){ this.toast('กำลังลองเชื่อมต่อใหม่...'); fetch(this.apiBase()+'/api/health').then(r=>{ this.setState({backendReachable:r.ok}); if(r.ok) this.toast('เชื่อมต่อสำเร็จ'); }).catch(()=>this.setState({backendReachable:false})); }
+
+  /* ═══════════ auth: login gate + 2FA ═══════════
+   * เชื่อมกับ backend จริง (auth.js). ถ้าต่อ backend ไม่ได้ (เช่นเปิดพรีวิว
+   * โดยไม่รันเซิร์ฟเวอร์) จะเข้า "โหมดตัวอย่าง" ให้ดูดีไซน์ได้ด้วยบัญชีสาธิต
+   * ⚠️ ความปลอดภัยจริงบังคับที่ backend เสมอ — โหมดตัวอย่างไม่ทำงานบนเซิร์ฟเวอร์จริง
+   */
+  DEMO_ADMIN = { email:'admin@boosthub.local', password:'admin1234' };
+  apiBase(){ try{ return localStorage.getItem('ym_api_base') || String(this.props.backendUrl||'').trim().replace(/\/+$/,'') || 'http://localhost:4242'; }catch(e){ return String(this.props.backendUrl||'').trim().replace(/\/+$/,'') || 'http://localhost:4242'; } }
+  async api(path, body, method){
+    const headers = { 'Content-Type':'application/json' };
+    if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN') headers.Authorization = 'Bearer '+this.state.authToken;
+    const r = await fetch(this.apiBase()+path, { method: method||'POST', headers, body: body?JSON.stringify(body):undefined });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data.error || 'เกิดข้อผิดพลาด');
+    return data;
+  }
+  _netErr(e){ return e instanceof TypeError; }   // fetch ล้มเหลว = ต่อเซิร์ฟเวอร์ไม่ได้
+  _demo2FA(){ try{ return localStorage.getItem('ym_admin_2fa_demo')==='1'; }catch(e){ return false; } }
+
+  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }); }
+  logoutAdmin(){ try{ localStorage.removeItem('ym_admin_token'); }catch(e){} this.setState({ authToken:null, authUser:null, authStep:'login', loginEmail:'', loginPassword:'', otpCode:'', authError:'' }); }
+
+  demoLoginAdmin(){ this.storeSession('DEMO-TOKEN', { name:'Admin', email:this.DEMO_ADMIN.email, is_admin:true }); this.toast('เข้าสู่ระบบโหมดทดลอง'); }
+  go(t){ this.setState({tab:t, loading:true}); this._save('ym_admin_tab', t); clearTimeout(this._ld); this._ld=setTimeout(()=>this.setState({loading:false}),420); }
+  askConfirm(o){ this.setState({confirm:o}); }
+  closeConfirm(){ this.setState({confirm:null}); }
+  doConfirm(){ const c=this.state.confirm; this.setState({confirm:null}); if(c&&c.action) c.action(); }
+  openDetail(id){ const o=this.state.orders.find(x=>x.id===id); this.setState({orderDetail:o||null}); }
+  closeDetail(){ this.setState({orderDetail:null}); }
+
+  async doLogin(){
+    if(this.state.authBusy) return;
+    const email = this.state.loginEmail.trim().toLowerCase(), password = this.state.loginPassword;
+    if(!email || !password){ this.setState({authError:'กรุณากรอกอีเมลและรหัสผ่าน'}); return; }
+    this.setState({authBusy:true, authError:''});
+    try {
+      const res = await this.api('/api/auth/login', { email, password });
+      if(res.need2fa) this.setState({ authStep:'otp', tempToken:res.tempToken, authBusy:false, authError:'' });
+      else if(res.user && !res.user.is_admin) this.setState({authBusy:false, authError:'บัญชีนี้ไม่ใช่แอดมิน'});
+      else this.storeSession(res.token, res.user);
+    } catch(e){
+      if(this._netErr(e)){
+        if(email===this.DEMO_ADMIN.email && password===this.DEMO_ADMIN.password){
+          if(this._demo2FA()) this.setState({ authStep:'otp', tempToken:'DEMO', authBusy:false, authError:'' });
+          else this.storeSession('DEMO-TOKEN', { name:'Admin', email, is_admin:true });
+        } else this.setState({authBusy:false, authError:'อีเมลหรือรหัสผ่านไม่ถูกต้อง'});
+      } else this.setState({authBusy:false, authError:e.message});
+    }
+  }
+  async doVerifyOtp(){
+    if(this.state.authBusy) return;
+    const code = this.state.otpCode.trim();
+    if(!/^\d{6}$/.test(code)){ this.setState({authError:'กรอกรหัส 6 หลัก'}); return; }
+    this.setState({authBusy:true, authError:''});
+    if(this.state.tempToken==='DEMO'){ this.storeSession('DEMO-TOKEN', { name:'Admin', email:this.DEMO_ADMIN.email, is_admin:true }); return; }
+    try { const res = await this.api('/api/auth/2fa/verify', { tempToken:this.state.tempToken, code }); this.storeSession(res.token, res.user); }
+    catch(e){ this.setState({authBusy:false, authError: this._netErr(e)?'ต่อเซิร์ฟเวอร์ไม่ได้':e.message}); }
+  }
+
+  async start2FA(){
+    this.setState({ twoFAStep:'setup', twoFAErr:'', twoFACode:'', twoFAQr:null, twoFASecret:'' });
+    try { const res = await this.api('/api/auth/2fa/setup'); this.setState({ twoFAQr:res.qrDataUrl, twoFASecret:res.secret }); }
+    catch(e){ if(this._netErr(e)) this.setState({ twoFAQr:null, twoFASecret:'DEMO2FAKEY7A9BQ' }); else this.setState({ twoFAErr:e.message, twoFAStep:'idle' }); }
+  }
+  async confirm2FA(){
+    const code = this.state.twoFACode.trim();
+    if(!/^\d{6}$/.test(code)){ this.setState({twoFAErr:'กรอกรหัส 6 หลัก'}); return; }
+    if(this.state.authToken==='DEMO-TOKEN'){ try{ localStorage.setItem('ym_admin_2fa_demo','1'); }catch(e){} this.setState({ twoFAStep:'idle', twoFACode:'' }); this.toast('เปิด 2FA แล้ว (โหมดตัวอย่าง)'); return; }
+    try { await this.api('/api/auth/2fa/enable', { code }); const me = await this.api('/api/auth/me', null, 'GET'); this.setState({ twoFAStep:'idle', twoFACode:'', authUser:me.user }); this.toast('เปิด 2FA เรียบร้อย'); }
+    catch(e){ this.setState({ twoFAErr:e.message }); }
+  }
+  async disable2FA(){
+    const pw = prompt('ยืนยันรหัสผ่านเพื่อปิด 2FA');
+    if(pw===null) return;
+    if(this.state.authToken==='DEMO-TOKEN'){ try{ localStorage.removeItem('ym_admin_2fa_demo'); }catch(e){} this.toast('ปิด 2FA แล้ว (โหมดตัวอย่าง)'); this.forceUpdate(); return; }
+    try { await this.api('/api/auth/2fa/disable', { password:pw }); const me=await this.api('/api/auth/me',null,'GET'); this.setState({authUser:me.user}); this.toast('ปิด 2FA แล้ว'); }
+    catch(e){ this.toast(e.message); }
+  }
+
+  fmt(n){ return Number(n).toLocaleString('th-TH', { maximumFractionDigits: 2 }); }
+  toast(msg){ this.setState({ toast: msg }); clearTimeout(this._t); this._t = setTimeout(()=>this.setState({toast:null}), 2600); }
+
+  saveOrders(list){ this.setState({orders:list}); this._save('ym_orders', list); }
+  saveClips(list){ this.setState({clips:list}); this._save('ym_clips', list); }
+
+  toggleDone(id){
+    const list = this.state.orders.map(o=> o.id===id
+      ? { ...o, status: o.status==='สำเร็จ'?'กำลังทำ':'สำเร็จ', progress: o.status==='สำเร็จ'? (o.progress>=100?60:o.progress) : 100 }
+      : o );
+    this.saveOrders(list);
+    const now = list.find(o=>o.id===id);
+    this.toast(now.status==='สำเร็จ' ? 'ออเดอร์ #'+id+' เสร็จแล้ว · ขึ้นหน้าเว็บลูกค้าแล้ว' : 'เปิดออเดอร์ #'+id+' กลับมาทำต่อ');
+  }
+  startOrder(id){
+    const list = this.state.orders.map(o=> o.id===id ? { ...o, status:'กำลังทำ', progress: Math.max(o.progress,15) } : o );
+    this.saveOrders(list); this.toast('เริ่มดำเนินการ #'+id);
+  }
+  refundOrder(id){
+    const list = this.state.orders.map(o=> o.id===id ? { ...o, status:'ยกเลิก', progress:0 } : o );
+    this.saveOrders(list); this.toast('ยกเลิก & คืนเครดิต #'+id);
+  }
+
+  advanceClip(id){
+    const flow = ['รอทำ','กำลังถ่าย','ตัดต่อ','ส่งแล้ว'];
+    const list = this.state.clips.map(c=>{ if(c.id!==id) return c; const i=flow.indexOf(c.status); return { ...c, status: flow[Math.min(i+1, flow.length-1)] }; });
+    this.saveClips(list); const nc=list.find(c=>c.id===id); this.toast('งาน '+id+' → '+nc.status);
+  }
+  clipDone(id){
+    const list = this.state.clips.map(c=> c.id===id ? { ...c, status:'ส่งแล้ว' } : c );
+    this.saveClips(list); this.toast('ส่งงาน '+id+' ให้ลูกค้าแล้ว');
+  }
+
+  statusColor(s){ return s==='สำเร็จ'?'#25e0a8' : s==='กำลังทำ'? (this.props.accentColor??'#7c5cff') : s==='ยกเลิก'?'#ff6b7a' : '#e0a825'; }
+  statusStyle(s){ const c=this.statusColor(s); return 'display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;color:'+c+';background:color-mix(in srgb, '+c+' 14%, transparent);'; }
+  clipStatusColor(s){ return s==='ส่งแล้ว'?'#25e0a8' : s==='รอทำ'?'#e0a825' : (this.props.accentColor??'#7c5cff'); }
+  clipStatusStyle(s){ const c=this.clipStatusColor(s); return 'display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:7px;color:'+c+';background:color-mix(in srgb, '+c+' 15%, transparent);'; }
+
+  navStyle(active){ return 'display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;border:none;cursor:pointer;font-size:14px;font-weight:'+(active?'600':'500')+';font-family:inherit;width:100%;'+(active?'background:color-mix(in srgb, var(--accent) 20%, transparent);color:var(--text);':'background:transparent;color:var(--muted2);'); }
+  filterStyle(active){ return 'height:34px;padding:0 15px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;'+(active?'background:var(--accent);color:#fff;border:1px solid var(--accent);':'background:var(--surface);color:var(--muted2);border:1px solid var(--border2);'); }
+  toggleStyle(on){ return 'width:44px;height:25px;border-radius:999px;border:none;cursor:pointer;padding:0;position:relative;transition:background .2s;background:'+(on?'var(--accent)':'var(--border2)')+';'; }
+  knobStyle(on){ return 'position:absolute;top:3px;left:'+(on?'22px':'3px')+';width:19px;height:19px;border-radius:50%;background:#fff;transition:left .2s;display:block;'; }
+  actBtn(kind){
+    const base='height:32px;padding:0 12px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;';
+    if(kind==='primary') return base+'border:none;background:var(--accent);color:#fff;';
+    if(kind==='good') return base+'border:none;background:#25e0a8;color:#06281d;';
+    if(kind==='ghost') return base+'border:1px solid var(--border2);background:var(--surface);color:var(--muted2);';
+    return base+'border:1px solid var(--border2);background:var(--surface);color:var(--muted3);';
+  }
+
+  rateOf(id, def){ return this.state.rates[id] !== undefined ? this.state.rates[id] : def; }
+  setRate(id, v){ const rates={...this.state.rates, [id]: v}; this.setState({rates}); this._save('ym_rates', rates); clearTimeout(this._rt); this._rt=setTimeout(()=>this.toast('อัปเดตราคาขึ้นหน้าเว็บลูกค้าแล้ว'), 700); }
+  toggleSvc(id){ const off=this.state.svcOff.includes(id); const svcOff= off? this.state.svcOff.filter(x=>x!==id) : [...this.state.svcOff, id]; this.setState({svcOff}); this._save('ym_svcoff', svcOff); this.toast(off?'เปิดบริการแล้ว · แสดงบนหน้าเว็บลูกค้า':'ปิดบริการแล้ว · ซ่อนจากหน้าเว็บลูกค้า'); }
+
+  addCredit(uid){ const u=this.state.users.find(x=>x.id===uid); this.setState({ creditUser: u?{id:u.id,name:u.name}:null, creditAmount:'' }); }
+  doAddCredit(){ const cu=this.state.creditUser; if(!cu) return; const amt=Number(this.state.creditAmount)||0; if(amt<=0){ this.toast('กรอกจำนวนเครดิตก่อน'); return; } const list=this.state.users.map(u=> u.id===cu.id ? {...u, balance:u.balance+amt} : u); const bal=(this._load('ym_balance')||0)+amt; this._save('ym_balance', bal); this.setState({ users:list, creditUser:null, creditAmount:'' }); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดหน้าเว็บลูกค้าแล้ว'); }
+  toggleBan(uid){ const list=this.state.users.map(u=> u.id===uid ? {...u, banned:!u.banned} : u); this.setState({users:list}); const u=list.find(x=>x.id===uid); this.toast(u.banned?'ระงับบัญชี '+u.name:'ปลดระงับ '+u.name); }
+  approveDeposit(id){
+    const d=this.state.deposits.find(x=>x.id===id);
+    const rest=this.state.deposits.filter(x=>x.id!==id);
+    this._save('ym_deposits', rest);
+    const bal=(this._load('ym_balance')||0)+d.amount; this._save('ym_balance', bal);
+    this.setState(s=>({ deposits:rest, depositHistory:[{user:d.user,method:d.method,amount:d.amount,time:'เพิ่งอนุมัติ',auto:false}, ...s.depositHistory] }));
+    this.toast('อนุมัติ ฿'+this.fmt(d.amount)+' ให้ '+d.user+' · เครดิตเข้าหน้าเว็บแล้ว');
+  }
+  rejectDeposit(id){ const d=this.state.deposits.find(x=>x.id===id); const rest=this.state.deposits.filter(x=>x.id!==id); this._save('ym_deposits', rest); this.setState({deposits:rest}); this.toast('ปฏิเสธสลิปของ '+d.user); }
+
+  renderVals(){
+    const st=this.state;
+    const accent = this.props.accentColor ?? '#7c5cff';
+    const glow = (this.props.neonGlow ?? true) ? '0 0 0 1px color-mix(in srgb, '+accent+' 40%, transparent), 0 8px 30px color-mix(in srgb, '+accent+' 30%, transparent)' : 'none';
+
+    const pending = st.orders.filter(o=>o.status==='รอดำเนินการ').length;
+    const working = st.orders.filter(o=>o.status==='กำลังทำ').length;
+    const done = st.orders.filter(o=>o.status==='สำเร็จ').length;
+    const pendClips = st.clips.filter(c=>c.status!=='ส่งแล้ว').length;
+
+    const titles={ overview:['ภาพรวมระบบ','สรุปยอดขาย ออเดอร์ และสิ่งที่ต้องจัดการวันนี้'], orders:['จัดการออเดอร์','ดูออเดอร์ที่เข้ามา ติ๊กเมื่อทำเสร็จ อัปเดตขึ้นหน้าเว็บทันที'], clips:['คิวงานคลิป','งานรับทำคลิปจากลูกค้า อัปเดตสถานะการผลิต'], users:['สมาชิก','จัดการบัญชีผู้ใช้ เครดิต และสถานะ'], services:['จัดการบริการ','แก้เรตราคาและเปิด–ปิดบริการบนหน้าเว็บ'], deposits:['การเติมเงิน','ตรวจสอบสลิป อนุมัติยอดเติม และดูรายได้'], settings:['ตั้งค่าระบบ','ช่องทางชำระเงินและข้อมูลติดต่อ'] };
+
+    // orders filter
+    const filterMap = { all:null, 'รอดำเนินการ':'รอดำเนินการ', 'กำลังทำ':'กำลังทำ', 'สำเร็จ':'สำเร็จ' };
+    let shown = st.orderFilter==='all' ? st.orders.slice() : st.orders.filter(o=>o.status===st.orderFilter);
+    const oq = st.orderQuery.trim().toLowerCase();
+    if(oq) shown = shown.filter(o=> (''+o.id).includes(oq) || (o.service||'').toLowerCase().includes(oq) || (o.user||'').toLowerCase().includes(oq) || (o.link||'').toLowerCase().includes(oq) );
+    const SORTERS = { new:(a,b)=>b.id-a.id, old:(a,b)=>a.id-b.id, priceHi:(a,b)=>b.price-a.price, priceLo:(a,b)=>a.price-b.price };
+    shown.sort(SORTERS[st.orderSort]||SORTERS.new);
+
+    const orderRow = (o)=>{
+      const p=this.PLATFORMS[o.pf]||this.PLATFORMS.instagram;
+      const done = o.status==='สำเร็จ';
+      const actions=[];
+      if(o.status==='รอดำเนินการ') actions.push({ label:'เริ่มทำ', style:this.actBtn('primary'), onClick:()=>this.startOrder(o.id) });
+      if(o.status==='กำลังทำ') actions.push({ label:'✓ เสร็จ', style:this.actBtn('good'), onClick:()=>this.toggleDone(o.id) });
+      if(o.status!=='สำเร็จ' && o.status!=='ยกเลิก') actions.push({ label:'ยกเลิก', style:this.actBtn('ghost'), onClick:()=>this.askConfirm({title:'ยกเลิก & คืนเครดิต?', message:'ออเดอร์ #'+o.id+' จะถูกยกเลิกและคืนเครดิตให้ลูกค้า', confirmLabel:'ยกเลิกออเดอร์', danger:true, action:()=>this.refundOrder(o.id)}) });
+      if(o.status==='สำเร็จ') actions.push({ label:'เปิดใหม่', style:this.actBtn('ghost'), onClick:()=>this.toggleDone(o.id) });
+      if(o.status==='ยกเลิก') actions.push({ label:'เริ่มทำ', style:this.actBtn('primary'), onClick:()=>this.startOrder(o.id) });
+      return {
+        id:o.id, service:o.service, link:o.link, user:o.user||'—', time:o.time||'', qtyText:this.fmt(o.qty),
+        logo:p.logo, color:p.color, status:o.status, statusColor:this.statusColor(o.status), statusStyle:this.statusStyle(o.status),
+        progress:(o.progress||0)+'%', priceText:this.fmt(o.price), done,
+        rowBg: done ? 'color-mix(in srgb, #25e0a8 5%, transparent)' : 'transparent',
+        checkStyle:'width:26px;height:26px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;'+(done?'background:#25e0a8;border:1px solid #25e0a8;':'background:var(--field);border:1.5px solid var(--border2);'),
+        onToggle:()=>this.toggleDone(o.id),
+        actions,
+      };
+    };
+
+    return {
+      accentVar: accent, glowVar: glow,
+      // auth / login gate
+      authed: !!st.authToken, notAuthed: !st.authToken,
+      stepLogin: st.authStep==='login', stepOtp: st.authStep==='otp',
+      loginEmail: st.loginEmail, loginPassword: st.loginPassword, otpCode: st.otpCode,
+      authError: st.authError, hasAuthError: !!st.authError,
+      loginBtnLabel: st.authBusy?'กำลังตรวจสอบ...':'เข้าสู่ระบบ',
+      otpBtnLabel: st.authBusy?'กำลังยืนยัน...':'ยืนยันเข้าสู่ระบบ',
+      onLoginEmail:(e)=>this.setState({loginEmail:e.target.value}),
+      onLoginPassword:(e)=>this.setState({loginPassword:e.target.value}),
+      onLoginKey:(e)=>{ if(e.key==='Enter') this.doLogin(); },
+      onOtp:(e)=>this.setState({otpCode:e.target.value.replace(/\D/g,'').slice(0,6)}),
+      onOtpKey:(e)=>{ if(e.key==='Enter') this.doVerifyOtp(); },
+      doLogin:()=>this.doLogin(), doVerifyOtp:()=>this.doVerifyOtp(),
+      backToLogin:()=>this.setState({authStep:'login', otpCode:'', authError:''}),
+      forgotHint:()=>this.toast('กด "ลืมรหัส" ที่หน้าเว็บลูกค้า หรือให้ผู้ดูแลรีเซ็ตให้'),
+      logoutAdmin:()=>this.logoutAdmin(),
+      showDemoLogin: st.backendReachable===false,   // โผล่ตอนต่อ backend ไม่ติด (พรีวิว) — ขึ้นเว็บจริงจะหาย
+      demoLoginAdmin:()=>this.demoLoginAdmin(),
+      // 2FA settings
+      twoFAEnabled: st.authToken==='DEMO-TOKEN' ? this._demo2FA() : !!(st.authUser && st.authUser.totp_enabled),
+      show2FASetupBtn: (st.authToken==='DEMO-TOKEN' ? !this._demo2FA() : !(st.authUser && st.authUser.totp_enabled)) && st.twoFAStep==='idle',
+      twoFASetup: st.twoFAStep==='setup', twoFAQr: st.twoFAQr, noQr: st.twoFAStep==='setup' && !st.twoFAQr,
+      twoFASecret: st.twoFASecret, twoFACode: st.twoFACode, twoFAErr: st.twoFAErr, hasTwoFAErr: !!st.twoFAErr,
+      onTwoFACode:(e)=>this.setState({twoFACode:e.target.value.replace(/\D/g,'').slice(0,6)}),
+      start2FA:()=>this.start2FA(), confirm2FA:()=>this.confirm2FA(), disable2FA:()=>this.disable2FA(),
+      navItems: this.NAV.map(n=>{
+        let badge=''; if(n.id==='orders'&&(pending+working)>0) badge=pending+working; if(n.id==='clips'&&pendClips>0) badge=pendClips; if(n.id==='deposits'&&st.deposits.length>0) badge=st.deposits.length;
+        return { label:n.label, icon:n.icon, badge, style:this.navStyle(st.tab===n.id), onClick:()=>this.go(n.id) };
+      }),
+      pageTitle: titles[st.tab][0], pageSub: titles[st.tab][1],
+      todayRevenue: this.fmt(st.orders.filter(o=>o.status!=='ยกเลิก').reduce((a,o)=>a+o.price,0)),
+
+      tabOverview: st.tab==='overview', tabOrders: st.tab==='orders', tabClips: st.tab==='clips', tabUsers: st.tab==='users', tabServices: st.tab==='services', tabDeposits: st.tab==='deposits', tabSettings: st.tab==='settings',
+
+      // overview
+      kpis: [
+        { label:'รายได้วันนี้', value:'฿'+this.fmt(st.orders.filter(o=>o.status!=='ยกเลิก').reduce((a,o)=>a+o.price,0)), delta:'▲ 12% จากเมื่อวาน', color:'#25e0a8', icon:'M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' },
+        { label:'ออเดอร์ทั้งหมด', value:st.orders.length, delta:working+pending+' กำลังดำเนินการ', color:accent, icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2', onClick:()=>this.setState({tab:'orders', orderFilter:'all'}) },
+        { label:'สมาชิก', value:st.users.length, delta:'ใช้งานอยู่ '+st.users.filter(u=>!u.banned).length, color:'#2f7bff', icon:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', onClick:()=>this.setState({tab:'users'}) },
+        { label:'ออเดอร์ค้าง', value:pending, delta:'รอดำเนินการ', color:'#e0a825', icon:'M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z', onClick:()=>this.setState({tab:'orders', orderFilter:'รอดำเนินการ'}) },
+        { label:'สลิป Wallet รออนุมัติ', value:st.deposits.length, delta:'รอตรวจสอบยอดโอน', color:'#ff8a3c', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15h6M9 11h2', onClick:()=>this.setState({tab:'deposits'}) },
+        { label:'งานคลิปค้าง', value:pendClips, delta:'ถ่าย/ตัดต่อ/ส่งงาน', color:'#a855f7', icon:'M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M4 6h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z', onClick:()=>this.setState({tab:'clips', clipFilter:'pending'}) },
+      ].map(k=>({ ...k, clickStyle: k.onClick ? 'cursor:pointer;' : '' })),
+      chartRanges: [
+        { key:'yesterday', label:'เมื่อวาน' },
+        { key:'today', label:'วันนี้' },
+        { key:'week', label:'สัปดาห์นี้' },
+        { key:'month', label:'12 เดือน' },
+      ].map(r=>({ label:r.label, onClick:()=>this.setState({chartRange:r.key}), style:this.filterStyle(st.chartRange===r.key)+'white-space:nowrap;flex-shrink:0;' })),
+      chartTitle: ({ yesterday:'รายได้เมื่อวาน', today:'รายได้วันนี้', week:'รายได้ 7 วันล่าสุด', month:'รายได้ย้อนหลัง 12 เดือน' })[st.chartRange],
+      yearRevenue: (()=>{
+        const RANGE_DATA={
+          today:    { unit:['00:00','03:00','06:00','09:00','12:00','15:00','18:00','21:00'], data:[0,0,120,540,890,1250,980,410] },
+          yesterday:{ unit:['00:00','03:00','06:00','09:00','12:00','15:00','18:00','21:00'], data:[80,40,310,760,1120,1480,1050,640] },
+          week:     { unit:['จ','อ','พ','พฤ','ศ','ส','อา'], data:[1200,1850,1420,2380,2100,1640,2250] },
+          month:    { unit:['ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'], data:[18400,21200,19800,24600,27300,22900,31200,29400,33800,26700,35100,41600] },
+        };
+        return this.fmt(RANGE_DATA[st.chartRange].data.reduce((a,v)=>a+v,0));
+      })(),
+      chart: (()=>{
+        const RANGE_DATA={
+          today:    { unit:['00:00','03:00','06:00','09:00','12:00','15:00','18:00','21:00'], data:[0,0,120,540,890,1250,980,410] },
+          yesterday:{ unit:['00:00','03:00','06:00','09:00','12:00','15:00','18:00','21:00'], data:[80,40,310,760,1120,1480,1050,640] },
+          week:     { unit:['จ','อ','พ','พฤ','ศ','ส','อา'], data:[1200,1850,1420,2380,2100,1640,2250] },
+          month:    { unit:['ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'], data:[18400,21200,19800,24600,27300,22900,31200,29400,33800,26700,35100,41600] },
+        };
+        const { unit, data }=RANGE_DATA[st.chartRange];
+        const mx=Math.max(...data, 1);
+        return data.map((v,i)=>({ month:unit[i], valText: v>=1000 ? (v/1000).toFixed(1)+'k' : (''+v), h:Math.round(v/mx*100)+'%', tip:unit[i]+' · ฿'+this.fmt(v) }));
+      })(),
+      actionQueue: [
+        { count:pending, label:'ออเดอร์รอดำเนินการ', sub:'กดเพื่อเริ่มทำ', color:'#e0a825', onClick:()=>this.setState({tab:'orders', orderFilter:'รอดำเนินการ'}) },
+        { count:st.deposits.length, label:'สลิปรอตรวจสอบ', sub:'อนุมัติการเติมเงิน', color:accent, onClick:()=>this.setState({tab:'deposits'}) },
+        { count:pendClips, label:'งานคลิปในคิว', sub:'ถ่าย/ตัดต่อ/ส่งงาน', color:'#2f7bff', onClick:()=>this.setState({tab:'clips', clipFilter:'pending'}) },
+      ],
+      recentOrders: st.orders.slice(0,5).map(o=>{ const p=this.PLATFORMS[o.pf]; return { id:o.id, service:o.service, user:o.user||'—', logo:p.logo, color:p.color, priceText:this.fmt(o.price), status:o.status, statusStyle:this.statusStyle(o.status) }; }),
+      goOrders: ()=>this.setState({tab:'orders'}),
+
+      // orders
+      orderFilters: [
+        { key:'all', label:'ทั้งหมด', count:st.orders.length },
+        { key:'รอดำเนินการ', label:'รอดำเนินการ', count:pending },
+        { key:'กำลังทำ', label:'กำลังทำ', count:working },
+        { key:'สำเร็จ', label:'สำเร็จ', count:done },
+      ].map(f=>({ label:f.label, count:f.count, style:this.filterStyle(st.orderFilter===f.key), onClick:()=>this.setState({orderFilter:f.key}) })),
+      orderRows: shown.map(o=>({ ...orderRow(o), onOpen:()=>this.openDetail(o.id) })),
+      noOrders: shown.length===0,
+      loading: st.loading, notLoading: !st.loading, skeleton:[0,1,2,3,4,5],
+      orderQuery: st.orderQuery,
+      onOrderQuery:(e)=>this.setState({orderQuery:e.target.value}),
+      orderSorts: [ {k:'new',l:'ใหม่สุด'}, {k:'old',l:'เก่าสุด'}, {k:'priceHi',l:'ราคา ↓'}, {k:'priceLo',l:'ราคา ↑'} ].map(s=>({ label:s.l, onClick:()=>this.setState({orderSort:s.k}), style:this.filterStyle(st.orderSort===s.k)+'height:32px;font-size:12px;' })),
+      hasConfirm: !!st.confirm,
+      confirmTitle: st.confirm?st.confirm.title:'',
+      confirmMsg: st.confirm?st.confirm.message:'',
+      confirmLabel: st.confirm?(st.confirm.confirmLabel||'ยืนยัน'):'ยืนยัน',
+      confirmBtnStyle: 'flex:1;height:44px;border-radius:11px;border:none;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:Sora;background:'+((st.confirm&&st.confirm.danger)?'#ff5c6a':'var(--accent)')+';',
+      confirmCancel: ()=>this.closeConfirm(),
+      confirmOk: ()=>this.doConfirm(),
+      stopProp: (e)=>e.stopPropagation(),
+      hasDetail: !!st.orderDetail,
+      detailId: st.orderDetail?('#'+st.orderDetail.id):'',
+      detailService: st.orderDetail?st.orderDetail.service:'',
+      detailUser: st.orderDetail?(st.orderDetail.user||'—'):'',
+      detailLink: st.orderDetail?st.orderDetail.link:'',
+      detailQty: st.orderDetail?this.fmt(st.orderDetail.qty):'',
+      detailStatus: st.orderDetail?st.orderDetail.status:'',
+      detailStatusStyle: st.orderDetail?this.statusStyle(st.orderDetail.status):'',
+      detailPrice: st.orderDetail?this.fmt(st.orderDetail.price):'',
+      detailTime: st.orderDetail?(st.orderDetail.time||''):'',
+      detailProgress: st.orderDetail?((st.orderDetail.progress||0)+'%'):'0%',
+      closeDetail: ()=>this.closeDetail(),
+      creditModal: !!st.creditUser,
+      creditUserName: st.creditUser?st.creditUser.name:'',
+      creditAmount: st.creditAmount,
+      onCreditAmount:(e)=>this.setState({creditAmount:e.target.value.replace(/[^0-9]/g,'')}),
+      onCreditKey:(e)=>{ if(e.key==='Enter') this.doAddCredit(); },
+      creditChips: [100,300,500,1000].map(a=>({ label:'+'+this.fmt(a), onClick:()=>this.setState({creditAmount:String(a)}) })),
+      confirmCredit:()=>this.doAddCredit(),
+      closeCredit:()=>this.setState({creditUser:null, creditAmount:''}),
+      copyLink: ()=>this.copy(st.orderDetail&&st.orderDetail.link,'ลิงก์'),
+      copyDetailId: ()=>this.copy(st.orderDetail&&st.orderDetail.id,'เลขออเดอร์'),
+      bulkIds: shown.filter(o=>o.status==='กำลังทำ'||o.status==='รอดำเนินการ').map(o=>o.id),
+      hasBulk: shown.filter(o=>o.status==='กำลังทำ'||o.status==='รอดำเนินการ').length>0,
+      bulkCount: shown.filter(o=>o.status==='กำลังทำ'||o.status==='รอดำเนินการ').length,
+      bulkDone: ()=>{ const ids=st.orders.filter(o=>(o.status==='กำลังทำ'||o.status==='รอดำเนินการ') && (st.orderFilter==='all'||o.status===st.orderFilter)).map(o=>o.id); this.askConfirm({title:'ทำเครื่องเสร็จทั้งหมด?', message:'ออเดอร์ '+ids.length+' รายการจะถูกทำเครื่องว่าเสร็จและขึ้นหน้าเว็บลูกค้า', confirmLabel:'ทำเครื่องเสร็จทั้งหมด', action:()=>this.markAllDone(ids)}); },
+      showOffline: st.backendReachable===false && !!st.authToken && st.authToken!=='DEMO-TOKEN',
+      retryConn: ()=>this.retryConn(),
+
+      // clips
+      clipFilters: [
+        { key:'all', label:'ทั้งหมด', count:st.clips.length },
+        { key:'pending', label:'ค้างอยู่', count:pendClips },
+        { key:'ส่งแล้ว', label:'ส่งแล้ว', count:st.clips.length-pendClips },
+      ].map(f=>({ label:f.label, count:f.count, style:this.filterStyle(st.clipFilter===f.key), onClick:()=>this.setState({clipFilter:f.key}) })),
+      clipCards: (st.clipFilter==='all' ? st.clips : st.clipFilter==='pending' ? st.clips.filter(c=>c.status!=='ส่งแล้ว') : st.clips.filter(c=>c.status===st.clipFilter)).map(c=>{
+        const flow=['รอทำ','กำลังถ่าย','ตัดต่อ','ส่งแล้ว']; const i=flow.indexOf(c.status);
+        const actions=[];
+        if(c.status!=='ส่งแล้ว'){ actions.push({ label:'ถัดไป → '+flow[Math.min(i+1,3)], style:this.actBtn('ghost')+'flex:1;height:38px;', onClick:()=>this.advanceClip(c.id) }); actions.push({ label:'✓ ส่งงาน', style:this.actBtn('good')+'flex:1;height:38px;', onClick:()=>this.clipDone(c.id) }); }
+        else actions.push({ label:'✓ ส่งงานแล้ว', style:this.actBtn('ghost')+'flex:1;height:38px;cursor:default;color:#25e0a8;', onClick:()=>{} });
+        return {
+          id:c.id, status:c.status, statusStyle:this.clipStatusStyle(c.status),
+          structureLabel:this.CLIP_LABELS[c.structure]||c.structure, lengthLabel:c.length+' วิ', speakLabel:this.CLIP_LABELS[c.speak]||c.speak,
+          qty:c.qty, total:this.fmt(c.total), email:c.email, note:c.note,
+          stylesText: (c.styles||[]).map(s=>this.CLIP_LABELS[s]||s).join(' · '),
+          actions,
+        };
+      }),
+      noClips: (st.clipFilter==='all' ? st.clips : st.clipFilter==='pending' ? st.clips.filter(c=>c.status!=='ส่งแล้ว') : st.clips.filter(c=>c.status===st.clipFilter)).length===0,
+
+      // users
+      userSearch: st.userSearch,
+      onUserSearch: (e)=>this.setState({userSearch:e.target.value}),
+      noUserResults: st.userSearch.trim().length>0 && !st.users.some(u=>{
+        const q=st.userSearch.trim().toLowerCase();
+        return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q);
+      }),
+      userRows: st.users.filter(u=>{
+        const q=st.userSearch.trim().toLowerCase();
+        if(!q) return true;
+        return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q);
+      }).map((u,i)=>({
+        name:u.name, email:u.email, joined:u.joined, initial:u.name.replace(/^(คุณ|ร้าน|ช่อง|น้อง)\s*/,'').charAt(0),
+        balance:this.fmt(u.balance), orders:u.orders, spent:this.fmt(u.spent), banned:u.banned,
+        avatarBg:['linear-gradient(135deg,'+accent+',#25c9e0)','linear-gradient(135deg,#ff5c8a,#ff8a3c)','linear-gradient(135deg,#2f7bff,#25c9e0)','linear-gradient(135deg,#12b981,#25c9e0)','linear-gradient(135deg,#a855f7,#ec4899)'][i%5],
+        onCredit:()=>this.addCredit(u.id), onBan:()=> u.banned ? this.toggleBan(u.id) : this.askConfirm({title:'ระงับบัญชีนี้?', message:'ผู้ใช้จะไม่สามารถสั่งซื้อได้จนกว่าจะปลดระงับ', confirmLabel:'ระงับบัญชี', danger:true, action:()=>this.toggleBan(u.id)}),
+        banLabel: u.banned?'ปลดระงับ':'ระงับ',
+        banStyle:'height:32px;padding:0 12px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;'+(u.banned?'border:1px solid #25e0a8;background:color-mix(in srgb,#25e0a8 12%,transparent);color:#25e0a8;':'border:1px solid rgba(255,80,100,.35);background:rgba(255,80,100,.08);color:#ff6b7a;'),
+      })),
+
+      // services
+      svcGroups: Object.keys(this.PLATFORMS).map(pf=>({
+        name:this.PLATFORMS[pf].name, logo:this.PLATFORMS[pf].logo, color:this.PLATFORMS[pf].color,
+        items:this.SERVICES[pf].map(s=>{
+          const off=st.svcOff.includes(s.id);
+          return {
+            name:s.name, rate:this.rateOf(s.id, s.rate), minText:this.fmt(s.min), maxText:this.fmt(s.max),
+            dim: off?'opacity:.45;':'',
+            onRate:(e)=>this.setRate(s.id, e.target.value),
+            onToggle:()=>this.toggleSvc(s.id),
+            toggleStyle:this.toggleStyle(!off), knobStyle:this.knobStyle(!off),
+          };
+        }),
+      })),
+
+      // deposits
+      pendingDeposits: st.deposits.map(d=>({ user:d.user, method:d.method, methodImg:d.methodImg, amount:this.fmt(d.amount), time:d.time, slip:d.slip||'', hasSlip:!!d.slip, onApprove:()=>this.approveDeposit(d.id), onReject:()=>this.askConfirm({title:'ปฏิเสธสลิปนี้?', message:'ยอดเติมของ '+d.user+' จะไม่ถูกเพิ่มเข้าระบบ', confirmLabel:'ปฏิเสธสลิป', danger:true, action:()=>this.rejectDeposit(d.id)}) })),
+      pendingDepositCount: st.deposits.length,
+      noPendingDeposits: st.deposits.length===0,
+      depositHistory: st.depositHistory.map(d=>({
+        user:d.user, method:d.method, amount:this.fmt(d.amount), time:d.time,
+        badge: d.auto ? 'อัตโนมัติ' : 'อนุมัติเอง',
+        badgeStyle: 'flex-shrink:0;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;'+(d.auto?'color:#25e0a8;background:color-mix(in srgb,#25e0a8 15%,transparent);':'color:var(--muted);background:var(--field);border:1px solid var(--border);'),
+      })),
+      financeSummary: [
+        { label:'รายได้วันนี้', value:'฿'+this.fmt(2250), color:'#25e0a8' },
+        { label:'รายได้สัปดาห์นี้', value:'฿'+this.fmt(12840), color:'var(--text)' },
+        { label:'เติมรอตรวจสอบ', value:'฿'+this.fmt(st.deposits.reduce((a,d)=>a+d.amount,0)), color:'#e0a825' },
+        { label:'เครดิตหมุนเวียน', value:'฿'+this.fmt(st.users.reduce((a,u)=>a+u.balance,0)), color:accent },
+      ],
+
+      // settings
+      paySettings: [
+        { id:'promptpay', name:'พร้อมเพย์ (PromptPay)', desc:'สแกน QR โอนจากทุกธนาคาร', img:'assets/promptpay.png' },
+        { id:'stripe', name:'บัตรเครดิต/เดบิต (Stripe)', desc:'ชำระผ่าน Stripe', img:'assets/stripe.svg' },
+        { id:'truemoney', name:'TrueMoney Wallet', desc:'เติมผ่านวอลเล็ท', img:'assets/truemoney.png' },
+      ].map(p=>{ const on=!st.payOff.includes(p.id); return { name:p.name, desc:p.desc, img:p.img, toggleStyle:this.toggleStyle(on), knobStyle:this.knobStyle(on), onToggle:()=>this.setState(s=>({payOff: on?[...s.payOff,p.id]:s.payOff.filter(x=>x!==p.id)})) }; }),
+      setLine: st.setLine, onSetLine:(e)=>this.setState({setLine:e.target.value}),
+      setEmail: st.setEmail, onSetEmail:(e)=>this.setState({setEmail:e.target.value}),
+      setTmn: st.setTmn, onSetTmn:(e)=>this.setState({setTmn:e.target.value}),
+      saveSettings: ()=>this.toast('บันทึกการตั้งค่าเรียบร้อย'),
+
+      toast: st.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>

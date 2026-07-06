@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#7c5cff"/><text x="50" y="62" font-family="sans-serif" font-size="34" font-weight="800" fill="#fff" text-anchor="middle">SMM</text></svg></template>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&amp;family=Sora:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#07080f; --panel:#0a0b16; --raised:#12131f;
+    --text:#e9eaf3; --muted:#8a8ca8; --muted2:#9a9cb8; --muted3:#c7c9e0;
+    --surface:rgba(255,255,255,.03); --surface2:rgba(255,255,255,.05); --field:rgba(255,255,255,.04);
+    --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.1);
+  }
+  [data-theme="cute"]{
+    --bg:#ffdcef; --panel:#ffd0e8; --raised:#fff2f9;
+    --text:#7c2f59; --muted:#c274a0; --muted2:#b76f98; --muted3:#9a4e77;
+    --surface:rgba(255,255,255,.5); --surface2:rgba(255,255,255,.72); --field:rgba(255,255,255,.7);
+    --border:rgba(228,140,185,.4); --border2:rgba(228,140,185,.62);
+  }
+  [data-theme="cute"] input, [data-theme="cute"] textarea{ color:var(--text) !important; }
+  [data-theme="cute"] ::placeholder{ color:#d18cb4 }
+  body{background:var(--bg);font-family:'Noto Sans Thai','Sora',sans-serif;-webkit-font-smoothing:antialiased}
+  input,button,select{font-family:inherit}
+  button{color:inherit}
+  input:focus{outline:none}
+  ::placeholder{color:#5a5d78}
+  @keyframes floatUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.3}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  @keyframes toastIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}
+  .sc-scroll::-webkit-scrollbar{width:8px;height:8px}
+  .sc-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:8px}
+  /* ---- responsive: มือถือ / แท็บเล็ต ---- */
+  .ym-nav>button{transition:background .2s ease,color .2s ease,transform .12s ease}
+  .ym-nav>button:active{transform:scale(.93)}
+  @media (max-width:860px){
+    .ym-login-grid{grid-template-columns:1fr !important}
+    .ym-login-brand{display:none !important}
+    .ym-shell{grid-template-columns:1fr !important}
+    .ym-sidebar{position:fixed !important;top:auto !important;bottom:0;left:0;right:0;height:auto !important;flex-direction:row !important;padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;border-right:none !important;border-top:1px solid var(--border) !important;background:color-mix(in srgb, var(--bg) 94%, transparent) !important;backdrop-filter:blur(14px);z-index:60;overflow-x:auto;overflow-y:hidden}
+    .ym-brand,.ym-credit,.ym-hide-sm{display:none !important}
+    .ym-nav{flex-direction:row !important;gap:2px !important;width:100%}
+    .ym-nav>button{flex:1 0 auto;min-width:60px;flex-direction:column !important;gap:4px !important;padding:8px 6px !important;font-size:10.5px !important;font-weight:600 !important;border-radius:13px !important;justify-content:center !important;text-align:center !important}
+    .ym-nav>button>span{flex:none !important;text-align:center !important;line-height:1.1 !important}
+    .ym-main{max-height:none !important;overflow:visible !important}
+    .ym-topbar{padding:12px 16px !important}
+    .ym-topbar-actions{gap:9px !important}
+    .ym-content{padding:18px 16px 118px !important}
+    .ym-cols{grid-template-columns:1fr !important}
+    [style*="top:96px"]{position:static !important;top:auto !important}
+    .ym-table{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+    .ym-table>div{min-width:600px}
+    /* orders → การ์ดต่อแถวบนมือถือ (ไม่ซ้อนกัน) */
+    .ym-ohead{display:none !important}
+    .ym-ocards{overflow-x:visible !important}
+    .ym-ocards>div{min-width:0 !important}
+    .ym-crow{grid-template-columns:1fr auto auto !important;gap:7px 10px !important;padding:14px 16px !important}
+    .ym-crow>div:nth-child(2){grid-column:1;grid-row:1;min-width:0}
+    .ym-crow>div:nth-child(6){grid-column:2;grid-row:1;text-align:right}
+    .ym-crow>div:nth-child(7){grid-column:3;grid-row:1}
+    .ym-crow>div:nth-child(1){grid-column:1/-1;grid-row:2;color:var(--muted);font-size:12px}
+    .ym-crow>div:nth-child(3){grid-column:1/-1;grid-row:3;min-width:0}
+    .ym-crow>div:nth-child(4){grid-column:1/-1;grid-row:4}
+    .ym-crow>div:nth-child(5){grid-column:1/-1;grid-row:5}
+  }
+</style>
+</helmet>
+<div data-theme="{{ themeAttr }}" style="--accent: {{ accentVar }}; --accent-soft: {{ accentSoftVar }}; --glow: {{ glowVar }}; min-height:100vh; color:var(--text); background:radial-gradient(1200px 800px at 85% -10%, color-mix(in srgb, var(--accent,#7c5cff) 16%, transparent), transparent 60%), radial-gradient(900px 700px at -5% 110%, color-mix(in srgb, var(--accent,#7c5cff) 10%, transparent), transparent 55%), var(--bg);">
+
+  <!-- ========================= LOGIN GATE ========================= -->
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div class="ym-login-grid" style="min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;">
+    <!-- brand panel -->
+    <div class="ym-login-brand" style="position:relative;overflow:hidden;padding:64px 60px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg, color-mix(in srgb, var(--accent,#7c5cff) 22%, var(--panel)), var(--panel) 62%);border-right:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:11px;background:var(--accent,#7c5cff);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:Sora;font-size:15px;color:#fff;box-shadow:var(--glow,none);">YM</div>
+        <span style="font-family:Sora;font-weight:700;font-size:20px;letter-spacing:-.01em;">YM booster</span>
+      </div>
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--border);border:1px solid var(--border);font-size:12.5px;color:var(--muted3);margin-bottom:22px;">
+          <span style="width:7px;height:7px;border-radius:50%;background:#25e0a8;animation:pulseDot 1.6s infinite;"></span>ระบบพร้อมให้บริการ 24 ชม.
+        </div>
+        <h1 style="font-family:Sora;font-weight:800;font-size:44px;line-height:1.08;letter-spacing:-.02em;margin-bottom:18px;">ปั๊มยอด<br>โซเชียลของคุณ<br><span style="color:var(--accent,#7c5cff);">ให้ปังในคลิกเดียว</span></h1>
+        <p style="color:var(--muted2);font-size:15.5px;line-height:1.7;max-width:380px;">แพลตฟอร์มสั่งเพิ่มยอดผู้ติดตาม ไลก์ วิว และคอมเมนต์ สำหรับ Facebook, Instagram, YouTube และ TikTok เริ่มต้นได้ทันทีด้วยตัวเอง</p>
+        <div style="display:flex;gap:26px;margin-top:34px;">
+          <div><div style="font-family:Sora;font-weight:700;font-size:24px;">120K+</div><div style="font-size:12.5px;color:var(--muted);">ออเดอร์สำเร็จ</div></div>
+          <div><div style="font-family:Sora;font-weight:700;font-size:24px;">4 แพลตฟอร์ม</div><div style="font-size:12.5px;color:var(--muted);">ครบทุกโซเชียล</div></div>
+          <div><div style="font-family:Sora;font-weight:700;font-size:24px;">~3 นาที</div><div style="font-size:12.5px;color:var(--muted);">เริ่มส่งยอด</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <sc-for list="{{ platforms }}" as="p" hint-placeholder-count="4">
+          <div style="width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:{{ p.color }};padding:8px;"><img src="{{ p.logo }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:contain;"></div>
+        </sc-for>
+      </div>
+    </div>
+    <!-- form panel -->
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;padding:40px;">
+      <button onClick="{{ toggleTheme }}" title="{{ themeLabel }}" style="position:absolute;top:24px;right:24px;display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;border:1px solid var(--border2);border-radius:11px;background:var(--surface);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;"><span style="font-size:15px;line-height:1;">{{ themeIcon }}</span>{{ themeLabel }}</button>
+      <div style="width:100%;max-width:380px;animation:floatUp .5s ease both;">
+        <div style="display:flex;background:var(--field);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:26px;">
+          <button onClick="{{ setLoginTab }}" style="{{ loginTabStyle }}">เข้าสู่ระบบ</button>
+          <button onClick="{{ setRegisterTab }}" style="{{ registerTabStyle }}">สมัครสมาชิก</button>
+        </div>
+        <h2 style="font-family:Sora;font-weight:700;font-size:24px;margin-bottom:6px;">{{ authTitle }}</h2>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">{{ authSubtitle }}</p>
+
+        <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+          <label style="display:block;font-size:13px;color:var(--muted3);margin-bottom:7px;">ชื่อผู้ใช้</label>
+          <input value="{{ regName }}" onInput="{{ onRegName }}" placeholder="ตั้งชื่อผู้ใช้ของคุณ" style="width:100%;height:46px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14.5px;margin-bottom:16px;">
+        </sc-if>
+
+        <label style="display:block;font-size:13px;color:var(--muted3);margin-bottom:7px;">อีเมล / เบอร์โทรศัพท์</label>
+        <input value="{{ loginId }}" onInput="{{ onLoginId }}" placeholder="you@example.com" style="width:100%;height:46px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14.5px;margin-bottom:16px;">
+
+        <label style="display:block;font-size:13px;color:var(--muted3);margin-bottom:7px;">รหัสผ่าน</label>
+        <input value="{{ loginPw }}" onInput="{{ onLoginPw }}" type="password" placeholder="••••••••" style="width:100%;height:46px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14.5px;margin-bottom:20px;">
+
+        <sc-if value="{{ showForgot }}" hint-placeholder-val="{{ true }}"><div style="text-align:right;margin:-8px 0 16px;"><span onClick="{{ doForgot }}" style="font-size:12.5px;color:var(--accent,#7c5cff);cursor:pointer;">ลืมรหัสผ่าน?</span></div></sc-if>
+        <sc-if value="{{ hasAuthError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.25);border-radius:9px;padding:9px 12px;margin-bottom:14px;">{{ authError }}</div></sc-if>
+        <button onClick="{{ doLogin }}" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">{{ authCta }}</button>
+
+        <sc-if value="{{ showDemoLogin }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--muted);font-size:12.5px;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>หรือ<div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+        <button onClick="{{ demoLogin }}" style="width:100%;height:46px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;">เข้าสู่ระบบด้วยบัญชีทดลอง</button>
+        <div style="text-align:center;color:var(--muted);font-size:11px;margin-top:8px;">โหมดพรีวิว · ปุ่มนี้จะหายไปเมื่อเชื่อมต่อเซิร์ฟเวอร์จริง</div>
+        </sc-if>
+        <p style="text-align:center;color:var(--muted);font-size:12px;margin-top:20px;">การเข้าใช้งานถือว่ายอมรับเงื่อนไขการให้บริการ</p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ========================= APP ========================= -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <div class="ym-shell" style="display:grid;grid-template-columns:246px 1fr;min-height:100vh;">
+    <!-- sidebar -->
+    <aside class="ym-sidebar" style="border-right:1px solid var(--border);padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;background:color-mix(in srgb, var(--bg) 60%, transparent);">
+      <div class="ym-brand" style="display:flex;align-items:center;gap:11px;padding:0 8px;margin-bottom:26px;">
+        <div style="width:34px;height:34px;border-radius:10px;background:var(--accent,#7c5cff);display:flex;align-items:center;justify-content:center;font-weight:800;font-family:Sora;color:#fff;box-shadow:var(--glow,none);font-size:13px;">YM</div>
+        <span style="font-family:Sora;font-weight:700;font-size:17px;">YM booster</span>
+      </div>
+      <nav class="ym-nav" style="display:flex;flex-direction:column;gap:4px;">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+          <button onClick="{{ n.onClick }}" style="{{ n.style }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.icon }}"></path></svg>
+            <span>{{ n.label }}</span>
+          </button>
+        </sc-for>
+      </nav>
+      <div class="ym-credit" style="margin-top:auto;padding:14px;border-radius:14px;background:linear-gradient(160deg, color-mix(in srgb, var(--accent,#7c5cff) 22%, var(--raised)), var(--raised));border:1px solid var(--border);">
+        <div style="font-size:12.5px;color:var(--muted3);margin-bottom:3px;">ยอดเครดิตคงเหลือ</div>
+        <div style="font-family:Sora;font-weight:800;font-size:22px;margin-bottom:12px;">{{ balanceText }} <span style="font-size:13px;font-weight:600;color:var(--muted2);">เครดิต</span></div>
+        <button onClick="{{ goFunds }}" style="width:100%;height:38px;border:none;border-radius:10px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;">+ เติมเครดิต</button>
+      </div>
+    </aside>
+
+    <!-- main -->
+    <main class="sc-scroll ym-main" style="overflow-y:auto;max-height:100vh;">
+      <!-- topbar -->
+      <div class="ym-topbar" style="position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:1px solid var(--border);background:color-mix(in srgb, var(--bg) 82%, transparent);backdrop-filter:blur(12px);">
+        <div>
+          <div style="font-family:Sora;font-weight:700;font-size:19px;">{{ pageTitle }}</div>
+          <div style="font-size:12.5px;color:var(--muted);">{{ pageSub }}</div>
+        </div>
+        <div class="ym-topbar-actions" style="display:flex;align-items:center;gap:14px;">
+          <button onClick="{{ toggleTheme }}" title="{{ themeLabel }}" class="ym-hide-sm" style="display:flex;align-items:center;gap:7px;height:40px;padding:0 13px;border:1px solid var(--border2);border-radius:11px;background:var(--surface);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;"><span style="font-size:15px;line-height:1;">{{ themeIcon }}</span>{{ themeLabel }}</button>
+          <button onClick="{{ goFunds }}" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border:1px solid var(--border2);border-radius:11px;background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;cursor:pointer;">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--accent,#7c5cff);"></span>{{ balanceText }} เครดิต
+          </button>
+          <div style="display:flex;align-items:center;gap:10px;padding-left:6px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent,#7c5cff),#25c9e0);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">{{ userInitial }}</div>
+            <div style="line-height:1.2;">
+              <div style="font-size:13.5px;font-weight:600;">{{ userName }}</div>
+              <button onClick="{{ doLogout }}" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:0;">ออกจากระบบ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ym-content" style="padding:28px 30px 60px;max-width:1120px;">
+
+        <sc-if value="{{ showOffline }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:11px;background:rgba(255,138,60,.1);border:1px solid rgba(255,138,60,.35);border-radius:12px;padding:12px 15px;margin-bottom:18px;">
+            <span style="font-size:16px;line-height:1;">⚠️</span>
+            <div style="flex:1;font-size:12.5px;color:var(--muted3);line-height:1.5;">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ · บางการทำงานอาจขัดข้องชั่วคราว</div>
+            <button onClick="{{ retryConn }}" style="flex-shrink:0;height:34px;padding:0 14px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;">ลองใหม่</button>
+          </div>
+        </sc-if>
+
+        <!-- ===== NEW ORDER ===== -->
+        <sc-if value="{{ tabNew }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="display:flex;gap:11px;margin-bottom:24px;flex-wrap:wrap;">
+            <sc-for list="{{ platformCards }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.onClick }}" style="{{ p.style }}">
+                <div style="width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:{{ p.color }};padding:9px;"><img src="{{ p.logo }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:contain;"></div>
+                <div style="text-align:left;"><div style="font-weight:700;font-size:14.5px;font-family:Sora;color:var(--text);">{{ p.name }}</div><div style="font-size:12px;color:var(--muted);">{{ p.count }} บริการ</div></div>
+              </button>
+            </sc-for>
+          </div>
+
+          <div class="ym-cols" style="display:grid;grid-template-columns:1.35fr 1fr;gap:22px;align-items:start;">
+            <!-- service list -->
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+              <div style="padding:15px 18px;border-bottom:1px solid var(--border);font-weight:600;font-size:14px;display:flex;align-items:center;gap:9px;"><span style="width:26px;height:26px;border-radius:8px;background:{{ activePlatformColor }};display:inline-flex;align-items:center;justify-content:center;padding:5px;"><img src="{{ activePlatformLogo }}" alt="{{ activePlatformName }}" style="width:100%;height:100%;object-fit:contain;"></span>บริการ {{ activePlatformName }}</div>
+              <div class="sc-scroll" style="max-height:440px;overflow-y:auto;">
+                <sc-for list="{{ serviceRows }}" as="s" hint-placeholder-count="5">
+                  <button onClick="{{ s.onClick }}" style="{{ s.style }}">
+                    <div style="flex:1;text-align:left;">
+                      <div style="font-weight:600;font-size:14px;color:var(--text);display:flex;align-items:center;gap:8px;">{{ s.name }} <sc-if value="{{ s.selected }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;color:var(--accent,#7c5cff);border:1px solid var(--accent,#7c5cff);border-radius:5px;padding:1px 6px;">เลือกอยู่</span></sc-if></div><div style="font-size:12px;color:var(--muted);margin-top:3px;">ขั้นต่ำ {{ s.minText }} · สูงสุด {{ s.maxText }}</div>
+                      
+                    </div>
+                    <div style="text-align:right;"><div style="font-weight:700;font-family:Sora;font-size:14.5px;color:var(--accent,#7c5cff);">{{ s.rateText }}</div><div style="font-size:11px;color:var(--muted);">/ 1000</div></div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- order form -->
+            <div style="position:sticky;top:96px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--glow,none);">
+              <div style="font-weight:700;font-family:Sora;font-size:15px;margin-bottom:4px;">สร้างออเดอร์</div>
+              <div style="font-size:12.5px;color:var(--muted);margin-bottom:18px;">{{ selectedServiceName }}</div>
+
+              <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">ลิงก์ / ยูสเซอร์เนม</label>
+              <input value="{{ link }}" onInput="{{ onLink }}" onKeyDown="{{ onOrderKey }}" placeholder="{{ linkPlaceholder }}" style="width:100%;height:44px;padding:0 13px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;margin-bottom:15px;">
+
+              <sc-if value="{{ showReactions }}" hint-placeholder-val="{{ false }}">
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">เลือกอิโมจิไลก์</label>
+                <div style="display:flex;gap:7px;margin-bottom:15px;">
+                  <sc-for list="{{ reactions }}" as="r" hint-placeholder-count="7">
+                    <button onClick="{{ r.onClick }}" title="{{ r.label }}" style="{{ r.style }}">{{ r.emoji }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">จำนวน</label>
+              <input value="{{ qty }}" onInput="{{ onQty }}" onKeyDown="{{ onOrderKey }}" type="number" placeholder="1000" style="width:100%;height:44px;padding:0 13px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;margin-bottom:8px;">
+              <div style="display:flex;gap:7px;margin-bottom:16px;">
+                <sc-for list="{{ qtyChips }}" as="q" hint-placeholder-count="4">
+                  <button onClick="{{ q.onClick }}" style="flex:1;height:32px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--muted3);font-size:12.5px;cursor:pointer;">{{ q.label }}</button>
+                </sc-for>
+              </div>
+
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted2);margin-bottom:7px;"><span>เรตราคา</span><span>{{ selectedRateText }} / 1000</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted2);margin-bottom:9px;"><span>จำนวน</span><span>{{ qtyText }}</span></div>
+                <div style="height:1px;background:var(--border);margin-bottom:9px;"></div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-weight:600;font-size:14px;">รวมทั้งหมด</span><span style="font-family:Sora;font-weight:800;font-size:22px;color:var(--accent,#7c5cff);">{{ costText }}</span></div>
+                <div style="text-align:right;font-size:11.5px;color:var(--muted);">เครดิต</div>
+              </div>
+
+              <sc-if value="{{ orderError }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.2);border-radius:9px;padding:9px 12px;margin-bottom:12px;">
+                  <div>{{ orderError }}</div>
+                  <sc-if value="{{ orderNeedsFunds }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ goFundsFromOrder }}" style="margin-top:9px;width:100%;height:38px;border:none;border-radius:9px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:Sora;">+ เติมเครดิตด่วน</button>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <button onClick="{{ placeOrder }}" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">สั่งซื้อเลย</button>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== ORDERS ===== -->
+        <sc-if value="{{ tabOrders }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="display:flex;gap:12px;margin-bottom:22px;flex-wrap:wrap;">
+            <sc-for list="{{ orderStats }}" as="o" hint-placeholder-count="4">
+              <div style="flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;">
+                <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">{{ o.label }}</div>
+                <div style="font-family:Sora;font-weight:700;font-size:24px;color:{{ o.color }};">{{ o.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="ym-table ym-ocards" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;">
+            <div class="ym-ohead" style="display:grid;grid-template-columns:52px 1fr 1.1fr 84px 118px 88px 58px;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);font-weight:600;">
+              <div>#</div><div>บริการ</div><div>ลิงก์</div><div>จำนวน</div><div>สถานะ</div><div style="text-align:right;">ราคา</div><div></div>
+            </div>
+            <sc-if value="{{ loading }}" hint-placeholder-val="{{ false }}">
+              <sc-for list="{{ skeleton }}" as="s" hint-placeholder-count="6">
+                <div style="padding:17px 20px;border-bottom:1px solid var(--field);"><div style="height:15px;border-radius:6px;background:linear-gradient(90deg,var(--field) 0%,var(--surface2) 50%,var(--field) 100%);background-size:400px 100%;animation:shimmer 1.1s infinite linear;"></div></div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ notLoading }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ orders }}" as="o" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:52px 1fr 1.1fr 84px 118px 88px 58px;gap:12px;padding:15px 20px;border-bottom:1px solid var(--field);align-items:center;" class="ym-crow">
+                  <div style="color:var(--muted);font-size:13px;">{{ o.id }}</div>
+                  <div style="display:flex;align-items:center;gap:9px;"><span style="width:26px;height:26px;border-radius:7px;background:{{ o.color }};display:inline-flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0;"><img src="{{ o.logo }}" alt="" style="width:100%;height:100%;object-fit:contain;"></span><span style="font-size:13.5px;">{{ o.service }}</span></div>
+                  <div style="font-size:13px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ o.link }}</div>
+                  <div style="font-size:13.5px;">{{ o.qtyText }}</div>
+                  <div><span style="{{ o.statusStyle }}">{{ o.status }}</span><div style="margin-top:6px;height:4px;border-radius:4px;background:var(--border);overflow:hidden;"><div style="height:100%;width:{{ o.progress }};background:{{ o.statusColor }};border-radius:4px;"></div></div></div>
+                  <div style="text-align:right;font-family:Sora;font-weight:600;font-size:13.5px;">{{ o.priceText }}</div>
+                  <div style="text-align:right;"><button onClick="{{ o.onReorder }}" title="สั่งซ้ำ" style="width:34px;height:34px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--muted3);font-size:16px;line-height:1;cursor:pointer;font-family:inherit;">↻</button></div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noOrders }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:48px 24px;text-align:center;">
+                  <div style="font-size:34px;margin-bottom:10px;">🚀</div>
+                  <div style="font-family:Sora;font-weight:700;font-size:16px;margin-bottom:6px;">ยังไม่มีออเดอร์</div>
+                  <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">เริ่มเพิ่มยอดโซเชียลของคุณได้เลย</div>
+                  <button onClick="{{ goNew }}" style="height:44px;padding:0 22px;border:none;border-radius:11px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">+ สั่งออเดอร์แรก</button>
+                </div>
+              </sc-if>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== SERVICES CATALOGUE ===== -->
+        <sc-if value="{{ tabServices }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;display:flex;flex-direction:column;gap:22px;">
+          <sc-for list="{{ catalogue }}" as="c" hint-placeholder-count="4">
+            <div>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:13px;">
+                <div style="width:34px;height:34px;border-radius:10px;background:{{ c.color }};display:flex;align-items:center;justify-content:center;padding:8px;"><img src="{{ c.logo }}" alt="{{ c.name }}" style="width:100%;height:100%;object-fit:contain;"></div>
+                <div style="font-family:Sora;font-weight:700;font-size:17px;">{{ c.name }}</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;">
+                <sc-for list="{{ c.items }}" as="s" hint-placeholder-count="5">
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px;">
+                    <div style="font-weight:600;font-size:14px;margin-bottom:8px;">{{ s.name }}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-family:Sora;font-weight:700;font-size:18px;color:var(--accent,#7c5cff);">{{ s.rateText }}</span><span style="font-size:11.5px;color:var(--muted);">/ 1000</span></div>
+                    <div style="font-size:11.5px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">ขั้นต่ำ {{ s.minText }} · สูงสุด {{ s.maxText }}</div>
+                    <button onClick="{{ s.onOrder }}" style="width:100%;height:36px;margin-top:11px;border:1px solid var(--accent,#7c5cff);border-radius:9px;background:color-mix(in srgb, var(--accent,#7c5cff) 12%, transparent);color:var(--accent,#7c5cff);font-weight:600;font-size:13px;cursor:pointer;">สั่งบริการนี้</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
+        <!-- ===== CREATOR & AFFILIATE ===== -->
+        <sc-if value="{{ tabCreator }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ configClosed }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:floatUp .4s ease both;">
+          <div style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg, color-mix(in srgb, var(--accent,#7c5cff) 26%, var(--raised)), var(--raised) 70%);border:1px solid var(--border);border-radius:18px;padding:22px 24px;margin-bottom:24px;box-shadow:var(--glow,none);">
+            <div style="flex:1;">
+              <div style="font-family:Sora;font-weight:800;font-size:22px;letter-spacing:-.01em;margin-bottom:6px;">สายทำคอนเทนต์ & หารายได้</div>
+              <div style="font-size:13.5px;color:var(--muted3);line-height:1.6;max-width:560px;">รับทำคลิปสั้นขายของ สำหรับแม่ค้าและสาย affiliate สคริปต์ + ถ่าย + ตัดต่อ พร้อมลง ความยาว 8–32 วิ</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+            <sc-for list="{{ creatorItems }}" as="c" hint-placeholder-count="6">
+              <div style="display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:18px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:9px;">
+                  <div style="font-weight:700;font-size:15px;font-family:Sora;line-height:1.35;">{{ c.name }}</div>
+                  <sc-if value="{{ c.tag }}" hint-placeholder-val="{{ false }}"><span style="flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--accent,#7c5cff);border:1px solid var(--accent,#7c5cff);border-radius:6px;padding:2px 7px;">{{ c.tag }}</span></sc-if>
+                </div>
+                <div style="font-size:12.5px;color:var(--muted2);line-height:1.6;flex:1;margin-bottom:14px;">{{ c.desc }}</div>
+                <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:4px;">
+                  <span style="font-family:Sora;font-weight:800;font-size:22px;color:var(--accent,#7c5cff);">{{ c.priceText }}</span>
+                  <span style="font-size:12px;color:var(--muted);">{{ c.unit }}</span>
+                </div>
+                <sc-if value="{{ c.note }}" hint-placeholder-val="{{ false }}"><div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;">{{ c.note }}</div></sc-if>
+                <button onClick="{{ c.onOrder }}" style="width:100%;height:40px;border:none;border-radius:10px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;font-family:Sora;">{{ c.cta }}</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- config view -->
+        <sc-if value="{{ configOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;">
+          <button onClick="{{ closeConfig }}" style="display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:var(--muted2);font-size:13.5px;cursor:pointer;font-family:inherit;margin-bottom:16px;padding:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>ย้อนกลับ
+          </button>
+          <div class="ym-cols" style="display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:22px;">
+
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:15px;"><span style="font-family:Sora;font-weight:700;font-size:15px;">เลือกโครงสร้างคลิป</span><span style="font-size:12px;color:var(--muted);">(เลือก 1)</span></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                  <sc-for list="{{ clipStructure }}" as="o" hint-placeholder-count="4">
+                    <button onClick="{{ o.onClick }}" style="{{ o.style }}">
+                      <span style="font-size:20px;line-height:1;">{{ o.emoji }}</span>
+                      <span style="flex:1;"><span style="display:block;font-size:13.5px;font-weight:600;color:var(--text);">{{ o.label }}</span><span style="display:block;font-size:11.5px;color:var(--muted2);margin-top:2px;">{{ o.sub }}</span></span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px;"><span style="font-family:Sora;font-weight:700;font-size:15px;">เลือกสไตล์คลิป</span><span style="font-size:12px;color:var(--muted);">(เลือกได้หลายแบบ)</span></div>
+                <div style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted2);margin-bottom:15px;">✨ ใส่ฉากเพิ่มเองได้ · 12 แบบ — แนะนำมือใหม่</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+                  <sc-for list="{{ clipBasic }}" as="o" hint-placeholder-count="12">
+                    <button onClick="{{ o.onClick }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:inherit;text-align:left;">
+                      <span style="{{ o.boxStyle }}"><sc-if value="{{ o.checked }}" hint-placeholder-val="{{ false }}">✓</sc-if></span>
+                      <span style="flex:1;font-size:13px;color:var(--text);">{{ o.label }}</span>
+                      <sc-if value="{{ o.hit }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#0c0d16;background:#ffcf3f;border-radius:5px;padding:2px 6px;">ฮิต</span></sc-if>
+                    </button>
+                  </sc-for>
+                </div>
+
+                <div style="font-size:13px;font-weight:600;color:var(--muted3);margin:18px 0 11px;">สถานที่ / ฉากถ่าย</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+                  <sc-for list="{{ clipLocation }}" as="o" hint-placeholder-count="16">
+                    <button onClick="{{ o.onClick }}" style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:inherit;text-align:left;">
+                      <span style="{{ o.boxStyle }}"><sc-if value="{{ o.checked }}" hint-placeholder-val="{{ false }}">✓</sc-if></span>
+                      <span style="font-size:15px;line-height:1;">{{ o.emoji }}</span>
+                      <span style="flex:1;font-size:13px;color:var(--text);">{{ o.label }}</span>
+                      <sc-if value="{{ o.hit }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:800;color:#0c0d16;background:#ffcf3f;border-radius:5px;padding:2px 6px;">ฮิต</span></sc-if>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- right sticky -->
+            <div style="position:sticky;top:96px;display:flex;flex-direction:column;gap:18px;">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;">
+                <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">เลือกสไตล์พูด</div>
+                <div class="sc-scroll" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding-right:4px;">
+                  <sc-for list="{{ speakList }}" as="o" hint-placeholder-count="12">
+                    <button onClick="{{ o.onClick }}" style="{{ o.style }}"><span style="font-size:15px;line-height:1;">{{ o.emoji }}</span>{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;"><span style="font-family:Sora;font-weight:700;font-size:14px;">รูปนางแบบ / นายแบบ</span><span style="font-size:11.5px;color:var(--muted);">ไม่บังคับ</span></div>
+                <label style="{{ modelSlotStyle }}">
+                  <input type="file" accept="image/*" onChange="{{ onModelImg }}" style="display:none;">
+                  <sc-if value="{{ hasModelImg }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ modelImg }}" alt="รูปนางแบบ" style="max-width:100%;max-height:120px;border-radius:8px;object-fit:contain;margin-bottom:8px;">
+                    <span style="font-size:12.5px;color:#25e0a8;font-weight:600;">✓ อัปโหลดแล้ว · แตะเพื่อเปลี่ยน</span>
+                    <span onClick="{{ clearModelImg }}" style="font-size:12px;color:#ff6b7a;margin-top:6px;cursor:pointer;">✕ ลบรูป</span>
+                  </sc-if>
+                  <sc-if value="{{ noModelImg }}" hint-placeholder-val="{{ true }}"><span style="font-size:22px;">🧍</span><span style="font-size:12.5px;color:var(--muted2);">แตะเพื่ออัปโหลดรูป</span></sc-if>
+                </label>
+
+                <div style="display:flex;align-items:center;gap:7px;margin:16px 0 12px;"><span style="font-family:Sora;font-weight:700;font-size:14px;">รูปสินค้า</span><span style="font-size:11.5px;color:var(--muted);">ไม่บังคับ</span></div>
+                <label style="{{ productSlotStyle }}">
+                  <input type="file" accept="image/*" onChange="{{ onProductImg }}" style="display:none;">
+                  <sc-if value="{{ hasProductImg }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ productImg }}" alt="รูปสินค้า" style="max-width:100%;max-height:120px;border-radius:8px;object-fit:contain;margin-bottom:8px;">
+                    <span style="font-size:12.5px;color:#25e0a8;font-weight:600;">✓ อัปโหลดแล้ว · แตะเพื่อเปลี่ยน</span>
+                    <span onClick="{{ clearProductImg }}" style="font-size:12px;color:#ff6b7a;margin-top:6px;cursor:pointer;">✕ ลบรูป</span>
+                  </sc-if>
+                  <sc-if value="{{ noProductImg }}" hint-placeholder-val="{{ true }}"><span style="font-size:22px;">📦</span><span style="font-size:12.5px;color:var(--muted2);">แตะเพื่ออัปโหลดรูป</span></sc-if>
+                </label>
+              </div>
+
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--glow,none);">
+                <div style="font-size:12.5px;color:var(--muted);margin-bottom:13px;">{{ configName }}</div>
+
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">ความยาวคลิป</label>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px;">
+                  <sc-for list="{{ clipLengths }}" as="l" hint-placeholder-count="4">
+                    <button onClick="{{ l.onClick }}" style="{{ l.style }}">
+                      <span style="font-size:13.5px;font-weight:700;color:var(--text);">{{ l.label }}</span>
+                      <span style="font-size:11px;color:var(--accent,#7c5cff);font-weight:600;">{{ l.priceText }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">จำนวนคลิป</label>
+                <input value="{{ clipQty }}" onInput="{{ onClipQty }}" type="number" min="10" max="500" placeholder="10" style="width:100%;height:44px;padding:0 13px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;font-family:Sora;font-weight:600;margin-bottom:8px;">
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                  <sc-for list="{{ clipQtyChips }}" as="q" hint-placeholder-count="4">
+                    <button onClick="{{ q.onClick }}" style="flex:1;height:30px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--muted3);font-size:12px;cursor:pointer;font-family:inherit;">{{ q.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size:11.5px;color:var(--muted);margin-bottom:15px;">{{ clipRateText }} เครดิต / คลิป · ขั้นต่ำ 10 · สูงสุด 500 คลิป</div>
+
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">อีเมล (Gmail) สำหรับรับคลิป</label>
+                <input value="{{ clipEmail }}" onInput="{{ onClipEmail }}" type="email" placeholder="you@gmail.com" style="width:100%;height:44px;padding:0 13px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;margin-bottom:15px;">
+
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">หมายเหตุถึงทีมงาน <span style="color:var(--muted);">(ไม่บังคับ)</span></label>
+                <textarea value="{{ clipNote }}" onInput="{{ onClipNote }}" placeholder="เช่น โทนคลิป จุดขายสินค้า คำที่ห้ามพูด หรือรายละเอียดพิเศษ" rows="3" style="width:100%;padding:10px 13px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:13.5px;font-family:inherit;resize:vertical;margin-bottom:15px;line-height:1.5;"></textarea>
+
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted2);margin-bottom:7px;"><span>สไตล์คลิปที่เลือก</span><span>{{ clipCount }} แบบ</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted2);margin-bottom:9px;"><span>สไตล์พูด</span><span>{{ speakLabel }}</span></div>
+                <div style="height:1px;background:var(--border);margin-bottom:9px;"></div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;"><span style="font-weight:600;font-size:14px;">รวมทั้งหมด</span><span><span style="font-family:Sora;font-weight:800;font-size:24px;color:var(--accent,#7c5cff);">{{ clipTotalText }}</span> <span style="font-size:12px;color:var(--muted);">เครดิต</span></span></div>
+
+                <sc-if value="{{ clipError }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.2);border-radius:9px;padding:9px 12px;margin-bottom:12px;">{{ clipError }}</div>
+                </sc-if>
+
+                <button onClick="{{ confirmClipOrder }}" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">ยืนยันสั่งทำคลิป</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+        </sc-if>
+
+        <!-- ===== FUNDS ===== -->
+        <sc-if value="{{ tabFunds }}" hint-placeholder-val="{{ false }}">
+        <div class="ym-cols" style="animation:floatUp .4s ease both;display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;">
+          <div>
+            <div style="background:linear-gradient(135deg, color-mix(in srgb, var(--accent,#7c5cff) 30%, var(--raised)), var(--raised));border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:22px;position:relative;overflow:hidden;box-shadow:var(--glow,none);">
+              <div style="font-size:13px;color:var(--muted3);margin-bottom:6px;">ยอดเครดิตคงเหลือ</div>
+              <div style="font-family:Sora;font-weight:800;font-size:40px;letter-spacing:-.02em;">{{ balanceText }} <span style="font-size:16px;font-weight:600;color:var(--muted3);">เครดิต</span></div>
+              <div style="font-size:12.5px;color:var(--muted2);margin-top:8px;">1 เครดิต = 1 บาท · ใช้ชำระค่าบริการทุกรายการภายในเว็บ</div>
+            </div>
+
+            <div style="font-family:Sora;font-weight:700;font-size:16px;margin-bottom:14px;">เลือกช่องทางเติมเงิน</div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ payMethods }}" as="m" hint-placeholder-count="3">
+                <button onClick="{{ m.onClick }}" style="{{ m.style }}">
+                  <div style="width:52px;height:52px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:7px;"><img src="{{ m.img }}" alt="{{ m.name }}" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
+                  <div style="flex:1;text-align:left;"><div style="font-weight:600;font-size:14.5px;color:var(--text);">{{ m.name }}</div><div style="font-size:12.5px;color:var(--muted);">{{ m.desc }}</div>
+                    <sc-if value="{{ m.hasBrands }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:6px;margin-top:7px;">
+                        <sc-for list="{{ m.brands }}" as="b" hint-placeholder-count="3">
+                          <img src="{{ b }}" alt="" style="height:18px;border-radius:3px;box-shadow:0 0 0 1px var(--border2);">
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ m.enabled }}" hint-placeholder-val="{{ true }}"><div style="{{ m.radioStyle }}"><sc-if value="{{ m.selected }}" hint-placeholder-val="{{ false }}"><div style="width:10px;height:10px;border-radius:50%;background:var(--accent,#7c5cff);"></div></sc-if></div></sc-if>
+                  <sc-if value="{{ m.disabled }}" hint-placeholder-val="{{ false }}"><span style="flex-shrink:0;font-size:11px;font-weight:600;color:#e0a825;background:rgba(224,168,37,.12);border:1px solid rgba(224,168,37,.3);border-radius:7px;padding:4px 9px;white-space:nowrap;">ปิดใช้งานชั่วคราว</span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- topup panel -->
+          <div style="position:sticky;top:96px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+            <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px;">
+              <div style="width:44px;height:44px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:6px;"><img src="{{ topupMethodImg }}" alt="{{ topupMethodName }}" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
+              <div><div style="font-weight:700;font-family:Sora;font-size:15px;">เติมเครดิต</div><div style="font-size:12.5px;color:var(--muted);">ผ่าน {{ topupMethodName }}</div></div>
+            </div>
+
+            <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:6px;">จำนวนเงิน (บาท)</label>
+            <input value="{{ topupAmount }}" onInput="{{ onTopupAmount }}" onKeyDown="{{ onTopupKey }}" type="number" placeholder="100" style="width:100%;height:46px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:16px;font-family:Sora;font-weight:600;margin-bottom:10px;">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:18px;">
+              <sc-for list="{{ topupChips }}" as="t" hint-placeholder-count="6">
+                <button onClick="{{ t.onClick }}" style="height:34px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--muted3);font-size:12.5px;cursor:pointer;">{{ t.label }}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ isTrueMoney }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:14px;background:rgba(255,120,0,.06);border:1px dashed rgba(255,140,0,.3);border-radius:12px;margin-bottom:16px;">
+                <sc-if value="{{ tmIdle }}" hint-placeholder-val="{{ true }}">
+                  <div style="text-align:center;margin-bottom:13px;">
+                    <div style="font-size:12.5px;color:#ffb066;margin-bottom:10px;">สแกน QR หรือโอนเข้าวอลเล็ท TrueMoney แล้วแนบสลิป</div>
+                    <div style="width:180px;height:180px;margin:0 auto 10px;background:#fff;border-radius:14px;padding:8px;"><img src="assets/truemoney-qr.png" alt="TrueMoney QR" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"></div>
+                    <div style="font-size:13.5px;font-weight:600;">วนิดา อิสอ</div>
+                  </div>
+                  <label style="{{ slipBoxStyle }}">
+                    <input type="file" accept="image/*" onChange="{{ onSlip }}" style="display:none;">
+                    <sc-if value="{{ hasSlip }}" hint-placeholder-val="{{ false }}">
+                      <img src="{{ slipData }}" alt="สลิป" style="max-width:100%;max-height:130px;border-radius:8px;object-fit:contain;">
+                      <span style="font-size:12px;color:#25e0a8;font-weight:600;">✓ แนบสลิปแล้ว · แตะเพื่อเปลี่ยน</span>
+                    </sc-if>
+                    <sc-if value="{{ noSlip }}" hint-placeholder-val="{{ true }}">
+                      <span style="font-size:24px;line-height:1;">🧾</span>
+                      <span style="font-size:12.5px;color:var(--muted2);">แตะเพื่อแนบสลิปการโอน</span>
+                    </sc-if>
+                  </label>
+                </sc-if>
+                <sc-if value="{{ tmSent }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px 0;">
+                    <div style="width:46px;height:46px;border-radius:50%;background:#e0a825;display:flex;align-items:center;justify-content:center;color:#2a1e00;font-size:22px;">⏳</div>
+                    <div style="font-size:13.5px;font-weight:600;color:#ffcf3f;">ส่งสลิปแล้ว · รอแอดมินตรวจสอบ</div>
+                    <div style="font-size:11.5px;color:var(--muted);text-align:center;line-height:1.6;">เครดิตจะเข้าอัตโนมัติหลังแอดมินยืนยันสลิป<br>ปกติเครดิตเข้าภายใน 2–5 นาที</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isPromptPay }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:14px;background:rgba(0,120,255,.06);border:1px solid rgba(0,140,255,.28);border-radius:12px;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;">
+                  <span style="font-size:12.5px;font-weight:600;color:#8fc0ff;">พร้อมเพย์ QR</span>
+                  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted2);">โอนได้ทุกธนาคาร</span>
+                </div>
+
+                <sc-if value="{{ ppIdle }}" hint-placeholder-val="{{ true }}">
+                  <div style="text-align:center;padding:10px 4px;font-size:12.5px;color:#9aa8c8;line-height:1.6;">กดปุ่มด้านล่างเพื่อสร้าง QR พร้อมเพย์<br>สำหรับยอด <b style="color:#cfe0ff;">฿{{ topupCreditText }}</b></div>
+                  <sc-if value="{{ ppNeedsEmail }}" hint-placeholder-val="{{ false }}">
+                    <label style="display:block;font-size:12px;color:#9aa8c8;margin:10px 0 6px;">อีเมลสำหรับใบเสร็จ</label>
+                    <input value="{{ topupEmail }}" onInput="{{ onTopupEmail }}" type="email" placeholder="you@example.com" style="width:100%;height:40px;padding:0 12px;background:rgba(255,255,255,.05);border:1px solid rgba(0,140,255,.28);border-radius:9px;color:#fff;font-size:13.5px;">
+                  </sc-if>
+                  <sc-if value="{{ ppError }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:9px;font-size:11.5px;color:#ff8f9c;background:rgba(255,80,100,.09);border:1px solid rgba(255,80,100,.24);border-radius:9px;padding:8px 11px;text-align:center;line-height:1.55;">{{ ppError }}</div>
+                  </sc-if>
+                </sc-if>
+
+                <sc-if value="{{ ppGenerating }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0;"><div style="width:34px;height:34px;border:3px solid rgba(255,255,255,.15);border-top-color:#4d9fff;border-radius:50%;animation:spin .8s linear infinite;"></div><div style="font-size:12.5px;color:#7fb2ff;">กำลังสร้าง QR ผ่าน Stripe...</div></div>
+                </sc-if>
+
+                <sc-if value="{{ ppQr }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;">
+                    <sc-if value="{{ ppQrUrl }}" hint-placeholder-val="{{ false }}">
+                      <div style="width:170px;height:170px;background:#fff;border-radius:12px;padding:10px;margin-bottom:10px;"><img src="{{ ppQrUrl }}" alt="PromptPay QR" style="width:100%;height:100%;object-fit:contain;"></div>
+                    </sc-if>
+                    <sc-if value="{{ noPpQrUrl }}" hint-placeholder-val="{{ true }}">
+                    <div style="position:relative;width:150px;height:150px;background:#fff;border-radius:12px;padding:12px;margin-bottom:10px;">
+                      <div style="width:100%;height:100%;background:repeating-conic-gradient(#0b1020 0 25%, #fff 0 50%) 50%/12px 12px;border-radius:3px;"></div>
+                      <div style="position:absolute;top:12px;left:12px;width:34px;height:34px;border:6px solid #0b1020;border-radius:6px;background:#fff;"></div>
+                      <div style="position:absolute;top:12px;right:12px;width:34px;height:34px;border:6px solid #0b1020;border-radius:6px;background:#fff;"></div>
+                      <div style="position:absolute;bottom:12px;left:12px;width:34px;height:34px;border:6px solid #0b1020;border-radius:6px;background:#fff;"></div>
+                      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px;background:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;"><img src="assets/promptpay.png" alt="" style="width:24px;height:24px;object-fit:contain;"></div>
+                    </div>
+                    </sc-if>
+                    <div style="font-family:Sora;font-weight:700;font-size:20px;">฿{{ topupCreditText }}</div>
+                    <div style="font-size:11.5px;color:var(--muted);margin-bottom:4px;">YM BOOSTER CO., LTD.</div>
+                    <div style="font-size:12px;color:#ffb066;">หมดอายุใน {{ ppTimer }}</div>
+                    <div style="width:100%;margin-top:11px;display:flex;align-items:center;gap:7px;padding:9px 11px;background:var(--field);border-radius:9px;font-size:11.5px;color:#9aa8c8;"><span style="width:8px;height:8px;border-radius:50%;background:#4d9fff;animation:pulseDot 1.4s infinite;flex-shrink:0;"></span>{{ ppWaitText }}</div>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ ppPaid }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 0;"><div style="width:44px;height:44px;border-radius:50%;background:#25e0a8;display:flex;align-items:center;justify-content:center;color:#07281d;font-size:24px;">✓</div><div style="font-size:13px;font-weight:600;color:#25e0a8;">ชำระสำเร็จ · เครดิตเข้าอัตโนมัติแล้ว</div></div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isStripe }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px;background:rgba(99,91,255,.07);border:1px solid rgba(99,91,255,.26);border-radius:14px;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                  <span style="font-family:Sora;font-weight:700;font-size:15px;">บัตรเครดิต / เดบิต</span>
+                  <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:#a9a5ff;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>เข้ารหัสปลอดภัย SSL</span>
+                </div>
+
+                <sc-if value="{{ cardReal }}" hint-placeholder-val="{{ false }}">
+                  <label style="display:block;font-size:12px;color:var(--muted3);margin-bottom:7px;">ข้อมูลบัตร</label>
+                  <div style="border:1px solid var(--border2);border-radius:11px;padding:14px;background:var(--field);">
+                    <div ref="{{ cardElRef }}"></div>
+                  </div>
+                  <sc-if value="{{ cardError }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:8px;font-size:11.5px;color:#ff8f9c;background:rgba(255,80,100,.09);border:1px solid rgba(255,80,100,.24);border-radius:9px;padding:7px 11px;">{{ cardError }}</div>
+                  </sc-if>
+
+                  <label style="display:block;font-size:12px;color:var(--muted3);margin:13px 0 7px;">ชื่อบนบัตร</label>
+                  <input value="{{ cardName }}" onInput="{{ onCardName }}" placeholder="ชื่อ-นามสกุล ตามหน้าบัตร" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;margin-bottom:13px;">
+
+                  <label style="display:block;font-size:12px;color:var(--muted3);margin-bottom:7px;">อีเมลสำหรับใบเสร็จ</label>
+                  <input value="{{ topupEmail }}" onInput="{{ onTopupEmail }}" type="email" placeholder="you@example.com" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+                </sc-if>
+
+                <sc-if value="{{ cardDemo }}" hint-placeholder-val="{{ true }}">
+                  <label style="display:block;font-size:12px;color:var(--muted3);margin-bottom:7px;">ข้อมูลบัตร</label>
+                  <div style="border:1px solid var(--border2);border-radius:11px;overflow:hidden;background:var(--field);">
+                    <div style="display:flex;align-items:center;border-bottom:1px solid var(--border2);">
+                      <input placeholder="0000 0000 0000 0000" style="flex:1;height:46px;padding:0 14px;background:transparent;border:none;color:#fff;font-size:14px;letter-spacing:.03em;">
+                      <div style="display:flex;gap:5px;padding-right:12px;flex-shrink:0;">
+                        <img src="assets/visa.svg" alt="" style="height:17px;border-radius:3px;">
+                        <img src="assets/mastercard.svg" alt="" style="height:17px;border-radius:3px;">
+                        <img src="assets/amex.svg" alt="" style="height:17px;border-radius:3px;">
+                      </div>
+                    </div>
+                    <div style="display:flex;">
+                      <input placeholder="เดือน / ปี (MM / YY)" style="flex:1;height:46px;padding:0 14px;background:transparent;border:none;border-right:1px solid var(--border2);color:#fff;font-size:14px;">
+                      <input placeholder="CVC" style="width:110px;height:46px;padding:0 14px;background:transparent;border:none;color:#fff;font-size:14px;">
+                    </div>
+                  </div>
+
+                  <label style="display:block;font-size:12px;color:var(--muted3);margin:13px 0 7px;">ชื่อบนบัตร</label>
+                  <input placeholder="ชื่อ-นามสกุล ตามหน้าบัตร" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted2);margin-bottom:14px;"><span>รับเครดิต</span><span style="font-family:Sora;font-weight:700;color:var(--accent,#7c5cff);">+{{ topupCreditText }}</span></div>
+            <button onClick="{{ confirmTopup }}" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">{{ topupCtaLabel }}</button>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ===== HELP ===== -->
+        <sc-if value="{{ tabHelp }}" hint-placeholder-val="{{ false }}">
+        <div class="ym-cols" style="animation:floatUp .4s ease both;display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:24px;">
+
+            <!-- how to use -->
+            <div>
+              <div style="font-family:Sora;font-weight:700;font-size:17px;margin-bottom:14px;">วิธีใช้งาน 4 ขั้นตอน</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <sc-for list="{{ howToSteps }}" as="s" hint-placeholder-count="4">
+                  <div style="display:flex;gap:13px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;">
+                    <div style="width:34px;height:34px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:Sora;font-weight:800;font-size:16px;background:color-mix(in srgb, var(--accent,#7c5cff) 16%, transparent);color:var(--accent,#7c5cff);">{{ s.n }}</div>
+                    <div><div style="font-weight:600;font-size:14px;margin-bottom:4px;">{{ s.title }}</div><div style="font-size:12.5px;color:var(--muted2);line-height:1.6;">{{ s.desc }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- faq -->
+            <div>
+              <div style="font-family:Sora;font-weight:700;font-size:17px;margin-bottom:14px;">แก้ปัญหาที่พบบ่อย</div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ faqItems }}" as="f" hint-placeholder-count="5">
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+                    <button onClick="{{ f.onClick }}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:15px 17px;background:transparent;border:none;cursor:pointer;font-family:inherit;text-align:left;">
+                      <span style="font-size:14px;font-weight:600;color:var(--text);">{{ f.q }}</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="{{ f.iconStyle }}"><path d="M6 9l6 6 6-6"></path></svg>
+                    </button>
+                    <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:0 17px 16px;font-size:13px;color:var(--muted2);line-height:1.7;">{{ f.a }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <!-- contact sidebar -->
+          <div style="position:sticky;top:96px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:4px;">ติดต่อทีมงาน</div>
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:16px;">แอดมินพร้อมช่วยเหลือ ตอบไวทุกช่องทาง</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{ contactChannels }}" as="c" hint-placeholder-count="3">
+                <a href="{{ c.href }}" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px;border-radius:12px;background:var(--surface);border:1px solid var(--border);text-decoration:none;color:inherit;" style-hover="border-color:color-mix(in srgb, var(--accent,#7c5cff) 55%, transparent);background:var(--surface2);">
+                  <div style="width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:{{ c.color }};">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="{{ c.icon }}"></path></svg>
+                  </div>
+                  <div style="flex:1;min-width:0;"><div style="font-size:13.5px;font-weight:600;">{{ c.name }}</div><div style="font-size:12px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.handle }}</div></div>
+                  <span style="flex-shrink:0;font-size:12.5px;font-weight:700;color:#fff;background:var(--accent,#7c5cff);border-radius:9px;padding:7px 13px;white-space:nowrap;">{{ c.cta }}</span>
+                </a>
+              </sc-for>
+            </div>
+            <div style="margin-top:16px;padding:13px 15px;border-radius:12px;background:color-mix(in srgb, var(--accent,#7c5cff) 10%, transparent);border:1px solid color-mix(in srgb, var(--accent,#7c5cff) 30%, transparent);font-size:12.5px;color:var(--muted3);line-height:1.6;">💬 เปิดบริการทุกวัน · ตอบกลับเฉลี่ยภายใน 5 นาทีในเวลาทำการ</div>
+          </div>
+        </div>
+        </sc-if>
+
+      </div>
+    </main>
+  </div>
+  </sc-if>
+
+  <!-- toast -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;top:22px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:10px;padding:13px 20px;border-radius:12px;background:var(--raised);border:1px solid var(--accent,#7c5cff);box-shadow:0 12px 40px rgba(0,0,0,.5);animation:toastIn .3s ease;">
+      <span style="width:22px;height:22px;border-radius:50%;background:var(--accent,#7c5cff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;">✓</span>
+      <span style="font-size:13.5px;font-weight:600;">{{ toast }}</span>
+    </div>
+  </sc-if>
+
+  <!-- confirm dialog -->
+  <sc-if value="{{ hasConfirm }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ confirmCancel }}" style="position:fixed;inset:0;z-index:70;background:rgba(4,5,12,.62);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:22px;animation:floatUp .18s ease both;">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:360px;background:var(--raised);border:1px solid var(--border2);border-radius:18px;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+        <div style="font-family:Sora;font-weight:700;font-size:17px;margin-bottom:8px;">{{ confirmTitle }}</div>
+        <div style="font-size:13.5px;color:var(--muted2);line-height:1.6;margin-bottom:22px;">{{ confirmMsg }}</div>
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ confirmCancel }}" style="flex:1;height:44px;border-radius:11px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">ยกเลิก</button>
+          <button onClick="{{ confirmOk }}" style="{{ confirmBtnStyle }}">{{ confirmLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#7c5cff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ธีม&quot;,&quot;options&quot;:[&quot;#7c5cff&quot;,&quot;#12b981&quot;,&quot;#ff5c8a&quot;,&quot;#2f7bff&quot;,&quot;#ff8a3c&quot;]},&quot;neonGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;ธีม&quot;},&quot;stripeBackendUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ym-booster-api-8rhb.onrender.com&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ระบบชำระเงิน (Stripe)&quot;}}">
+class Component extends DCLogic {
+  state = {
+    authToken: (()=>{ try{ return localStorage.getItem('ym_cust_token'); }catch(e){ return null; } })(),
+    authUser: null,
+    regName: '',
+    authError: '',
+    authBusy: false,
+    backendReachable: null,   // null=ยังไม่เช็ค, true=ต่อได้, false=ต่อไม่ได้
+    screen: (()=>{ try{ return localStorage.getItem('ym_cust_token') ? 'app' : 'login'; }catch(e){ return 'login'; } })(),
+    theme: 'pro',
+    authTab: 'login',
+    tab: 'new',
+    balance: 1250,
+    platform: 'instagram',
+    serviceId: 'ig_follow',
+    link: '',
+    qty: 1000,
+    reaction: 'like',
+    ppStage: 'idle',
+    ppCountdown: 180,
+    ppQrUrl: '',
+    ppError: '',
+    topupEmail: '',
+    cardName: '',
+    cardError: '',
+    cardBusy: false,
+    loginId: '',
+    loginPw: '',
+    topupMethod: 'promptpay',
+    topupAmount: 100,
+    tmStage: 'idle',
+    slipData: '',
+    slipName: '',
+    configService: null,
+    clipStyles: [],
+    speakStyle: 'festival',
+    clipStructure: 'sell',
+    clipLength: 8,
+    clipQty: 10,
+    clipEmail: '',
+    clipNote: '',
+    clipError: '',
+    openFaq: 0,
+    modelImg: null,
+    productImg: null,
+    orderError: '',
+    toast: null,
+    loading: false,
+    confirm: null,
+    rates: {},
+    svcOff: [],
+    orders: [
+      { id: 5821, pf:'tiktok', user:'น้อง สตูดิโอ', service:'ผู้ติดตาม TikTok', link:'@nong_studio', qty:2000, status:'สำเร็จ', progress:100, price:84, time:'วันนี้ 09:12' },
+      { id: 5817, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ไลก์ Instagram', link:'instagram.com/p/Cx9...', qty:500, status:'กำลังทำ', progress:64, price:6, time:'วันนี้ 08:40' },
+      { id: 5810, pf:'youtube', user:'ช่อง รีวิวของกิน', service:'ยอดวิว YouTube', link:'youtu.be/aB3kd', qty:10000, status:'กำลังทำ', progress:38, price:300, time:'วันนี้ 07:55' },
+      { id: 5804, pf:'facebook', user:'ร้าน My Cafe BKK', service:'ถูกใจเพจ Facebook', link:'fb.com/mycafe.bkk', qty:1000, status:'รอดำเนินการ', progress:8, price:45, time:'เมื่อวาน 22:10' },
+      { id: 5799, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ผู้ติดตาม Instagram', link:'@fern.makeup', qty:3000, status:'สำเร็จ', progress:100, price:114, time:'เมื่อวาน 19:03' },
+    ],
+  };
+
+  PLATFORMS = [
+    { id:'facebook',  name:'Facebook',  logo:'assets/facebook.svg',  color:'#1877F2' },
+    { id:'instagram', name:'Instagram', logo:'assets/instagram.svg', color:'#E1306C' },
+    { id:'youtube',   name:'YouTube',   logo:'assets/youtube.svg',   color:'#FF0000' },
+    { id:'tiktok',    name:'TikTok',    logo:'assets/tiktok.svg',    color:'#111318' },
+  ];
+
+  SERVICES = {
+    facebook: [
+      { id:'fb_follow',  name:'เพิ่มผู้ติดตาม เพจ/โปรไฟล์',  rate:54, min:100, max:1000000 },
+      { id:'fb_like',    name:'เพิ่มไลก์ / เลือกอิโมจิได้',   rate:47, min:100, max:10000000 },
+      { id:'fb_view',    name:'เพิ่มยอดวิว คลิป',            rate:6,  min:100, max:100000000 },
+      { id:'fb_share',   name:'เพิ่มการแชร์',               rate:64, min:100, max:1000000 },
+      { id:'fb_group',   name:'เพิ่มสมาชิกในกลุ่ม',          rate:62, min:100, max:500000 },
+      { id:'fb_comment', name:'เพิ่มคอมเมนต์',              rate:1500, min:10, max:5000 },
+    ],
+    instagram: [
+      { id:'ig_follow',  name:'เพิ่มผู้ติดตาม',          rate:42, min:100, max:1000000 },
+      { id:'ig_like',    name:'เพิ่มไลก์',               rate:23, min:100, max:10000000 },
+      { id:'ig_view',    name:'เพิ่มยอดวิว Reels',       rate:5,  min:100, max:100000000 },
+      { id:'ig_repost',  name:'เพิ่มการรีโพส',           rate:65, min:100, max:1000000 },
+      { id:'ig_group',   name:'เพิ่มสมาชิกในกลุ่ม',       rate:74, min:100, max:500000 },
+      { id:'ig_comment', name:'เพิ่มคอมเมนต์',           rate:1500, min:10, max:5000 },
+    ],
+    youtube: [
+      { id:'yt_follow',    name:'เพิ่มผู้ติดตาม',          rate:54,  min:100,  max:1000000 },
+      { id:'yt_like',      name:'เพิ่มไลก์',               rate:110, min:100,  max:10000000 },
+      { id:'yt_view_long', name:'เพิ่มยอดวิว คลิปยาว',     rate:65,  min:100, max:100000000 },
+      { id:'yt_share',     name:'เพิ่มการแชร์',            rate:98,  min:100,  max:1000000 },
+      { id:'yt_view_short',name:'เพิ่มยอดวิว คลิปสั้น',    rate:57,  min:100, max:100000000 },
+      { id:'yt_comment',   name:'เพิ่มคอมเมนต์',           rate:1500, min:10,  max:5000 },
+    ],
+    tiktok: [
+      { id:'tt_follow',  name:'เพิ่มผู้ติดตาม เพจ/โปรไฟล์',  rate:152, min:100, max:1000000 },
+      { id:'tt_like',    name:'เพิ่มการกดใจ',               rate:57,  min:100, max:10000000 },
+      { id:'tt_view',    name:'เพิ่มยอดวิว คลิป',            rate:7,   min:100, max:100000000 },
+      { id:'tt_share',   name:'เพิ่มการแชร์',               rate:27,  min:100, max:1000000 },
+      { id:'tt_repost',  name:'เพิ่มการรีโพส',              rate:75,  min:100, max:1000000 },
+      { id:'tt_comment', name:'เพิ่มคอมเมนต์',              rate:1500, min:10,  max:5000 },
+    ],
+  };
+
+  NAV = [
+    { id:'new',      label:'สั่งซื้อบริการ', icon:'M12 5v14M5 12h14' },
+    { id:'orders',   label:'ประวัติออเดอร์', icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 12h6M9 16h4' },
+    { id:'services', label:'รายการบริการ',   icon:'M4 6h16M4 12h16M4 18h16' },
+    { id:'creator',  label:'ครีเอเตอร์ & Affiliate', icon:'M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M4 6h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z' },
+    { id:'funds',    label:'เติมเครดิต',     icon:'M3 10h18M7 15h2M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+    { id:'help',     label:'ช่วยเหลือ',       icon:'M12 17h.01M12 13.5a2 2 0 1 0-2-3.2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z' },
+  ];
+
+  CREATOR = [
+    { id:'clip_short',  name:'รับทำคลิปสั้น TikTok / Reels / Shorts', desc:'คลิปขายของ สำหรับแม่ค้า หรือ affiliate · ความยาว 8–32 วิ', price:10, unit:'เครดิต / คลิป', tag:'ยอดนิยม', note:'ขั้นต่ำ 10 คลิป' },
+  ];
+
+  FAQ = [
+    { q:'สั่งซื้อแล้วยอดเข้าช้ากี่โมง?', a:'ส่วนใหญ่เริ่มภายใน 2–8 ชั่วโมงหลังสั่ง ขึ้นอยู่กับปริมาณและความหนาแน่นของคิว หากเกิน 24 ชั่วโมงยังไม่ขยับ ทักหาแอดมินได้เลย' },
+    { q:'ใส่ลิงก์อย่างไรให้ถูกต้อง?', a:'สำหรับผู้ติดตามใส่เป็น @username หรือลิงก์โปรไฟล์ — สำหรับไลก์/วิวให้ใส่ลิงก์โพสต์หรือคลิปโดยตรง และต้องตั้งบัญชีเป็นสาธารณะ' },
+    { q:'เติมเครดิตแล้วเงินไม่เข้า?', a:'กรณีโอนพร้อมเพย์/โอนเงินแล้วเครดิตไม่เข้าภายใน 5 นาที ให้ส่งสลิปโอนมาที่แชท LINE (lin.ee/S35WkT2) ทีมงานเติมให้ทันที' },
+    { q:'ขอคืนเงินได้ไหม?', a:'เครดิตที่เติมแล้วใช้ชำระค่าบริการเท่านั้น ไม่สามารถถอนเป็นเงินสดได้ แต่หากออเดอร์มีปัญหา เราคืนเครดิตให้เต็มจำนวน' },
+    { q:'ปลอดภัยต่อบัญชีไหม?', a:'เราใช้ระบบที่ปลอดภัย ไม่ขอรหัสผ่านหรือข้อมูลส่วนตัว แนะนำให้ตั้งรหัสผ่านที่คาดเดายากและเปิด 2FA' },
+  ];
+
+  CLIP_LENGTHS = [
+    { id:8,  label:'8 วิ',  price:10 },
+    { id:16, label:'16 วิ', price:25 },
+    { id:24, label:'24 วิ', price:40 },
+    { id:32, label:'32 วิ', price:55 },
+  ];
+
+  CLIP_STRUCTURE = [
+    { id:'sell',  label:'ขายของ', sub:'Hook → Demo → Pain → Solution → CTA', emoji:'🎯' },
+    { id:'story', label:'เล่าเรื่อง', sub:'Hook → กลาง → ปิดสวยๆ ไม่ขาย', emoji:'📖' },
+    { id:'teach', label:'สอน / สาธิต', sub:'Step 1 → 2 → 3 → 4 → สรุป', emoji:'🧑\u200d🏫' },
+  ];
+
+  CLIP_BASIC = [
+    { id:'cb_person', label:'คนธรรมดารีวิว', hit:true },
+    { id:'cb_wear',   label:'สวมใส่เสื้อผ้า' },
+    { id:'cb_hold',   label:'ถือสินค้ารีวิว', hit:true },
+    { id:'cb_usage',  label:'รีวิวการใช้งาน', hit:true },
+    { id:'cb_prop',   label:'วางสินค้าเป็น Prop', hit:true },
+    { id:'cb_hand',   label:'เห็นมืออย่างเดียว', hit:true },
+    { id:'cb_pro',    label:'มืออาชีพ', hit:true },
+    { id:'cb_bold',   label:'อลังการ ดูดัน' },
+    { id:'cb_minimal',label:'มินิมอล' },
+    { id:'cb_luxury', label:'หรูหรา' },
+    { id:'cb_fun',    label:'สนุกสดใส' },
+    { id:'cb_modern', label:'โมเดิร์น' },
+  ];
+
+  CLIP_LOCATION = [
+    { id:'lc_wh_hand', label:'โกดังสินค้า (เห็นแค่มือ)', emoji:'📦', hit:true },
+    { id:'lc_wh_full', label:'โกดังสินค้า (เห็นเต็มตัว)', emoji:'📦' },
+    { id:'lc_factory', label:'โรงงานขายส่ง (เห็นแค่มือ)', emoji:'🏭', hit:true },
+    { id:'lc_live',    label:'ไลฟ์ขายของ', emoji:'📺', hit:true },
+    { id:'lc_belt',    label:'สายพานผลิต (เสียงพากย์ ไม่มีคนพูด)', emoji:'🏗️' },
+    { id:'lc_school',  label:'เปิดเทอม', emoji:'🎒' },
+    { id:'lc_beach',   label:'ริมทะเล', emoji:'🏖️' },
+    { id:'lc_cafe',    label:'คาเฟ่', emoji:'☕' },
+    { id:'lc_office',  label:'ออฟฟิศ', emoji:'💻' },
+    { id:'lc_studio',  label:'สตูดิโอขาว', emoji:'⬜', hit:true },
+    { id:'lc_garden',  label:'สวน', emoji:'🌿' },
+    { id:'lc_mall',    label:'ห้าง', emoji:'🏬' },
+    { id:'lc_street',  label:'ถนน', emoji:'🏃' },
+    { id:'lc_space',   label:'อวกาศ', emoji:'🚀' },
+    { id:'lc_forest',  label:'ป่าหลอน', emoji:'🌲' },
+    { id:'lc_warrior', label:'นักรบ', emoji:'⚔️' },
+  ];
+
+  CLIP_SCENE = [
+    { id:'sc_lion',    label:'สิงโตจ้อง', emoji:'🦁' },
+    { id:'sc_snake',   label:'งูเลื้อยรัด', emoji:'🐍' },
+    { id:'sc_croc',    label:'จระเข้โผล่', emoji:'🐊' },
+    { id:'sc_ghost',   label:'ผีท้ายทาง', emoji:'👻' },
+    { id:'sc_ufo',     label:'UFO ดูดตัว', emoji:'🛸' },
+    { id:'sc_haunt',   label:'บ้านผีสิง', emoji:'🏚️' },
+    { id:'sc_fire',    label:'ไฟไหม้หลังบ้าน', emoji:'🔥' },
+    { id:'sc_drown',   label:'กำลังจมน้ำ', emoji:'💧' },
+    { id:'sc_quake',   label:'แผ่นดินไหว', emoji:'🌍' },
+    { id:'sc_lava',    label:'ลาวาไหลมา', emoji:'🌋' },
+    { id:'sc_tornado', label:'ทอร์นาโด', emoji:'🌪️' },
+    { id:'sc_robber',  label:'โจรบุกบ้าน', emoji:'🦹' },
+    { id:'sc_police',  label:'ตำรวจไล่', emoji:'🚓' },
+    { id:'sc_kidnap',  label:'ลูกลักพาตัว', emoji:'🧒' },
+    { id:'sc_cliff',   label:'ตกหน้าผา', emoji:'🧗' },
+    { id:'sc_ship',    label:'เรือจม', emoji:'🚢' },
+    { id:'sc_meteor',  label:'ลูกอุกกาบาตมา', emoji:'☄️' },
+    { id:'sc_quicksand',label:'ทรายดูด', emoji:'⏳' },
+    { id:'sc_mammoth', label:'ขี่แมมมอส', emoji:'🦣' },
+    { id:'sc_ridelion',label:'ขี่สิงโต', emoji:'🦁' },
+    { id:'sc_ridecroc',label:'ขี่จระเข้', emoji:'🐊' },
+    { id:'sc_ostrich', label:'ขี่นกกระจอกเทศ', emoji:'🦤' },
+    { id:'sc_elephant',label:'ขี่ช้าง', emoji:'🐘' },
+    { id:'sc_camel',   label:'ขี่อูฐ', emoji:'🐫' },
+  ];
+
+  SPEAK_STYLES = [
+    { id:'normal',    label:'ปกติ - เป็นกันเอง', emoji:'🙂' },
+    { id:'troll',     label:'กวนตืน', emoji:'😜' },
+    { id:'raw',       label:'หยาบๆ ดิบๆ', emoji:'💪' },
+    { id:'polite',    label:'ผู้ดี สุภาพ', emoji:'👑' },
+    { id:'hardsell',  label:'ขายแรงๆ', emoji:'🔥' },
+    { id:'isan',      label:'อีสานบ้านๆ', emoji:'🌾' },
+    { id:'kammuang',  label:'คำเมือง', emoji:'⛰️' },
+    { id:'rich',      label:'มั่งมั่ง', emoji:'💰' },
+    { id:'confident', label:'มันใจจัด', emoji:'😎' },
+    { id:'creepy',    label:'หลอน ลึกลับ', emoji:'👻' },
+    { id:'fantasy',   label:'แฟนตาซี', emoji:'🧚' },
+    { id:'action',    label:'แอคชั่น', emoji:'⚔️' },
+    { id:'adventure', label:'ผจญภัย', emoji:'🧭' },
+    { id:'mystery',   label:'ลึกลับ', emoji:'🔮' },
+    { id:'festival',  label:'ฉลองเทศกาล', emoji:'🎉' },
+    { id:'grind',     label:'ทำงานหนัก', emoji:'🏋️' },
+    { id:'romantic',  label:'โรแมนติก', emoji:'💕' },
+    { id:'peaceful',  label:'สงบสุข', emoji:'🕊️' },
+    { id:'hype',      label:'ตื่นเต้นสุดๆ', emoji:'⚡' },
+    { id:'scary',     label:'กลัวๆ สั้น', emoji:'😱' },
+  ];
+
+  componentDidMount(){
+    const o=this._load('ym_orders'); if(o){ this.setState({orders:o}); } else { this._save('ym_orders', this.state.orders); }
+    const b=this._load('ym_balance'); if(b!=null){ this.setState({balance:b}); } else { this._save('ym_balance', this.state.balance); }
+    const rr=this._load('ym_rates'); if(rr) this.setState({rates:rr});
+    const so=this._load('ym_svcoff'); if(so) this.setState({svcOff:so});
+    this._onStorage=(e)=>{
+      if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l) this.setState({orders:l}); }
+      if(e.key==='ym_balance'){ const v=this._load('ym_balance'); if(v!=null) this.setState({balance:v}); }
+      if(e.key==='ym_rates'){ const l=this._load('ym_rates'); if(l) this.setState({rates:l}); }
+      if(e.key==='ym_svcoff'){ const l=this._load('ym_svcoff'); if(l) this.setState({svcOff:l}); }
+    };
+    window.addEventListener('storage', this._onStorage);
+    this._poll=setInterval(()=>{
+      if(document.hidden) return;
+      const l=this._load('ym_orders'); if(l && JSON.stringify(l)!==JSON.stringify(this.state.orders)) this.setState({orders:l});
+      const v=this._load('ym_balance'); if(v!=null && v!==this.state.balance) this.setState({balance:v});
+      const rz=this._load('ym_rates'); if(rz && JSON.stringify(rz)!==JSON.stringify(this.state.rates)) this.setState({rates:rz});
+      const sz=this._load('ym_svcoff'); if(sz && JSON.stringify(sz)!==JSON.stringify(this.state.svcOff)) this.setState({svcOff:sz});
+    }, 1800);
+    // เช็คว่า backend ตื่นอยู่ไหม — ถ้าต่อไม่ติด จะโชว์ปุ่ม "บัญชีทดลอง" ให้พรีวิวได้
+    if(this.apiBase()){
+      fetch(this.apiBase()+'/api/health').then(r=>this.setState({backendReachable:r.ok})).catch(()=>this.setState({backendReachable:false}));
+    }
+    const stab=this._load('ym_cust_tab'); if(stab) this.setState({tab:stab});
+    // มี token อยู่แล้ว → เช็คกับ backend ว่ายังใช้ได้ + ดึงข้อมูล/เครดิตจริง (ต่อไม่ได้ = คงสถานะไว้)
+    if(this.state.authToken && this.state.authToken!=='DEMO' && this.apiBase()){
+      this.apiCall('/api/auth/me', null, 'GET')
+        .then(r=>{ this.setState({authUser:r.user, balance: (typeof r.user.credits==='number'?r.user.credits:this.state.balance)}); this.refreshBalance(); this.refreshOrders(); })
+        .catch(e=>{ if(!this._netErr(e)) this.logoutCustomer(); });
+    }
+  }
+  componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearInterval(this._realPoll); this._stopPpTimer&&this._stopPpTimer(); clearTimeout(this._t); }
+  _load(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
+  _save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+  openConfig(id){ this.setState({ configService:id, clipError:'' }); }
+  closeConfig(){ this.setState({ configService:null }); }
+  toggleClip(id){ this.setState(s=>({ clipStyles: s.clipStyles.includes(id) ? s.clipStyles.filter(x=>x!==id) : [...s.clipStyles, id] })); }
+  clipRate(){ return (this.CLIP_LENGTHS.find(l=>l.id===this.state.clipLength)||this.CLIP_LENGTHS[0]).price; }
+  clipTotal(){ return (Math.max(0, Number(this.state.clipQty)||0)) * this.clipRate(); }
+  confirmClipOrder(){
+    const c=this.CREATOR.find(x=>x.id===this.state.configService);
+    const q=Number(this.state.clipQty)||0;
+    if(this.state.clipStyles.length===0){ this.setState({clipError:'เลือกสไตล์คลิปอย่างน้อย 1 แบบ'}); return; }
+    if(q < 10){ this.setState({clipError:'ขั้นต่ำ 10 คลิป'}); return; }
+    if(q > 500){ this.setState({clipError:'สูงสุด 500 คลิป'}); return; }
+    if(!/^[^\s@]+@gmail\.com$/i.test(this.state.clipEmail.trim())){ this.setState({clipError:'กรุณากรอกอีเมล @gmail.com เพื่อรับคลิป'}); return; }
+    const total=this.clipTotal();
+    if(total > this.state.balance){ this.setState({clipError:'เครดิตไม่พอ กรุณาเติมเครดิต'}); return; }
+    const email=this.state.clipEmail.trim();
+    const clip={ id:'C-'+(2044+((this._load('ym_clips')||[]).length)), styles:[...this.state.clipStyles], structure:this.state.clipStructure, speak:this.state.speakStyle, length:this.state.clipLength, qty:q, email, note:this.state.clipNote, total, status:'รอทำ', time:'เพิ่งสั่ง' };
+    this._save('ym_clips', [clip, ...(this._load('ym_clips')||[])]);
+    const nb=this.state.balance - total; this._save('ym_balance', nb);
+    this.setState(s=>({ configService:null, clipStyles:[], clipError:'', clipQty:10, clipEmail:'', clipNote:'', balance: nb }));
+    this.toast('สั่งทำ '+q+' คลิป · ตัด '+this.fmt(total)+' เครดิต · ส่งให้ที่ '+email);
+  }
+
+  PAY = [
+    { id:'truemoney', name:'TrueMoney Wallet', desc:'โอนเข้าวอลเล็ท + แนบสลิป (รอแอดมินอนุมัติ 2-5 นาที)', img:'assets/truemoney.png' },
+    { id:'promptpay', name:'พร้อมเพย์ (PromptPay)', desc:'สแกน QR โอนจากทุกธนาคาร', img:'assets/promptpay.png' },
+    { id:'stripe',    name:'บัตรเครดิต / เดบิต', desc:'ชำระด้วยบัตรอย่างปลอดภัย', img:'assets/visa.svg', brands:['assets/visa.svg','assets/mastercard.svg','assets/amex.svg'] },
+  ];
+
+  STRIPE_PK = 'pk_live_51TbYsq3H01Sgzd2ADCf9Zpl1s1PNm6hbDCSpzedKLoSfBWMdJViUzeK1xy4p9xBOR7Ie5LXEzWMR11X8eWhrTbJy009GGc2NpX';
+
+  fmt(n){ return Number(n).toLocaleString('th-TH', { maximumFractionDigits: 2 }); }
+  short(n){ if(n>=1000000) return (n/1000000)+'M'; if(n>=1000) return (n/1000)+'K'; return ''+n; }
+  toast(msg){ this.setState({ toast: msg }); clearTimeout(this._t); this._t = setTimeout(()=>this.setState({toast:null}), 2600); }
+
+  curService(){ return (this.SERVICES[this.state.platform]||[]).find(s=>s.id===this.state.serviceId) || this.SERVICES[this.state.platform][0]; }
+  curPlatform(){ return this.PLATFORMS.find(p=>p.id===this.state.platform); }
+  cost(){ const s=this.curService(); return (Number(this.state.qty)||0)/1000*this.custRate(s); }
+  custRate(s){ const v=this.state.rates && this.state.rates[s.id]; return (v!==undefined && v!=='' && v!==null && !isNaN(Number(v))) ? Number(v) : s.rate; }
+  svcList(pf){ return (this.SERVICES[pf]||[]).filter(s=>!(this.state.svcOff||[]).includes(s.id)); }
+
+  selectPlatform(id){ const first=this.SERVICES[id][0]; this.setState({ platform:id, serviceId:first.id, orderError:'' }); }
+  selectService(pf, id){ this.setState({ platform:pf, serviceId:id, tab:'new', orderError:'' }); }
+
+  async placeOrder(){
+    const s=this.curService(); const q=Number(this.state.qty)||0; const c=this.cost();
+    if(!this.state.link.trim()){ this.setState({orderError:'กรุณาใส่ลิงก์หรือยูสเซอร์เนม'}); return; }
+    if(q < s.min){ this.setState({orderError:'จำนวนขั้นต่ำคือ '+this.fmt(s.min)}); return; }
+    if(q > s.max){ this.setState({orderError:'จำนวนสูงสุดคือ '+this.fmt(s.max)}); return; }
+    if(c > this.state.balance){ this.setState({orderError:'เครดิตไม่พอ กรุณาเติมเครดิต'}); return; }
+    const pf=this.state.platform;
+
+    // ── ต่อ backend จริง: ตัดเครดิตในฐานข้อมูล + คำนวณราคาที่เซิร์ฟเวอร์ ──
+    if(this.apiBase() && this.state.authToken && this.state.authToken!=='DEMO'){
+      this.setState({orderBusy:true, orderError:''});
+      try{
+        const d=await this.apiCall('/api/orders', { platform:pf, serviceId:this.state.serviceId, qty:q, link:this.state.link.trim() });
+        const o=d.order;
+        const order={ id:o.id, pf:o.platform, user:(this.state.authUser&&this.state.authUser.name)||'คุณ', service:o.service_name, link:o.link, qty:o.qty, status:o.status||'รอดำเนินการ', progress:o.progress||0, price:o.price, time:'เพิ่งสั่ง' };
+        const newList=[order, ...this.state.orders];
+        this.setState({ orders:newList, balance:(typeof d.balance==='number'?d.balance:this.state.balance-o.price), link:'', orderError:'', orderBusy:false });
+        this.toast('สั่งซื้อสำเร็จ! ตัดเครดิต '+this.fmt(o.price)+' เครดิต');
+      }catch(e){
+        this.setState({orderBusy:false, orderError: e.message || 'สั่งซื้อไม่สำเร็จ'});
+      }
+      return;
+    }
+
+    // ── โหมดตัวอย่าง (ยังไม่ต่อ backend) — ทำงานในเครื่อง ──
+    const order={ id: 5822 + this.state.orders.length, pf, user:'คุณสมชาย ใจดี', service: s.name, link:this.state.link, qty:q, status:'รอดำเนินการ', progress:5, price:c, time:'เพิ่งสั่ง' };
+    const newList=[order, ...this.state.orders];
+    const nb=this.state.balance - c;
+    this._save('ym_orders', newList); this._save('ym_balance', nb);
+    this.setState({ orders:newList, balance: nb, link:'', orderError:'' });
+    this.toast('สั่งซื้อสำเร็จ! ตัดเครดิต '+this.fmt(c)+' เครดิต');
+  }
+
+  confirmTopup(){
+    const amt=Number(this.state.topupAmount)||0;
+    if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
+    const nb=this.state.balance + amt; this._save('ym_balance', nb);
+    this.setState({ balance: nb });
+    const m=this.PAY.find(p=>p.id===this.state.topupMethod);
+    this.toast('เติมเครดิตสำเร็จผ่าน '+m.name+' +'+this.fmt(amt));
+  }
+
+  // อัปโหลดรูปจริง (นางแบบ / สินค้า) — ย่อขนาดแล้วเก็บเป็น data URL
+  onImgFile(e, key){
+    const f=e.target.files&&e.target.files[0]; if(!f){ return; }
+    if(!/^image\//.test(f.type)){ this.toast('กรุณาเลือกไฟล์รูปภาพ'); return; }
+    const r=new FileReader();
+    r.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=900; const scale=Math.min(1, max/Math.max(img.width,img.height));
+        const cw=Math.round(img.width*scale), ch=Math.round(img.height*scale);
+        const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+        cv.getContext('2d').drawImage(img,0,0,cw,ch);
+        this.setState({ [key]: cv.toDataURL('image/jpeg',0.72) });
+        this.toast('อัปโหลดรูปเรียบร้อย');
+      };
+      img.src=r.result;
+    };
+    r.readAsDataURL(f);
+    e.target.value='';   // ให้เลือกไฟล์เดิมซ้ำได้
+  }
+
+  onSlipFile(e){
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=700; const scale=Math.min(1, max/Math.max(img.width,img.height));
+        const cw=Math.round(img.width*scale), ch=Math.round(img.height*scale);
+        const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+        cv.getContext('2d').drawImage(img,0,0,cw,ch);
+        this.setState({ slipData: cv.toDataURL('image/jpeg',0.7), slipName:f.name });
+      };
+      img.src=r.result;
+    };
+    r.readAsDataURL(f);
+  }
+  submitWalletSlip(){
+    const st=this.state;
+    if(st.tmStage==='sent') return;
+    const amt=Number(st.topupAmount)||0;
+    if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
+    if(!st.slipData){ this.toast('กรุณาแนบสลิปการโอนก่อน'); return; }
+    const dep={ id:'d'+Date.now(), user:'คุณสมชาย ใจดี', method:'TrueMoney Wallet', methodImg:'assets/truemoney.png', amount:amt, time:'เพิ่งแจ้งโอน', status:'pending', slip:st.slipData };
+    this._save('ym_deposits', [dep, ...(this._load('ym_deposits')||[])]);
+    this.setState({ tmStage:'sent' });
+    this.toast('ส่งสลิปเรียบร้อย รอแอดมินยืนยันเครดิต');
+    clearTimeout(this._tmReset);
+    this._tmReset=setTimeout(()=>this.setState({ tmStage:'idle', slipData:'', slipName:'' }), 4500);
+  }
+
+  topupConfirm(){
+    const st=this.state;
+    if(st.topupMethod==='truemoney'){ this.submitWalletSlip(); return; }
+    if(st.topupMethod==='promptpay'){
+      const real=!!this.apiBase();
+      if(st.ppStage==='idle'){
+        const amt=Number(st.topupAmount)||0;
+        if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
+        if(real){
+          const email=(st.topupEmail||'').trim();
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.toast('กรุณากรอกอีเมลให้ถูกต้องก่อนสร้าง QR'); return; }
+          this.startRealPromptPay(amt, email); return;
+        }
+        // โหมดสาธิต (ยังไม่ได้ตั้งค่า backend)
+        this.setState({ ppStage:'generating' });
+        clearTimeout(this._ppGen);
+        this._ppGen = setTimeout(()=>{ this.setState({ ppStage:'qr', ppCountdown:180 }); this._startPpTimer(); }, 1300);
+        return;
+      }
+      if(st.ppStage==='qr'){
+        if(real){ this.toast('สแกน QR จ่ายผ่านแอปธนาคาร ระบบจะเติมเครดิตให้อัตโนมัติ'); return; }
+        this._stopPpTimer();
+        const amt=Number(st.topupAmount)||0;
+        const nb=st.balance+amt; this._save('ym_balance', nb);
+        this.setState(s=>({ ppStage:'paid', balance:nb }));
+        this.toast('ชำระผ่านพร้อมเพย์สำเร็จ +'+this.fmt(amt));
+        clearTimeout(this._ppReset);
+        this._ppReset = setTimeout(()=>this.setState({ ppStage:'idle' }), 1800);
+        return;
+      }
+      return;
+    }
+    if(st.topupMethod==='stripe'){ this.confirmCardPayment(); return; }
+    this.confirmTopup();
+  }
+
+  _startPpTimer(){
+    this._stopPpTimer();
+    this._ppInt = setInterval(()=>{
+      this.setState(s=>{
+        if(s.ppCountdown <= 1){ this._stopPpTimer(); clearInterval(this._realPoll); return { ppCountdown:0, ppStage:'idle', ppQrUrl:'' }; }
+        return { ppCountdown: s.ppCountdown - 1 };
+      });
+    }, 1000);
+  }
+  _stopPpTimer(){ clearInterval(this._ppInt); }
+
+  // ── Real Stripe Card Element ───────────────────────────────
+  cardElRef = (el) => {
+    this._cardNode = el;
+    if (el) { this._mountCardElement(); } else { this._cardMounted = false; }
+  };
+  async _mountCardElement(){
+    if(!this.apiBase() || this._cardMounted || !this._cardNode) return;
+    try{
+      if(!window.Stripe) throw new Error('โหลด Stripe.js ไม่สำเร็จ');
+      if(!this._pk){
+        const cfgRes=await fetch(this.apiBase()+'/api/config');
+        const ct=cfgRes.headers.get('content-type')||'';
+        if(!cfgRes.ok || !ct.includes('application/json')) throw new Error('เชื่อมต่อ backend ไม่สำเร็จ ตรวจสอบว่า deploy เวอร์ชันล่าสุดแล้ว');
+        const cfg=await cfgRes.json();
+        if(!cfg.publishableKey) throw new Error('เชื่อมต่อ backend ไม่สำเร็จ ตรวจสอบว่า deploy เวอร์ชันล่าสุดแล้ว');
+        this._pk=cfg.publishableKey;
+      }
+      if(!this._stripe) this._stripe=window.Stripe(this._pk);
+      if(!this._elements) this._elements=this._stripe.elements();
+      // มี card element อยู่แล้ว → mount ซ้ำที่ node ใหม่ (Stripe ยอมให้มี card ได้แค่อันเดียว ห้ามสร้างซ้ำ)
+      if(this._card){
+        try{ this._card.unmount(); }catch(e){}
+        this._card.mount(this._cardNode);
+        this._cardMounted=true;
+        this.setState({ cardError:'' });
+        return;
+      }
+      this._card=this._elements.create('card', {
+        style:{ base:{ color:'#fff', fontFamily:'Sora, sans-serif', fontSize:'14px', '::placeholder':{ color:'#6b7290' } }, invalid:{ color:'#ff6b7a' } }
+      });
+      this._card.mount(this._cardNode);
+      this._card.on('change', (ev)=>{ this.setState({ cardError: ev.error ? ev.error.message : '' }); });
+      this._cardMounted=true;
+    }catch(e){
+      this.setState({ cardError: e.message || 'โหลดฟอร์มบัตรไม่สำเร็จ' });
+    }
+  }
+  async confirmCardPayment(){
+    const st=this.state;
+    const amt=Number(st.topupAmount)||0;
+    if(amt < 20){ this.toast('ขั้นต่ำในการเติม 20 บาท'); return; }
+    if(!this.apiBase()){ this.confirmTopup(); return; } // โหมดสาธิต
+    const email=(st.topupEmail||'').trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.setState({cardError:'กรุณากรอกอีเมลให้ถูกต้อง'}); return; }
+    if(!this._card){ this.setState({cardError:'กรุณากรอกข้อมูลบัตร'}); return; }
+    this.setState({ cardBusy:true, cardError:'' });
+    try{
+      const r=await fetch(this.apiBase()+'/api/card/create-intent', {
+        method:'POST', headers:this.apiHeaders(),
+        body:JSON.stringify({ amountBaht:amt, userId:this.userId(), email })
+      });
+      const rct=r.headers.get('content-type')||'';
+      if(!rct.includes('application/json')) throw new Error('เชื่อมต่อ backend ไม่สำเร็จ ตรวจสอบว่า deploy เวอร์ชันล่าสุดแล้ว');
+      const d=await r.json();
+      if(!r.ok || d.error) throw new Error(d.error || 'สร้างรายการไม่สำเร็จ');
+      const { error, paymentIntent }=await this._stripe.confirmCardPayment(d.clientSecret, {
+        payment_method: { card:this._card, billing_details:{ name:(st.cardName||'').trim() || this.userId(), email } }
+      });
+      if(error) throw new Error(error.message);
+      if(paymentIntent && paymentIntent.status==='succeeded'){
+        const nb=st.balance+amt; this._save('ym_balance', nb);
+        this.setState({ balance:nb, cardBusy:false });
+        this.toast('ชำระด้วยบัตรสำเร็จ · เครดิตเข้าอัตโนมัติ +'+this.fmt(amt));
+        if(this._card) this._card.clear();
+      } else {
+        this.setState({ cardBusy:false, cardError:'สถานะการชำระ: '+(paymentIntent ? paymentIntent.status : 'ไม่ทราบ') });
+      }
+    }catch(e){
+      this.setState({ cardBusy:false, cardError:e.message || 'ชำระเงินไม่สำเร็จ' });
+      this.toast('ชำระเงินไม่สำเร็จ: '+(e.message||''));
+    }
+  }
+  selectPayMethod(id){ const m=this.PAY.find(p=>p.id===id); if(m&&m.disabled) return; this._stopPpTimer(); clearInterval(this._realPoll); this.setState({ topupMethod:id, ppStage:'idle', ppQrUrl:'', ppError:'', tmStage:'idle', slipData:'', slipName:'' }); }
+
+  // ── Real Stripe PromptPay ──────────────────────────────────
+  apiBase(){ return String(this.props.stripeBackendUrl || '').trim().replace(/\/+$/,''); }
+  userId(){
+    if(this.state.authUser && this.state.authUser.id) return this.state.authUser.id;   // ผูกเครดิตกับบัญชีที่ล็อกอิน
+    let id=this._load('ym_user_id');
+    if(!id){ id='u_'+Math.random().toString(36).slice(2,10); this._save('ym_user_id', id); }
+    return id;
+  }
+
+  /* ═══════════ ระบบบัญชีลูกค้า (สมัคร / ล็อกอิน / ลืมรหัส) ═══════════
+   * ต่อกับ backend จริง — ต้องล็อกอินก่อนถึงเข้าใช้งาน/จ่ายเงินได้ เครดิตผูกกับบัญชี
+   * ถ้าต่อ backend ไม่ได้ (พรีวิว) ใช้ปุ่ม "บัญชีทดลอง" เพื่อดูดีไซน์
+   */
+  apiHeaders(){ const h={'Content-Type':'application/json'}; if(this.state.authToken && this.state.authToken!=='DEMO') h.Authorization='Bearer '+this.state.authToken; return h; }
+  _netErr(e){ return e instanceof TypeError; }
+  async apiCall(path, body, method){
+    const r=await fetch(this.apiBase()+path, { method:method||'POST', headers:this.apiHeaders(), body: body?JSON.stringify(body):undefined });
+    const ct=r.headers.get('content-type')||'';
+    if(!ct.includes('application/json')) throw new Error('เชื่อมต่อ backend ไม่สำเร็จ ตรวจสอบว่า deploy เวอร์ชันล่าสุดแล้ว');
+    const d=await r.json();
+    if(!r.ok || d.error) throw new Error(d.error || 'เกิดข้อผิดพลาด');
+    return d;
+  }
+  _enterApp(token, user){
+    try{ localStorage.setItem('ym_cust_token', token); }catch(e){}
+    this.setState({ authToken:token, authUser:user||null, screen:'app', authBusy:false, authError:'', loginPw:'' });
+    if(user && typeof user.credits==='number'){ this.setState({ balance:user.credits }); this._save('ym_balance', user.credits); }
+    if(token!=='DEMO') { this.refreshBalance(); this.refreshOrders(); }
+  }
+  async refreshBalance(){
+    if(!this.apiBase() || this.state.authToken==='DEMO') return;
+    try{ const d=await this.apiCall('/api/balance', null, 'GET'); if(typeof d.credits==='number'){ this.setState({balance:d.credits}); this._save('ym_balance', d.credits); } }catch(e){}
+  }
+  // ดึงออเดอร์จริงของผู้ใช้จาก backend — แทนที่ออเดอร์ตัวอย่างเมื่อล็อกอินจริง
+  async refreshOrders(){
+    if(!this.apiBase() || this.state.authToken==='DEMO') return;
+    try{
+      const d=await this.apiCall('/api/orders', null, 'GET');
+      if(Array.isArray(d.orders)){
+        const list=d.orders.map(o=>({ id:o.id, pf:o.platform, user:(this.state.authUser&&this.state.authUser.name)||'คุณ', service:o.service_name, link:o.link, qty:o.qty, status:o.status, progress:o.progress||0, price:o.price, time:'' }));
+        this.setState({ orders:list });
+      }
+    }catch(e){}
+  }
+  async doAuth(){
+    if(this.state.authBusy) return;
+    const isReg=this.state.authTab==='register';
+    const email=(this.state.loginId||'').trim().toLowerCase();
+    const password=this.state.loginPw||'';
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.setState({authError:'กรุณากรอกอีเมลให้ถูกต้อง'}); return; }
+    if(password.length<6){ this.setState({authError:'รหัสผ่านอย่างน้อย 6 ตัว'}); return; }
+    if(isReg && !(this.state.regName||'').trim()){ this.setState({authError:'กรุณากรอกชื่อผู้ใช้'}); return; }
+    if(!this.apiBase()){ this.setState({authError:'ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์ — ใช้ "บัญชีทดลอง" เพื่อดูตัวอย่าง'}); return; }
+    this.setState({authBusy:true, authError:''});
+    try{
+      const path=isReg?'/api/auth/register':'/api/auth/login';
+      const body=isReg?{ name:this.state.regName.trim(), email, password }:{ email, password };
+      const d=await this.apiCall(path, body);
+      this._enterApp(d.token, d.user);
+      this.toast(isReg?'สมัครสมาชิกสำเร็จ ยินดีต้อนรับ!':'เข้าสู่ระบบสำเร็จ');
+    }catch(e){
+      this.setState({ authBusy:false, authError: this._netErr(e)?'ต่อเซิร์ฟเวอร์ไม่ได้ — ใช้ "บัญชีทดลอง" เพื่อดูตัวอย่าง':e.message });
+    }
+  }
+  demoLogin(){ this.setState({ authToken:'DEMO', authUser:{ id:this._loadOrMakeGuest(), name:'บัญชีทดลอง', email:'demo@ym.local' }, screen:'app', authError:'' }); this.toast('เข้าสู่ระบบด้วยบัญชีทดลอง'); }
+  _loadOrMakeGuest(){ let id=this._load('ym_user_id'); if(!id){ id='u_'+Math.random().toString(36).slice(2,10); this._save('ym_user_id', id); } return id; }
+  async doForgot(){
+    const email=(this.state.loginId||'').trim().toLowerCase();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.setState({authError:'กรอกอีเมลของคุณก่อน แล้วกด "ลืมรหัสผ่าน?" อีกครั้ง'}); return; }
+    if(!this.apiBase()){ this.toast('โหมดตัวอย่าง — ระบบจริงจะส่งลิงก์รีเซ็ตเข้าอีเมล'); return; }
+    try{ await this.apiCall('/api/auth/forgot', { email }); this.toast('ถ้าอีเมลนี้มีบัญชี เราส่งลิงก์รีเซ็ตไปให้แล้ว'); }
+    catch(e){ this.toast('ส่งไม่สำเร็จ: '+(e.message||'')); }
+  }
+  logoutCustomer(){ try{ localStorage.removeItem('ym_cust_token'); }catch(e){} this.setState({ authToken:null, authUser:null, screen:'login', authTab:'login', loginPw:'', authError:'' }); }
+  retryConnCust(){ if(!this.apiBase()) return; this.toast('กำลังลองเชื่อมต่อใหม่...'); fetch(this.apiBase()+'/api/health').then(r=>{ this.setState({backendReachable:r.ok}); if(r.ok) this.toast('เชื่อมต่อสำเร็จ'); }).catch(()=>this.setState({backendReachable:false})); }
+  go(t){ this.setState({tab:t, loading:true}); this._save('ym_cust_tab', t); clearTimeout(this._ld); this._ld=setTimeout(()=>this.setState({loading:false}), 420); }
+  askConfirm(opts){ this.setState({ confirm: opts }); }
+  closeConfirm(){ this.setState({ confirm:null }); }
+  doConfirm(){ const c=this.state.confirm; this.setState({confirm:null}); if(c&&c.action) c.action(); }
+  reorder(id){
+    const o=this.state.orders.find(x=>x.id===id); if(!o) return;
+    const svc=(this.SERVICES[o.pf]||[]).find(s=>s.name===o.service);
+    this.setState({ platform:o.pf, serviceId: svc?svc.id:this.state.serviceId, link:o.link, qty:String(o.qty), tab:'new', loading:true, orderError:'' });
+    clearTimeout(this._ld); this._ld=setTimeout(()=>this.setState({loading:false}),420);
+    this.toast('เตรียมสั่งซ้ำ '+o.service+' ให้แล้ว · ตรวจทานแล้วกดสั่งซื้อ');
+  }
+  async startRealPromptPay(amt, email){
+    this.setState({ ppStage:'generating', ppError:'', ppQrUrl:'' });
+    try{
+      if(!window.Stripe) throw new Error('โหลด Stripe.js ไม่สำเร็จ');
+      const r=await fetch(this.apiBase()+'/api/promptpay/create', {
+        method:'POST', headers:this.apiHeaders(),
+        body:JSON.stringify({ amountBaht:amt, userId:this.userId(), email })
+      });
+      const d=await r.json();
+      if(!r.ok || d.error) throw new Error(d.error || 'สร้างรายการไม่สำเร็จ');
+      const stripe=window.Stripe(d.publishableKey);
+      const { error, paymentIntent }=await stripe.confirmPromptPayPayment(
+        d.clientSecret,
+        { payment_method:{ billing_details:{ name:this.userId(), email } } },
+        { handleActions:false }
+      );
+      if(error) throw new Error(error.message);
+      const qr=paymentIntent && paymentIntent.next_action && paymentIntent.next_action.promptpay_display_qr_code;
+      const qrUrl=qr ? (qr.image_url_png || qr.image_url_svg || '') : '';
+      this.setState({ ppStage:'qr', ppCountdown:180, ppQrUrl:qrUrl });
+      this._startPpTimer();
+      this._pollReal(d.paymentIntentId, amt);
+    }catch(e){
+      this.setState({ ppStage:'idle', ppError:e.message || 'เชื่อมต่อ Stripe ไม่สำเร็จ' });
+      this.toast('เชื่อมต่อ Stripe ไม่สำเร็จ: '+(e.message||''));
+    }
+  }
+  _pollReal(piId, amt){
+    clearInterval(this._realPoll);
+    this._realPoll=setInterval(async ()=>{
+      try{
+        const s=await fetch(this.apiBase()+'/api/promptpay/status/'+piId).then(x=>x.json());
+        if(s.status==='succeeded'){
+          clearInterval(this._realPoll); this._stopPpTimer();
+          const nb=this.state.balance + amt; this._save('ym_balance', nb);
+          this.setState({ ppStage:'paid', balance:nb, ppQrUrl:'' });
+          this.toast('ชำระผ่านพร้อมเพย์สำเร็จ · เครดิตเข้าอัตโนมัติ +'+this.fmt(amt));
+          clearTimeout(this._ppReset);
+          this._ppReset=setTimeout(()=>this.setState({ ppStage:'idle' }), 2400);
+        } else if(s.status==='canceled'){
+          clearInterval(this._realPoll); this._stopPpTimer();
+          this.setState({ ppStage:'idle', ppError:'รายการถูกยกเลิก' });
+        }
+      }catch(e){ /* เก็บ poll ต่อ เผื่อเน็ตสะดุด */ }
+    }, 3000);
+  }
+
+  slotStyle(filled){
+    return 'width:100%;min-height:76px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:12px;cursor:pointer;font-family:inherit;'+
+      (filled ? 'border:1.5px solid #25e0a8;background:rgba(37,224,168,.08);' : 'border:1.5px dashed var(--border2);background:var(--surface);');
+  }
+  checkBoxStyle(on){
+    return 'width:18px;height:18px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;'+
+      (on ? 'background:var(--accent,#7c5cff);border:1.5px solid var(--accent,#7c5cff);' : 'background:transparent;border:1.5px solid var(--border2);');
+  }
+  navStyle(active){
+    return 'display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:11px;border:none;cursor:pointer;font-size:14px;font-weight:'+(active?'600':'500')+';font-family:inherit;text-align:left;width:100%;'+
+      (active ? 'background:color-mix(in srgb, var(--accent,#7c5cff) 20%, transparent);color:var(--text);' : 'background:transparent;color:var(--muted2);');
+  }
+  tabBtnStyle(active){
+    return 'flex:1;height:38px;border:none;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:600;font-family:inherit;'+
+      (active ? 'background:var(--accent,#7c5cff);color:#fff;' : 'background:transparent;color:var(--muted2);');
+  }
+
+  renderVals(){
+    const st=this.state;
+    const cute = st.theme==='cute';
+    const accent = cute ? '#ff5fa2' : (this.props.accentColor ?? '#7c5cff');
+    const glow = (this.props.neonGlow ?? true) ? '0 0 0 1px color-mix(in srgb, '+accent+' 40%, transparent), 0 8px 30px color-mix(in srgb, '+accent+' 32%, transparent)' : 'none';
+    const svc=this.curService(); const pf=this.curPlatform(); const c=this.cost();
+    const pfById=(id)=>this.PLATFORMS.find(p=>p.id===id);
+
+    const statusColor=(s)=> s==='สำเร็จ'?'#25e0a8': s==='กำลังทำ'?accent : '#e0a825';
+    const statusStyle=(s)=>{ const col=statusColor(s); return 'display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;color:'+col+';background:color-mix(in srgb, '+col+' 14%, transparent);'; };
+
+    const titles={ new:['สั่งซื้อบริการ','เลือกแพลตฟอร์มและบริการที่ต้องการเพิ่มยอด'], orders:['ประวัติออเดอร์','ติดตามสถานะทุกออเดอร์แบบเรียลไทม์'], services:['รายการบริการทั้งหมด','ราคาต่อ 1,000 หน่วย ทั้ง 4 แพลตฟอร์ม'], creator:['ครีเอเตอร์ & Affiliate','รับทำคลิป ขายคอนเทนต์ หาครีเอเตอร์ และหารายได้'], funds:['เติมเครดิต','เลือกช่องทางชำระเงินเพื่อเติมเครดิตเข้าเว็บ'], help:['ช่วยเหลือ & ติดต่อ','วิธีใช้งาน แก้ปัญหา และช่องทางติดต่อทีมงาน'] };
+
+    return {
+      accentVar: accent,
+      themeAttr: st.theme,
+      isCute: cute,
+      toggleTheme: ()=>this.setState(s=>({ theme: s.theme==='cute' ? 'pro' : 'cute' })),
+      themeLabel: cute ? 'ธีมน่ารัก' : 'ธีมมืออาชีพ',
+      themeIcon: cute ? '🎀' : '✨',
+      accentSoftVar: 'color-mix(in srgb, '+accent+' 14%, transparent)',
+      glowVar: glow,
+      platforms: this.PLATFORMS,
+
+      isLogin: st.screen==='login',
+      isApp: st.screen==='app',
+      isRegister: st.authTab==='register',
+      authTitle: st.authTab==='register' ? 'สร้างบัญชีใหม่' : 'ยินดีต้อนรับกลับ',
+      authSubtitle: st.authTab==='register' ? 'สมัครฟรี เริ่มสั่งบริการได้ทันที' : 'เข้าสู่ระบบเพื่อจัดการออเดอร์ของคุณ',
+      authCta: st.authBusy ? 'กำลังดำเนินการ...' : (st.authTab==='register' ? 'สมัครและเข้าสู่ระบบ' : 'เข้าสู่ระบบ'),
+      loginTabStyle: this.tabBtnStyle(st.authTab==='login'),
+      registerTabStyle: this.tabBtnStyle(st.authTab==='register'),
+      setLoginTab: ()=>this.setState({authTab:'login'}),
+      setRegisterTab: ()=>this.setState({authTab:'register'}),
+      loginId: st.loginId, loginPw: st.loginPw, regName: st.regName,
+      onLoginId: (e)=>this.setState({loginId:e.target.value, authError:''}),
+      onLoginPw: (e)=>this.setState({loginPw:e.target.value, authError:''}),
+      onRegName: (e)=>this.setState({regName:e.target.value, authError:''}),
+      authError: st.authError, hasAuthError: !!st.authError,
+      showForgot: st.authTab==='login',
+      showDemoLogin: !this.apiBase() || st.backendReachable===false,   // โผล่ตอนไม่ได้ตั้ง backend หรือ backend ต่อไม่ติด (พรีวิว)
+      doLogin: ()=>this.doAuth(),
+      demoLogin: ()=>this.demoLogin(),
+      doForgot: ()=>this.doForgot(),
+      doLogout: ()=>this.askConfirm({ title:'ออกจากระบบ?', message:'คุณจะต้องเข้าสู่ระบบใหม่อีกครั้ง', confirmLabel:'ออกจากระบบ', danger:true, action:()=>this.logoutCustomer() }),
+
+      navItems: this.NAV.map(n=>({ label:n.label, icon:n.icon, style:this.navStyle(st.tab===n.id), onClick:()=>this.go(n.id) })),
+      pageTitle: titles[st.tab][0], pageSub: titles[st.tab][1],
+      balanceText: this.fmt(st.balance),
+      userName: (st.authUser && st.authUser.name) || 'ลูกค้า', userInitial: (((st.authUser && st.authUser.name) || 'ล').trim().charAt(0)) || 'ล',
+      goFunds: ()=>this.go('funds'),
+      goFundsFromOrder: ()=>this.go('funds'),
+      orderNeedsFunds: st.orderError.indexOf('เครดิตไม่พอ')>-1,
+      onOrderKey:(e)=>{ if(e.key==='Enter') this.placeOrder(); },
+      onTopupKey:(e)=>{ if(e.key==='Enter') this.topupConfirm(); },
+      showOffline: st.backendReachable===false && !!this.apiBase() && !!st.authToken && st.authToken!=='DEMO',
+      retryConn: ()=>this.retryConnCust(),
+
+      tabNew: st.tab==='new', tabOrders: st.tab==='orders', tabServices: st.tab==='services', tabCreator: st.tab==='creator', tabFunds: st.tab==='funds', tabHelp: st.tab==='help',
+
+      contactChannels: [
+        { name:'LINE Official', handle:'lin.ee/S35WkT2', href:'https://lin.ee/S35WkT2', desc:'ตอบเร็วที่สุด 24 ชม.', color:'#06C755', icon:'M12 2C6.48 2 2 5.94 2 10.8c0 4.35 3.55 8 8.35 8.7.32.07.77.22.88.5.1.26.07.66.03.92l-.14.86c-.04.26-.2 1.02.89.56s5.9-3.48 8.05-5.96C21.4 14.7 22 12.85 22 10.8 22 5.94 17.52 2 12 2z', cta:'เพิ่มเพื่อน' },
+        { name:'Facebook Page', handle:'m.me/61586952830205', href:'https://m.me/61586952830205', desc:'ทักแชทเพจได้ทุกวัน', color:'#1877F2', icon:'M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z', cta:'เปิดแชท' },
+        { name:'อีเมล', handle:'yarnan7480@gmail.com', href:'mailto:yarnan7480@gmail.com', desc:'สำหรับเรื่องบิล/ใบเสร็จ', color:'#e0a825', icon:'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM2 7l10 6 10-6', cta:'ส่งอีเมล' },
+      ],
+      howToSteps: [
+        { n:'1', title:'สมัคร / เข้าสู่ระบบ', desc:'สร้างบัญชีด้วยอีเมลหรือเบอร์โทร ใช้เวลาไม่ถึงนาที' },
+        { n:'2', title:'เติมเครดิต', desc:'เลือกช่องทาง (พร้อมเพย์ / บัตรเครดิต) 1 เครดิต = 1 บาท' },
+        { n:'3', title:'เลือกบริการ & ใส่ลิงก์', desc:'เลือกแพลตฟอร์ม บริการ ใส่ลิงก์/ยูสเซอร์ และจำนวน' },
+        { n:'4', title:'สั่งซื้อ & ติดตามสถานะ', desc:'กดสั่งซื้อ ระบบเริ่มส่งยอด ดูสถานะได้ที่ประวัติออเดอร์' },
+      ],
+      faqItems: this.FAQ.map((f,i)=>({
+        q:f.q, a:f.a, open: st.openFaq===i,
+        onClick:()=>this.setState(s=>({ openFaq: s.openFaq===i ? -1 : i })),
+        iconStyle:'transition:transform .2s;flex-shrink:0;'+(st.openFaq===i?'transform:rotate(180deg);':''),
+      })),
+
+      creatorItems: this.CREATOR.map(c=>({
+        name:c.name, desc:c.desc, tag:c.tag, note:c.note||'',
+        priceText: c.price>0 ? this.fmt(c.price) : c.unit, unit: c.price>0 ? c.unit : '',
+        isFree: c.price===0,
+        cta: c.price===0 ? 'สมัครเลย' : 'ตั้งค่า & สั่งทำ',
+        onOrder: c.price===0 ? ()=>this.toast('เปิดรับสมัคร Affiliate เรียบร้อย!') : ()=>this.openConfig(c.id),
+      })),
+
+      configOpen: !!st.configService,
+      configClosed: !st.configService,
+      configName: (this.CREATOR.find(c=>c.id===st.configService)||{}).name,
+      configPriceText: this.fmt((this.CREATOR.find(c=>c.id===st.configService)||{}).price||0),
+      configUnit: (this.CREATOR.find(c=>c.id===st.configService)||{}).unit,
+      closeConfig: ()=>this.closeConfig(),
+      clipStructure: this.CLIP_STRUCTURE.map(o=>({
+        label:o.label, sub:o.sub, emoji:o.emoji, selected: st.clipStructure===o.id,
+        onClick:()=>this.setState({clipStructure:o.id}),
+        style:'display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border-radius:12px;cursor:pointer;font-family:inherit;text-align:left;'+
+          (st.clipStructure===o.id ? 'background:color-mix(in srgb, var(--accent,#7c5cff) 14%, transparent);border:1.5px solid var(--accent,#7c5cff);' : 'background:var(--surface);border:1.5px solid var(--border);'),
+      })),
+      clipBasic: this.CLIP_BASIC.map(o=>({
+        label:o.label, hit:!!o.hit, checked: st.clipStyles.includes(o.id),
+        onClick:()=>this.toggleClip(o.id),
+        boxStyle: this.checkBoxStyle(st.clipStyles.includes(o.id)),
+      })),
+      clipLocation: this.CLIP_LOCATION.map(o=>({
+        label:o.label, emoji:o.emoji, hit:!!o.hit, checked: st.clipStyles.includes(o.id),
+        onClick:()=>this.toggleClip(o.id),
+        boxStyle: this.checkBoxStyle(st.clipStyles.includes(o.id)),
+      })),
+      clipScene: this.CLIP_SCENE.map(o=>({
+        label:o.label, emoji:o.emoji, checked: st.clipStyles.includes(o.id),
+        onClick:()=>this.toggleClip(o.id),
+        boxStyle: this.checkBoxStyle(st.clipStyles.includes(o.id)),
+      })),
+      speakList: this.SPEAK_STYLES.map(o=>({
+        label:o.label, emoji:o.emoji, selected: st.speakStyle===o.id,
+        onClick:()=>this.setState({speakStyle:o.id}),
+        style:'display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-size:13.5px;text-align:left;'+
+          (st.speakStyle===o.id ? 'background:var(--accent,#7c5cff);color:#fff;font-weight:600;' : 'background:var(--surface);color:var(--muted3);'),
+      })),
+      clipCount: st.clipStyles.length,
+      speakLabel: (this.SPEAK_STYLES.find(o=>o.id===st.speakStyle)||{}).label,
+      clipLengths: this.CLIP_LENGTHS.map(l=>({
+        label:l.label, priceText:this.fmt(l.price), selected: st.clipLength===l.id,
+        onClick:()=>this.setState({clipLength:l.id, clipError:''}),
+        style:'display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 6px;border-radius:10px;cursor:pointer;font-family:inherit;'+
+          (st.clipLength===l.id ? 'background:color-mix(in srgb, var(--accent,#7c5cff) 16%, transparent);border:1.5px solid var(--accent,#7c5cff);' : 'background:var(--surface);border:1.5px solid var(--border);'),
+      })),
+      clipRateText: this.fmt(this.clipRate()),
+      clipQty: st.clipQty,
+      onClipQty: (e)=>this.setState({clipQty:e.target.value, clipError:''}),
+      clipQtyChips: [10,50,100,500].map(v=>({ label:v+' คลิป', onClick:()=>this.setState({clipQty:v, clipError:''}) })),
+      clipEmail: st.clipEmail,
+      onClipEmail: (e)=>this.setState({clipEmail:e.target.value, clipError:''}),
+      clipNote: st.clipNote,
+      onClipNote: (e)=>this.setState({clipNote:e.target.value}),
+      clipTotalText: this.fmt(this.clipTotal()),
+      clipError: st.clipError,
+      hasModelImg: !!st.modelImg, hasProductImg: !!st.productImg,
+      noModelImg: !st.modelImg, noProductImg: !st.productImg,
+      modelImg: st.modelImg, productImg: st.productImg,
+      modelSlotStyle: this.slotStyle(!!st.modelImg),
+      productSlotStyle: this.slotStyle(!!st.productImg),
+      onModelImg: (e)=>this.onImgFile(e,'modelImg'),
+      onProductImg: (e)=>this.onImgFile(e,'productImg'),
+      clearModelImg: (e)=>{ if(e){ e.preventDefault&&e.preventDefault(); e.stopPropagation&&e.stopPropagation(); } this.setState({modelImg:null}); },
+      clearProductImg: (e)=>{ if(e){ e.preventDefault&&e.preventDefault(); e.stopPropagation&&e.stopPropagation(); } this.setState({productImg:null}); },
+      confirmClipOrder: ()=>this.confirmClipOrder(),
+
+      // new order
+      platformCards: this.PLATFORMS.map(p=>({
+        name:p.name, logo:p.logo, color:p.color, count:this.svcList(p.id).length,
+        onClick:()=>this.selectPlatform(p.id),
+        style:'display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:14px;cursor:pointer;flex:1;min-width:190px;font-family:inherit;'+
+          (st.platform===p.id ? 'background:color-mix(in srgb, var(--accent,#7c5cff) 12%, transparent);border:1.5px solid var(--accent,#7c5cff);' : 'background:var(--surface);border:1.5px solid var(--border);'),
+      })),
+      activePlatformName: pf.name, activePlatformColor: pf.color, activePlatformLogo: pf.logo,
+      serviceRows: this.svcList(st.platform).map(s=>({
+        name:s.name, selected: s.id===st.serviceId,
+        minText:this.fmt(s.min), maxText:this.fmt(s.max), rateText:this.fmt(this.custRate(s)),
+        onClick:()=>this.setState({serviceId:s.id, orderError:''}),
+        style:'display:flex;align-items:center;gap:12px;width:100%;padding:14px 18px;border:none;border-bottom:1px solid var(--surface2);cursor:pointer;font-family:inherit;'+
+          (s.id===st.serviceId ? 'background:color-mix(in srgb, var(--accent,#7c5cff) 9%, transparent);' : 'background:transparent;'),
+      })),
+      selectedServiceName: pf.name+' · '+svc.name,
+      selectedRateText: this.fmt(this.custRate(svc)),
+      linkPlaceholder: st.platform==='youtube' ? 'https://youtu.be/...' : (st.platform==='instagram'||st.platform==='tiktok') ? '@username หรือลิงก์โพสต์' : 'ลิงก์เพจ / โพสต์',
+      link: st.link, onLink:(e)=>this.setState({link:e.target.value, orderError:''}),
+      showReactions: st.serviceId==='fb_like' && st.platform==='facebook',
+      reactions: [
+        {id:'like',emoji:'👍',label:'ถูกใจ'},{id:'love',emoji:'❤️',label:'รักเลย'},
+        {id:'care',emoji:'🤗',label:'ห่วงใย'},{id:'haha',emoji:'😆',label:'ฮาฮา'},
+        {id:'wow',emoji:'😮',label:'ว้าว'},{id:'sad',emoji:'😢',label:'เศร้า'},
+        {id:'angry',emoji:'😡',label:'โกรธ'},
+      ].map(r=>({
+        emoji:r.emoji, label:r.label,
+        onClick:()=>this.setState({reaction:r.id}),
+        style:'width:38px;height:38px;border-radius:10px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;'+
+          (st.reaction===r.id ? 'background:color-mix(in srgb, var(--accent,#7c5cff) 18%, transparent);border:1.5px solid var(--accent,#7c5cff);transform:scale(1.06);' : 'background:var(--field);border:1.5px solid var(--border);'),
+      })),
+      qty: st.qty, onQty:(e)=>this.setState({qty:e.target.value, orderError:''}),
+      qtyText: this.fmt(Number(st.qty)||0),
+      qtyChips: [500,1000,5000,10000].map(v=>({ label:this.short(v), onClick:()=>this.setState({qty:v, orderError:''}) })),
+      costText: this.fmt(c),
+      orderError: st.orderError,
+      placeOrder: ()=>this.placeOrder(),
+
+      // orders
+      orderStats: [
+        { label:'ออเดอร์ทั้งหมด', value:st.orders.length, color:'var(--text)' },
+        { label:'กำลังดำเนินการ', value:st.orders.filter(o=>o.status!=='สำเร็จ').length, color:accent },
+        { label:'สำเร็จแล้ว', value:st.orders.filter(o=>o.status==='สำเร็จ').length, color:'#25e0a8' },
+        { label:'ใช้จ่ายรวม', value:this.fmt(st.orders.reduce((a,o)=>a+o.price,0)), color:'#e0a825' },
+      ],
+      orders: st.orders.map(o=>{ const p=pfById(o.pf); return {
+        id:o.id, service:o.service, link:o.link, qtyText:this.fmt(o.qty),
+        logo:p.logo, color:p.color, status:o.status, statusColor:statusColor(o.status),
+        statusStyle:statusStyle(o.status), progress:o.progress+'%', priceText:this.fmt(o.price),
+        onReorder:()=>this.reorder(o.id),
+      }; }),
+
+      loading: st.loading, notLoading: !st.loading, skeleton:[0,1,2,3,4,5], noOrders: st.orders.length===0,
+      goNew: ()=>this.go('new'),
+      hasConfirm: !!st.confirm,
+      confirmTitle: st.confirm?st.confirm.title:'',
+      confirmMsg: st.confirm?st.confirm.message:'',
+      confirmLabel: st.confirm?(st.confirm.confirmLabel||'ยืนยัน'):'ยืนยัน',
+      confirmBtnStyle: 'flex:1;height:44px;border-radius:11px;border:none;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:Sora;background:'+((st.confirm&&st.confirm.danger)?'#ff5c6a':'var(--accent,#7c5cff)')+';',
+      confirmCancel: ()=>this.closeConfirm(),
+      confirmOk: ()=>this.doConfirm(),
+      stopProp: (e)=>e.stopPropagation(),
+
+      // catalogue
+      catalogue: this.PLATFORMS.map(p=>({
+        name:p.name, logo:p.logo, color:p.color,
+        items:this.svcList(p.id).map(s=>({ name:s.name, rateText:this.fmt(this.custRate(s)), minText:this.fmt(s.min), maxText:this.fmt(s.max), onOrder:()=>this.selectService(p.id, s.id) })),
+      })),
+
+      // funds
+      payMethods: this.PAY.map(m=>({
+        name:m.name, desc:m.desc, img:m.img, selected: st.topupMethod===m.id,
+        brands: m.brands||[], hasBrands: !!(m.brands&&m.brands.length),
+        disabled: !!m.disabled, enabled: !m.disabled,
+        onClick:()=>this.selectPayMethod(m.id),
+        style:'display:flex;align-items:center;gap:14px;width:100%;padding:15px 17px;border-radius:14px;font-family:inherit;'+
+          (m.disabled ? 'cursor:not-allowed;opacity:.5;background:var(--surface);border:1.5px dashed var(--border2);' :
+           st.topupMethod===m.id ? 'cursor:pointer;background:color-mix(in srgb, var(--accent,#7c5cff) 10%, transparent);border:1.5px solid var(--accent,#7c5cff);' : 'cursor:pointer;background:var(--surface);border:1.5px solid var(--border);'),
+        radioStyle:'width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid '+(st.topupMethod===m.id?'var(--accent,#7c5cff)':'var(--border2)')+';',
+      })),
+      topupMethodName: (this.PAY.find(p=>p.id===st.topupMethod)||{}).name,
+      topupMethodImg: (this.PAY.find(p=>p.id===st.topupMethod)||{}).img,
+      isTrueMoney: st.topupMethod==='truemoney',
+      tmIdle: st.tmStage!=='sent',
+      tmSent: st.tmStage==='sent',
+      hasSlip: !!st.slipData, noSlip: !st.slipData,
+      slipData: st.slipData,
+      walletNumber: '082-808-4471',
+      slipBoxStyle: 'width:100%;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:12px;cursor:pointer;padding:10px;'+(st.slipData?'border:1.5px solid #25e0a8;background:rgba(37,224,168,.06);':'border:1.5px dashed rgba(255,140,0,.4);background:rgba(255,140,0,.04);'),
+      onSlip: (e)=>this.onSlipFile(e),
+      isPromptPay: st.topupMethod==='promptpay',
+      isStripe: st.topupMethod==='stripe',
+      cardReal: !!this.apiBase(), cardDemo: !this.apiBase(),
+      cardElRef: this.cardElRef,
+      cardName: st.cardName, onCardName: (e)=>this.setState({cardName:e.target.value}),
+      cardError: st.cardError,
+      stripeKeyMasked: this.STRIPE_PK.slice(0,12)+'••••'+this.STRIPE_PK.slice(-4),
+      isDebit: st.topupMethod==='debit',
+      topupAmount: st.topupAmount,
+      onTopupAmount:(e)=>this.setState({topupAmount:e.target.value}),
+      topupChips: [50,100,300,500,1000,2000].map(v=>({ label:'฿'+this.fmt(v), onClick:()=>this.setState({topupAmount:v}) })),
+      topupCreditText: this.fmt(Number(st.topupAmount)||0),
+      ppIdle: st.ppStage==='idle', ppGenerating: st.ppStage==='generating', ppQr: st.ppStage==='qr', ppPaid: st.ppStage==='paid',
+      ppTimer: Math.floor(st.ppCountdown/60)+':'+String(st.ppCountdown%60).padStart(2,'0'),
+      ppQrUrl: st.ppQrUrl, noPpQrUrl: !st.ppQrUrl,
+      ppError: st.ppError,
+      ppNeedsEmail: !!this.apiBase(),
+      topupEmail: st.topupEmail || (st.loginId.includes('@') ? st.loginId : ''),
+      onTopupEmail: (e)=>this.setState({topupEmail:e.target.value, ppError:''}),
+      ppWaitText: this.apiBase() ? 'รอชำระเงิน · เมื่อจ่ายแล้วระบบเติมเครดิตให้อัตโนมัติ' : 'รอการชำระเงิน · เมื่อโอนแล้วกด "ฉันชำระแล้ว"',
+      topupCtaLabel: st.topupMethod==='promptpay' ? (st.ppStage==='idle' ? 'สร้าง QR พร้อมเพย์' : st.ppStage==='qr' ? (this.apiBase() ? 'รอชำระเงิน · เติมอัตโนมัติ' : 'ฉันชำระแล้ว') : 'กำลังดำเนินการ...') : st.topupMethod==='truemoney' ? (st.tmStage==='sent' ? 'ส่งสลิปแล้ว · รอตรวจสอบ' : 'แจ้งโอน & ส่งสลิป') : st.topupMethod==='stripe' ? (st.cardBusy ? 'กำลังชำระเงิน...' : 'ชำระเงินด้วยบัตร') : 'ยืนยันเติมเงิน',
+      confirmTopup: ()=>this.topupConfirm(),
+
+      toast: st.toast,
+    };
+  }
+}
+</script>
+</body>
+</html>
