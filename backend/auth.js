@@ -116,16 +116,20 @@ const RESET_TTL_MS = 60 * 60 * 1000;   // 1 ชั่วโมง
 async function forgotPassword({ email }, appUrl) {
   email = String(email || '').trim().toLowerCase();
   const user = users.byEmail(email);
+  let devReset = null;   // ถ้ายังไม่ได้ตั้งค่า SMTP → ส่ง token กลับหน้าเว็บให้รีเซ็ตในแอปได้เลย
   if (user && !user.banned) {
     const token = crypto.randomBytes(32).toString('hex');   // ส่งเข้าเมลแบบดิบ
     const expiresAt = new Date(Date.now() + RESET_TTL_MS).toISOString();
     passwordResets.issue(user.id, sha256(token), expiresAt); // เก็บแบบ hash เท่านั้น
     const base = (appUrl || process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
     const link = `${base}/reset-password?token=${token}`;
-    try { await sendResetEmail(user.email, link); }
-    catch (e) { console.error('ส่งอีเมลรีเซ็ตล้มเหลว:', e.message); }
+    try {
+      const r = await sendResetEmail(user.email, link);
+      if (r && r.dev) devReset = token;   // ไม่มี SMTP → คืน token ให้หน้าเว็บรีเซ็ตเอง
+    }
+    catch (e) { console.error('ส่งอีเมลรีเซ็ตล้มเหลว:', e.message); devReset = token; }
   }
-  return { ok: true, message: 'ถ้าอีเมลนี้มีบัญชีอยู่ เราได้ส่งลิงก์รีเซ็ตไปให้แล้ว' };
+  return { ok: true, message: 'ถ้าอีเมลนี้มีบัญชีอยู่ เราได้ส่งลิงก์รีเซ็ตไปให้แล้ว', resetToken: devReset || undefined };
 }
 
 /** ตั้งรหัสใหม่ด้วย token — token ใช้ครั้งเดียว, หมดอายุ 1 ชม. */
@@ -144,6 +148,29 @@ async function resetPassword({ token, password }) {
 
   const user = users.byId(row.user_id);
   return { token: sign(user), user: publicUser(user) };   // ล็อกอินให้เลยหลังตั้งรหัสใหม่
+}
+
+/* ─────────────────── เข้าสู่ระบบด้วย Google (Gmail) ─────────────────── */
+async function loginWithGoogle({ credential }) {
+  if (!credential) throw httpErr(400, 'ไม่พบข้อมูลจาก Google');
+  let payload;
+  try {
+    const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(String(credential)));
+    payload = await r.json();
+    if (!r.ok || payload.error) throw new Error('bad token');
+  } catch (e) { throw httpErr(401, 'ยืนยันบัญชี Google ไม่สำเร็จ'); }
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+  if (clientId && payload.aud !== clientId) throw httpErr(401, 'บัญชี Google ไม่ตรงกับแอปนี้');
+  if (!payload.email || payload.email_verified === false || payload.email_verified === 'false')
+    throw httpErr(401, 'อีเมล Google นี้ยังไม่ได้ยืนยัน');
+  const email = String(payload.email).trim().toLowerCase();
+  let user = users.byEmail(email);
+  if (!user) {
+    const randomHash = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10);
+    user = users.create({ email, password_hash: randomHash, name: payload.name || email.split('@')[0] });
+  }
+  if (user.banned) throw httpErr(403, 'บัญชีนี้ถูกระงับ');
+  return { token: sign(user), user: publicUser(user) };
 }
 
 /* ─────────────────── middleware ─────────────────── */
@@ -195,4 +222,4 @@ function httpErr(status, message) {
   return e;
 }
 
-module.exports = { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, sign, httpErr };
+module.exports = { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, sign, httpErr, loginWithGoogle };

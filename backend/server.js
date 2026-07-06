@@ -19,7 +19,7 @@ const rateLimitPkg = require('express-rate-limit');
 const rateLimit = rateLimitPkg.rateLimit || rateLimitPkg;
 
 const { users, orders, deposits, ledger } = require('./db');
-const { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser } = require('./auth');
+const { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, loginWithGoogle } = require('./auth');
 const { CATALOG, priceOrder } = require('./services');
 
 // .trim() กันคีย์ที่วางมาแล้วติด space/ขึ้นบรรทัดใหม่/อักขระซ่อน → กัน ERR_INVALID_CHAR ตอนสร้าง header Authorization
@@ -184,6 +184,8 @@ app.use('/api/', apiLimiter);
  * ═══════════════════════════════════════════════════════════ */
 app.post('/api/auth/register', registerLimiter, wrap(async (req, res) => res.json(await register(req.body))));
 app.post('/api/auth/login',    loginLimiter,    wrap(async (req, res) => res.json(await login(req.body))));
+// เข้าสู่ระบบด้วย Google (Gmail) — รับ credential (ID token) จากฝั่งหน้า
+app.post('/api/auth/google', loginLimiter, wrap(async (req, res) => res.json(await loginWithGoogle(req.body))));
 app.get('/api/auth/me', requireAuth, (req, res) => res.json({ user: publicUser(req.user) }));
 
 // ลืมรหัสผ่าน — ส่งลิงก์รีเซ็ตเข้าอีเมล (ตอบ ok เสมอ ไม่บอกว่าอีเมลมีจริงไหม)
