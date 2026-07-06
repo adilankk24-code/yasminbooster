@@ -22,7 +22,8 @@ const { users, orders, deposits, ledger } = require('./db');
 const { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser } = require('./auth');
 const { CATALOG, priceOrder } = require('./services');
 
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+// .trim() กันคีย์ที่วางมาแล้วติด space/ขึ้นบรรทัดใหม่/อักขระซ่อน → กัน ERR_INVALID_CHAR ตอนสร้าง header Authorization
+const stripe = Stripe((process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder').trim());
 
 // ── สร้างบัญชีแอดมินตัวแรกอัตโนมัติตอนเริ่มระบบ (เผื่อ deploy บนที่ที่รัน `npm run seed` เองไม่ได้ เช่น Render free tier) ──
 // ตั้งอีเมล/รหัสผ่านผ่าน ADMIN_EMAIL / ADMIN_PASSWORD ใน .env — ถ้ามีแอดมินอยู่แล้วจะข้ามไปเฉยๆ ไม่ทำอะไรซ้ำ
@@ -88,7 +89,7 @@ app.post('/api/webhook', express.raw({ type: 'application/json', limit: '1mb' })
   let event;
   try {
     event = stripe.webhooks.constructEvent(
-      req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET
+      req.body, req.headers['stripe-signature'], (process.env.STRIPE_WEBHOOK_SECRET || '').trim()
     );
   } catch (err) {
     console.error('❌ ตรวจสอบลายเซ็น webhook ไม่ผ่าน:', err.message);
@@ -96,20 +97,29 @@ app.post('/api/webhook', express.raw({ type: 'application/json', limit: '1mb' })
   }
 
   if (event.type === 'payment_intent.succeeded') {
-    const pi = event.data.object;
-    const userId = pi.metadata.userId;
-    const credits = Number(pi.metadata.credits || 0);
-    const email = pi.metadata.email || '';
-    const method = pi.payment_method_types?.[0] === 'promptpay' ? 'พร้อมเพย์ QR (Stripe)' : 'บัตร (Stripe)';
-    try {
-      const dep = deposits.creditFromStripe(userId, credits, pi.id, method, email);   // กันซ้ำในตัว + สร้าง guest ถ้ายังไม่มี
-      if (dep) console.log(`✅ เติมเครดิต: user=${userId} +${credits} (pi=${pi.id})`);
-    } catch (e) {
-      console.error('เติมเครดิตล้มเหลว:', e.message);
-    }
+    settlePaymentIntent(event.data.object);
   }
   res.json({ received: true });
 });
+
+// เติมเครดิตเข้า DB จาก PaymentIntent ที่จ่ายสำเร็จ — กันซ้ำด้วย pi.id (idempotent)
+// เรียกได้ทั้งจาก webhook และจากตอนหน้าเว็บ poll สถานะ → เครดิตไม่หายแม้ webhook ไม่ทำงาน
+function settlePaymentIntent(pi) {
+  if (!pi || pi.status !== 'succeeded') return null;
+  const userId = pi.metadata.userId;
+  const credits = Number(pi.metadata.credits || 0);
+  const email = pi.metadata.email || '';
+  const method = pi.payment_method_types?.[0] === 'promptpay' ? 'พร้อมเพย์ QR (Stripe)' : 'บัตร (Stripe)';
+  if (!userId || !credits) return null;
+  try {
+    const dep = deposits.creditFromStripe(userId, credits, pi.id, method, email);   // กันซ้ำในตัว + สร้าง guest ถ้ายังไม่มี
+    if (dep) console.log(`✅ เติมเครดิต: user=${userId} +${credits} (pi=${pi.id})`);
+    return dep;
+  } catch (e) {
+    console.error('เติมเครดิตล้มเหลว:', e.message);
+    return null;
+  }
+}
 
 // จำกัดขนาด body 1MB — พอสำหรับสลิปที่ย่อแล้ว (~200KB) แต่กันคนยัด payload ก้อนโตถล่ม DB/หน่วยความจำ
 app.use(express.json({ limit: '1mb' }));
@@ -225,15 +235,27 @@ async function createIntent(req, res, method) {
     amount, currency: 'thb', payment_method_types: [method],
     metadata: { userId, email, credits: String(Math.round(amountBaht)) },  // 1 บาท = 1 เครดิต
   });
-  res.json({ clientSecret: intent.client_secret, paymentIntentId: intent.id, publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
+  res.json({ clientSecret: intent.client_secret, paymentIntentId: intent.id, publishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim() });
 }
 app.post('/api/promptpay/create',  optionalAuth, wrap((req, res) => createIntent(req, res, 'promptpay')));
 app.post('/api/card/create-intent', optionalAuth, wrap((req, res) => createIntent(req, res, 'card')));
 app.get('/api/promptpay/status/:id', wrap(async (req, res) => {
   const pi = await stripe.paymentIntents.retrieve(req.params.id);
+  if (pi.status === 'succeeded') settlePaymentIntent(pi);   // เติมเครดิตทันทีไม่ต้องรอ webhook (กันซ้ำด้วย pi.id)
   res.json({ status: pi.status });
 }));
-app.get('/api/config', (req, res) => res.json({ publishableKey: process.env.STRIPE_PUBLISHABLE_KEY }));
+
+// หน้าเว็บเรียกหลังจ่ายบัตร/พร้อมเพย์สำเร็จ เพื่อยืนยันเครดิตเข้า DB แล้วส่งยอดล่าสุดกลับ
+app.post('/api/payment/settle', optionalAuth, wrap(async (req, res) => {
+  const id = String(req.body.paymentIntentId || '').trim();
+  if (!id) return res.status(400).json({ error: 'ไม่พบรายการ' });
+  const pi = await stripe.paymentIntents.retrieve(id);
+  settlePaymentIntent(pi);
+  const uid = req.user ? req.user.id : pi.metadata.userId;
+  const u = uid ? users.byId(uid) : null;
+  res.json({ status: pi.status, credits: u ? u.credits : null });
+}));
+app.get('/api/config', (req, res) => res.json({ publishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim() }));
 
 /* ═══════════════════════════════════════════════════════════
  * เติมเงิน — TrueMoney Wallet (โอนมือ + แนบสลิป → แอดมินอนุมัติ)
