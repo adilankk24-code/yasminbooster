@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&amp;family=Sora:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -39,6 +40,7 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
   @keyframes toastIn{from{opacity:0;transform:translate(-50%,-18px)}to{opacity:1;transform:translateX(-50%)}}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .sc-scroll::-webkit-scrollbar{width:8px;height:8px}
   .sc-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:8px}
   /* ---- responsive: มือถือ / แท็บเล็ต ---- */
@@ -48,11 +50,9 @@
     .ym-login-grid{grid-template-columns:1fr !important}
     .ym-login-brand{display:none !important}
     .ym-shell{grid-template-columns:1fr !important}
-    .ym-sidebar{position:fixed !important;top:auto !important;bottom:0;left:0;right:0;height:auto !important;flex-direction:row !important;padding:6px 6px calc(6px + env(safe-area-inset-bottom)) !important;border-right:none !important;border-top:1px solid var(--border) !important;background:color-mix(in srgb, var(--bg) 94%, transparent) !important;backdrop-filter:blur(14px);z-index:60;overflow-x:auto;overflow-y:hidden}
-    .ym-brand,.ym-credit,.ym-hide-sm{display:none !important}
-    .ym-nav{flex-direction:row !important;gap:2px !important;width:100%}
-    .ym-nav>button{flex:1 0 auto;min-width:60px;flex-direction:column !important;gap:4px !important;padding:8px 6px !important;font-size:10.5px !important;font-weight:600 !important;border-radius:13px !important;justify-content:center !important;text-align:center !important}
-    .ym-nav>button>span{flex:none !important;text-align:center !important;line-height:1.1 !important}
+    .ym-sidebar{display:none !important}
+    .ym-hide-sm{display:none !important}
+    .ym-mobilenav{display:flex !important}
     .ym-main{max-height:none !important;overflow:visible !important}
     .ym-topbar{padding:12px 16px !important}
     .ym-topbar-actions{gap:9px !important}
@@ -130,6 +130,11 @@
         <sc-if value="{{ showForgot }}" hint-placeholder-val="{{ true }}"><div style="text-align:right;margin:-8px 0 16px;"><span onClick="{{ doForgot }}" style="font-size:12.5px;color:var(--accent,#7c5cff);cursor:pointer;">ลืมรหัสผ่าน?</span></div></sc-if>
         <sc-if value="{{ hasAuthError }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.25);border-radius:9px;padding:9px 12px;margin-bottom:14px;">{{ authError }}</div></sc-if>
         <button onClick="{{ doLogin }}" style="width:100%;height:48px;border:none;border-radius:12px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">{{ authCta }}</button>
+
+        <sc-if value="{{ showGoogle }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:12.5px;"><div style="flex:1;height:1px;background:var(--border);"></div>หรือ<div style="flex:1;height:1px;background:var(--border);"></div></div>
+        <div ref="{{ gsiRef }}" style="display:flex;justify-content:center;min-height:44px;color-scheme:light;"></div>
+        </sc-if>
 
         <sc-if value="{{ showDemoLogin }}" hint-placeholder-val="{{ true }}">
         <div style="display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--muted);font-size:12.5px;">
@@ -782,7 +787,48 @@
 
       </div>
     </main>
+
+    <!-- ===== mobile bottom nav ===== -->
+    <nav class="ym-mobilenav" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;align-items:stretch;height:calc(60px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--border);background:color-mix(in srgb, var(--bg) 90%, transparent);backdrop-filter:blur(16px);">
+      <sc-for list="{{ mobileTabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.onClick }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;font-family:inherit;padding:9px 0 6px;">
+          <span style="{{ t.iconWrap }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ t.icon }}"></path></svg></span>
+          <span style="{{ t.labelStyle }}">{{ t.label }}</span>
+        </button>
+      </sc-for>
+      <button onClick="{{ openMore }}" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;font-family:inherit;padding:9px 0 6px;">
+        <span style="{{ moreIconWrap }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></span>
+        <span style="{{ moreLabelStyle }}">เมนู</span>
+      </button>
+    </nav>
   </div>
+
+  <!-- ===== mobile "more" sheet ===== -->
+  <sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMore }}" style="position:fixed;inset:0;z-index:80;background:rgba(4,5,12,.6);backdrop-filter:blur(3px);display:flex;align-items:flex-end;animation:floatUp .18s ease both;">
+      <div onClick="{{ stopProp }}" style="width:100%;background:var(--raised);border:1px solid var(--border2);border-bottom:none;border-radius:22px 22px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -20px 50px rgba(0,0,0,.5);animation:sheetUp .26s cubic-bezier(.22,1,.36,1) both;max-height:82vh;overflow-y:auto;">
+        <div style="width:40px;height:4px;border-radius:99px;background:var(--border2);margin:4px auto 14px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding:0 4px;">
+          <div style="font-family:Sora;font-weight:700;font-size:17px;">เมนูทั้งหมด</div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted2);"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent,#7c5cff);"></span>{{ balanceText }} เครดิต</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <sc-for list="{{ sheetItems }}" as="s" hint-placeholder-count="6">
+            <button onClick="{{ s.onClick }}" style="{{ s.rowStyle }}">
+              <span style="{{ s.iconStyle }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.icon }}"></path></svg></span>
+              <span style="flex:1;text-align:left;">{{ s.label }}</span>
+              <sc-if value="{{ s.active }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;color:var(--accent,#7c5cff);border:1px solid var(--accent,#7c5cff);border-radius:6px;padding:2px 8px;white-space:nowrap;">อยู่หน้านี้</span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <div style="height:1px;background:var(--border);margin:13px 0;"></div>
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ toggleTheme }}" style="flex:1;height:46px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px;"><span style="font-size:15px;">{{ themeIcon }}</span>{{ themeLabel }}</button>
+          <button onClick="{{ logoutFromSheet }}" style="flex:1;height:46px;border:1px solid rgba(255,80,100,.3);border-radius:12px;background:rgba(255,80,100,.08);color:#ff6b7a;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit;">ออกจากระบบ</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
   </sc-if>
 
   <!-- toast -->
@@ -806,10 +852,29 @@
       </div>
     </div>
   </sc-if>
+  <!-- reset password modal -->
+  <sc-if value="{{ resetOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeReset }}" style="position:fixed;inset:0;z-index:90;background:rgba(4,5,12,.66);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:22px;animation:floatUp .18s ease both;">
+      <div onClick="{{ stopProp }}" style="width:100%;max-width:380px;background:var(--raised);border:1px solid var(--border2);border-radius:18px;padding:26px;box-shadow:0 24px 60px rgba(0,0,0,.5);">
+        <div style="width:46px;height:46px;border-radius:13px;background:color-mix(in srgb, var(--accent,#7c5cff) 20%, transparent);display:flex;align-items:center;justify-content:center;margin-bottom:16px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent,#7c5cff)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div>
+        <div style="font-family:Sora;font-weight:700;font-size:19px;margin-bottom:6px;">ตั้งรหัสผ่านใหม่</div>
+        <div style="font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:20px;">ตั้งรหัสผ่านใหม่สำหรับบัญชีของคุณ เสร็จแล้วจะเข้าสู่ระบบให้ทันที</div>
+        <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">รหัสผ่านใหม่</label>
+        <input value="{{ resetPw }}" onInput="{{ onResetPw }}" type="password" placeholder="••••••••" style="width:100%;height:46px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14.5px;margin-bottom:14px;">
+        <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">ยืนยันรหัสผ่าน</label>
+        <input value="{{ resetPw2 }}" onInput="{{ onResetPw2 }}" onKeyDown="{{ onResetKey }}" type="password" placeholder="••••••••" style="width:100%;height:46px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14.5px;margin-bottom:16px;">
+        <sc-if value="{{ hasResetErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#ff6b7a;background:rgba(255,80,100,.08);border:1px solid rgba(255,80,100,.25);border-radius:9px;padding:9px 12px;margin-bottom:14px;">{{ resetErr }}</div></sc-if>
+        <div style="display:flex;gap:10px;">
+          <button onClick="{{ closeReset }}" style="flex:0 0 auto;height:48px;padding:0 18px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">ยกเลิก</button>
+          <button onClick="{{ doReset }}" style="flex:1;height:48px;border:none;border-radius:12px;background:var(--accent,#7c5cff);color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:var(--glow,none);font-family:Sora;">{{ resetCta }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#7c5cff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ธีม&quot;,&quot;options&quot;:[&quot;#7c5cff&quot;,&quot;#12b981&quot;,&quot;#ff5c8a&quot;,&quot;#2f7bff&quot;,&quot;#ff8a3c&quot;]},&quot;neonGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;ธีม&quot;},&quot;stripeBackendUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ym-booster-api-jw2i.onrender.com&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ระบบชำระเงิน (Stripe)&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#7c5cff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ธีม&quot;,&quot;options&quot;:[&quot;#7c5cff&quot;,&quot;#12b981&quot;,&quot;#ff5c8a&quot;,&quot;#2f7bff&quot;,&quot;#ff8a3c&quot;]},&quot;neonGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;ธีม&quot;},&quot;stripeBackendUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ym-booster-api-jw2i.onrender.com&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ระบบชำระเงิน (Stripe)&quot;},&quot;googleClientId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;1042254280145-kcuse55pb2ipj4o8ibepotieqlhmkjbh.apps.googleusercontent.com&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;เข้าระบบด้วย Google&quot;}}">
 class Component extends DCLogic {
   state = {
     authToken: (()=>{ try{ return localStorage.getItem('ym_cust_token'); }catch(e){ return null; } })(),
@@ -822,6 +887,8 @@ class Component extends DCLogic {
     theme: 'pro',
     authTab: 'login',
     tab: 'new',
+    moreOpen: false,
+    resetOpen: false, resetToken: '', resetPw: '', resetPw2: '', resetBusy: false, resetErr: '',
     balance: 0,
     ledger: [],
     platform: 'instagram',
@@ -1027,6 +1094,7 @@ class Component extends DCLogic {
   ];
 
   componentDidMount(){
+    try{ const t=new URLSearchParams(location.search).get('token'); if(t){ this.setState({ resetOpen:true, resetToken:t, screen:'login', resetPw:'', resetPw2:'', resetErr:'' }); } }catch(e){}
     // บัญชีจริง → ยึดยอด/ออเดอร์จาก backend เท่านั้น (กันข้อมูลตัวอย่างเก่าใน localStorage โผล่ให้ลูกค้าใหม่งง)
     if(this.isReal()){
       this.setState({ orders:[], balance:0 });
@@ -1437,8 +1505,53 @@ class Component extends DCLogic {
     const email=(this.state.loginId||'').trim().toLowerCase();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ this.setState({authError:'กรอกอีเมลของคุณก่อน แล้วกด "ลืมรหัสผ่าน?" อีกครั้ง'}); return; }
     if(!this.apiBase()){ this.toast('โหมดตัวอย่าง — ระบบจริงจะส่งลิงก์รีเซ็ตเข้าอีเมล'); return; }
-    try{ await this.apiCall('/api/auth/forgot', { email }); this.toast('ถ้าอีเมลนี้มีบัญชี เราส่งลิงก์รีเซ็ตไปให้แล้ว'); }
-    catch(e){ this.toast('ส่งไม่สำเร็จ: '+(e.message||'')); }
+    this.setState({authBusy:true, authError:''});
+    try{
+      const d=await this.apiCall('/api/auth/forgot', { email });
+      this.setState({authBusy:false});
+      if(d.resetToken){
+        this.setState({ resetOpen:true, resetToken:d.resetToken, resetPw:'', resetPw2:'', resetErr:'' });
+      } else {
+        this.toast('ถ้าอีเมลนี้มีบัญชี เราส่งลิงก์รีเซ็ตไปให้ทางอีเมลแล้ว');
+      }
+    }
+    catch(e){ this.setState({authBusy:false}); this.toast('ส่งไม่สำเร็จ: '+(e.message||'')); }
+  }
+  async doReset(){
+    if(this.state.resetBusy) return;
+    const pw=this.state.resetPw||'', pw2=this.state.resetPw2||'';
+    if(pw.length<6){ this.setState({resetErr:'รหัสผ่านอย่างน้อย 6 ตัว'}); return; }
+    if(pw!==pw2){ this.setState({resetErr:'รหัสผ่านทั้งสองช่องไม่ตรงกัน'}); return; }
+    this.setState({resetBusy:true, resetErr:''});
+    try{
+      const d=await this.apiCall('/api/auth/reset', { token:this.state.resetToken, password:pw });
+      this.setState({ resetOpen:false, resetBusy:false, resetToken:'', resetPw:'', resetPw2:'' });
+      try{ if(history.replaceState) history.replaceState(null,'',location.pathname); }catch(e){}
+      this._enterApp(d.token, d.user);
+      this.toast('ตั้งรหัสผ่านใหม่สำเร็จ เข้าสู่ระบบให้แล้ว');
+    }catch(e){ this.setState({resetBusy:false, resetErr:e.message||'ตั้งรหัสไม่สำเร็จ'}); }
+  }
+  // ===== เข้าสู่ระบบด้วย Google (Gmail) =====
+  gsiRef = (el) => { this._gsiNode = el; if(el){ this._renderGoogle(); this._gsiTries=0; clearInterval(this._gsiPoll); this._gsiPoll=setInterval(()=>{ if(this._gsiDone || (this._gsiTries=(this._gsiTries||0)+1)>40){ clearInterval(this._gsiPoll); return; } this._renderGoogle(); }, 250); } };
+  _renderGoogle(){
+    const cid=String(this.props.googleClientId||'').trim();
+    if(!cid || !this._gsiNode || this._gsiDone) return;
+    if(!(window.google && google.accounts && google.accounts.id)) return;
+    try{
+      google.accounts.id.initialize({ client_id:cid, callback:(resp)=>this._onGoogleCredential(resp) });
+      google.accounts.id.renderButton(this._gsiNode, { type:'standard', theme:'filled_blue', size:'large', text:'continue_with', shape:'pill', logo_alignment:'center' });
+      this._gsiDone=true; clearInterval(this._gsiPoll);
+    }catch(e){}
+  }
+  async _onGoogleCredential(resp){
+    if(!resp || !resp.credential) return;
+    if(!this.apiBase()){ this.setState({authError:'ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์'}); return; }
+    this.setState({authBusy:true, authError:''});
+    try{
+      const d=await this.apiCall('/api/auth/google', { credential:resp.credential });
+      this._enterApp(d.token, d.user);
+      this.toast('เข้าสู่ระบบด้วย Google สำเร็จ');
+    }catch(e){ this.setState({authBusy:false, authError: this._netErr(e)?'ต่อเซิร์ฟเวอร์ไม่ได้':(e.message||'เข้าระบบด้วย Google ไม่สำเร็จ') }); }
   }
   logoutCustomer(){ try{ localStorage.removeItem('ym_cust_token'); }catch(e){} this.setState({ authToken:null, authUser:null, screen:'login', authTab:'login', loginPw:'', authError:'' }); }
   retryConnCust(){ if(!this.apiBase()) return; this.toast('กำลังลองเชื่อมต่อใหม่...'); fetch(this.apiBase()+'/api/health').then(r=>{ this.setState({backendReachable:r.ok}); if(r.ok) this.toast('เชื่อมต่อสำเร็จ'); }).catch(()=>this.setState({backendReachable:false})); }
@@ -1562,9 +1675,34 @@ class Component extends DCLogic {
       doLogin: ()=>this.doAuth(),
       demoLogin: ()=>this.demoLogin(),
       doForgot: ()=>this.doForgot(),
+      showGoogle: !!String(this.props.googleClientId||'').trim() && !!this.apiBase(),
+      gsiRef: this.gsiRef,
+      resetOpen: st.resetOpen, resetPw: st.resetPw, resetPw2: st.resetPw2, resetErr: st.resetErr, hasResetErr: !!st.resetErr, resetBusy: st.resetBusy,
+      resetCta: st.resetBusy ? 'กำลังตั้ง...' : 'ตั้งรหัสผ่านใหม่',
+      onResetPw: (e)=>this.setState({resetPw:e.target.value, resetErr:''}),
+      onResetPw2: (e)=>this.setState({resetPw2:e.target.value, resetErr:''}),
+      onResetKey: (e)=>{ if(e.key==='Enter') this.doReset(); },
+      doReset: ()=>this.doReset(),
+      closeReset: ()=>this.setState({resetOpen:false}),
       doLogout: ()=>this.askConfirm({ title:'ออกจากระบบ?', message:'คุณจะต้องเข้าสู่ระบบใหม่อีกครั้ง', confirmLabel:'ออกจากระบบ', danger:true, action:()=>this.logoutCustomer() }),
 
       navItems: this.NAV.map(n=>({ label:n.label, icon:n.icon, style:this.navStyle(st.tab===n.id), onClick:()=>this.go(n.id) })),
+
+      // ===== mobile bottom nav + more sheet =====
+      ...(()=>{ const pins=['new','orders','funds']; const short={ new:'สั่งซื้อ', orders:'ออเดอร์', funds:'เติมเครดิต' };
+        const iw=(a)=>'display:flex;align-items:center;justify-content:center;width:46px;height:29px;border-radius:9px;transition:background .15s ease;'+(a?'background:color-mix(in srgb, var(--accent,#7c5cff) 20%, transparent);color:var(--accent,#7c5cff);':'background:transparent;color:var(--muted2);');
+        const ls=(a)=>'font-size:10.5px;line-height:1;font-weight:'+(a?'700':'600')+';'+(a?'color:var(--accent,#7c5cff);':'color:var(--muted2);');
+        const rs=(a)=>'display:flex;align-items:center;gap:13px;width:100%;padding:12px;border:1px solid '+(a?'color-mix(in srgb, var(--accent,#7c5cff) 40%, transparent)':'transparent')+';border-radius:13px;background:'+(a?'color-mix(in srgb, var(--accent,#7c5cff) 12%, transparent)':'var(--surface)')+';color:var(--text);font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;';
+        const si=(a)=>'display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;flex-shrink:0;'+(a?'background:var(--accent,#7c5cff);color:#fff;':'background:var(--field);color:var(--muted2);');
+        const moreActive=!pins.includes(st.tab);
+        return {
+          mobileTabs: pins.map(id=>{ const n=this.NAV.find(x=>x.id===id); const a=st.tab===id; return { label:short[id], icon:n?n.icon:'', iconWrap:iw(a), labelStyle:ls(a), onClick:()=>this.go(id) }; }),
+          moreIconWrap: iw(moreActive), moreLabelStyle: ls(moreActive), moreOpen: st.moreOpen,
+          openMore: ()=>this.setState({moreOpen:true}),
+          closeMore: ()=>this.setState({moreOpen:false}),
+          logoutFromSheet: ()=>{ this.setState({moreOpen:false}); this.askConfirm({ title:'ออกจากระบบ?', message:'คุณจะต้องเข้าสู่ระบบใหม่อีกครั้ง', confirmLabel:'ออกจากระบบ', danger:true, action:()=>this.logoutCustomer() }); },
+          sheetItems: this.NAV.map(n=>{ const a=st.tab===n.id; return { label:n.label, icon:n.icon, active:a, rowStyle:rs(a), iconStyle:si(a), onClick:()=>{ this.setState({moreOpen:false}); this.go(n.id); } }; }),
+        }; })(),
       pageTitle: titles[st.tab][0], pageSub: titles[st.tab][1],
       balanceText: this.fmt(st.balance),
       userName: (st.authUser && st.authUser.name) || 'ลูกค้า', userInitial: (((st.authUser && st.authUser.name) || 'ล').trim().charAt(0)) || 'ล',
