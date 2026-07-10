@@ -20,6 +20,31 @@ if (process.env.SMTP_HOST) {
 
 const MAIL_FROM = process.env.MAIL_FROM || 'BoostHub <no-reply@boosthub.local>';
 
+/** ส่งรหัสยืนยัน 6 หลักสำหรับรีเซ็ตรหัสผ่าน (หมดอายุ 10 นาที) */
+async function sendResetCodeEmail(to, code) {
+  const subject = `${code} คือรหัสยืนยันของคุณ — รีเซ็ตรหัสผ่าน`;
+  const text = `มีการขอรีเซ็ตรหัสผ่านสำหรับบัญชีนี้\n\nรหัสยืนยันของคุณคือ: ${code}\n(หมดอายุใน 10 นาที ใช้ได้ครั้งเดียว)\n\nถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร บัญชีของคุณยังปลอดภัย`;
+  const html = `
+    <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#1a1a2e">
+      <h2 style="margin:0 0 8px;font-size:20px">รหัสยืนยันรีเซ็ตรหัสผ่าน</h2>
+      <p style="color:#555;line-height:1.6;font-size:14px">มีการขอรีเซ็ตรหัสผ่านสำหรับบัญชีนี้ นำรหัสด้านล่างไปกรอกในหน้าเว็บเพื่อยืนยันตัวตน</p>
+      <div style="margin:20px 0;padding:18px;background:#f4f1ff;border:1px solid #e0d8ff;border-radius:12px;text-align:center">
+        <div style="font-size:34px;font-weight:800;letter-spacing:.35em;color:#5b3df0;font-family:Consolas,monospace">${code}</div>
+        <div style="font-size:12px;color:#999;margin-top:6px">หมดอายุใน 10 นาที · ใช้ได้ครั้งเดียว</div>
+      </div>
+      <p style="color:#bbb;font-size:12px">ถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร บัญชีของคุณยังปลอดภัย และอย่าบอกรหัสนี้กับใคร</p>
+    </div>`;
+
+  if (!transport) {
+    console.log('\n──────── 📧 [DEV] ยังไม่ได้ตั้งค่า SMTP — รหัสยืนยันสำหรับ', to, '────────');
+    console.log('รหัส:', code);
+    console.log('────────────────────────────────────────────────────────────\n');
+    return { dev: true };
+  }
+  await transport.sendMail({ from: MAIL_FROM, to, subject, text, html });
+  return { sent: true };
+}
+
 async function sendResetEmail(to, link) {
   const subject = 'รีเซ็ตรหัสผ่าน BoostHub';
   const text = `มีการขอรีเซ็ตรหัสผ่านสำหรับบัญชีนี้\n\nกดลิงก์นี้เพื่อตั้งรหัสผ่านใหม่ (หมดอายุใน 1 ชั่วโมง):\n${link}\n\nถ้าคุณไม่ได้เป็นคนขอ ไม่ต้องทำอะไร บัญชีของคุณยังปลอดภัย`;
@@ -42,4 +67,4 @@ async function sendResetEmail(to, link) {
   return { sent: true };
 }
 
-module.exports = { sendResetEmail };
+module.exports = { sendResetEmail, sendResetCodeEmail };

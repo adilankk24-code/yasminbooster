@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const { authenticator } = require('otplib');
 const qrcode = require('qrcode');
 const { users, passwordResets } = require('./db');
-const { sendResetEmail } = require('./mailer');
+const { sendResetCodeEmail } = require('./mailer');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-เปลี่ยนก่อนขึ้น-production';
 const TOKEN_TTL = '7d';
@@ -105,41 +105,69 @@ async function disable2fa(user, password) {
   return { enabled: false };
 }
 
-/* ─────────────────── ลืมรหัสผ่าน ─────────────────── */
+/* ─────────────────── ลืมรหัสผ่าน (รหัสยืนยัน 6 หลักทางอีเมล) ───────────────────
+ * ขั้นตอนมาตรฐาน: ขอรหัส → ระบบส่งรหัส 6 หลักเข้าอีเมลที่สมัคร
+ * → กรอกรหัสยืนยัน → ได้ resetToken → ตั้งรหัสผ่านใหม่
+ * ⚠️ ไม่มีการคืนรหัส/token กลับหน้าเว็บเด็ดขาด — ต้องเปิดอีเมลจริงเท่านั้น
+ * (ถ้ายังไม่ตั้ง SMTP รหัสจะถูกพิมพ์ออก log ของเซิร์ฟเวอร์เท่านั้น)
+ */
 const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
-const RESET_TTL_MS = 60 * 60 * 1000;   // 1 ชั่วโมง
+const RESET_CODE_TTL_MS  = 10 * 60 * 1000;   // รหัส 6 หลักอายุ 10 นาที
+const RESET_TOKEN_TTL_MS = 15 * 60 * 1000;   // token ตั้งรหัสใหม่ (หลังยืนยันรหัสสำเร็จ) อายุ 15 นาที
+const MAX_CODE_ATTEMPTS  = 8;                // เดารหัสผิดได้สูงสุด 8 ครั้งต่อรหัสหนึ่ง
+const _codeAttempts = new Map();             // email → จำนวนครั้งที่เดาผิด
 
 /**
- * ขอรีเซ็ต — ออก token, บันทึกแบบ hash, ส่งลิงก์เข้าอีเมล
+ * ขอรีเซ็ต — สุ่มรหัส 6 หลัก เก็บแบบ hash แล้วส่งเข้าอีเมลที่สมัครไว้เท่านั้น
  * ⚠️ ตอบ success เสมอ (ถึงอีเมลไม่มีในระบบ) เพื่อไม่ให้เดาได้ว่าอีเมลไหนมีบัญชี
  */
-async function forgotPassword({ email }, appUrl) {
+async function forgotPassword({ email }) {
   email = String(email || '').trim().toLowerCase();
   const user = users.byEmail(email);
-  let devReset = null;   // ถ้ายังไม่ได้ตั้งค่า SMTP → ส่ง token กลับหน้าเว็บให้รีเซ็ตในแอปได้เลย
   if (user && !user.banned) {
-    const token = crypto.randomBytes(32).toString('hex');   // ส่งเข้าเมลแบบดิบ
-    const expiresAt = new Date(Date.now() + RESET_TTL_MS).toISOString();
-    passwordResets.issue(user.id, sha256(token), expiresAt); // เก็บแบบ hash เท่านั้น
-    const base = (appUrl || process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
-    const link = `${base}/reset-password?token=${token}`;
-    try {
-      const r = await sendResetEmail(user.email, link);
-      if (r && r.dev) devReset = token;   // ไม่มี SMTP → คืน token ให้หน้าเว็บรีเซ็ตเอง
-    }
-    catch (e) { console.error('ส่งอีเมลรีเซ็ตล้มเหลว:', e.message); devReset = token; }
+    const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+    const expiresAt = new Date(Date.now() + RESET_CODE_TTL_MS).toISOString();
+    passwordResets.issue(user.id, sha256('code:' + user.id + ':' + code), expiresAt);   // เก็บแบบ hash เท่านั้น (ขอใหม่ = ของเก่าใช้ไม่ได้)
+    _codeAttempts.delete(email);
+    try { await sendResetCodeEmail(user.email, code); }
+    catch (e) { console.error('ส่งอีเมลรหัสยืนยันล้มเหลว:', e.message); }
   }
-  return { ok: true, message: 'ถ้าอีเมลนี้มีบัญชีอยู่ เราได้ส่งลิงก์รีเซ็ตไปให้แล้ว', resetToken: devReset || undefined };
+  return { ok: true, message: 'ถ้าอีเมลนี้มีบัญชีอยู่ เราได้ส่งรหัสยืนยัน 6 หลักไปให้ทางอีเมลแล้ว' };
 }
 
-/** ตั้งรหัสใหม่ด้วย token — token ใช้ครั้งเดียว, หมดอายุ 1 ชม. */
+/** ยืนยันรหัส 6 หลัก → ออก resetToken สำหรับตั้งรหัสผ่านใหม่ (ใช้ครั้งเดียว) */
+function verifyResetCode({ email, code }) {
+  email = String(email || '').trim().toLowerCase();
+  code = String(code || '').trim();
+  if (!/^\d{6}$/.test(code)) throw httpErr(400, 'รหัสยืนยันต้องเป็นตัวเลข 6 หลัก');
+
+  const attempts = (_codeAttempts.get(email) || 0) + 1;
+  _codeAttempts.set(email, attempts);
+  if (attempts > MAX_CODE_ATTEMPTS) throw httpErr(429, 'ลองผิดหลายครั้งเกินไป กรุณากด "ส่งรหัสอีกครั้ง" เพื่อขอรหัสใหม่');
+
+  const bad = () => httpErr(400, 'รหัสยืนยันไม่ถูกต้องหรือหมดอายุ กรุณาตรวจสอบหรือขอรหัสใหม่');
+  const user = users.byEmail(email);
+  if (!user || user.banned) throw bad();
+
+  const row = passwordResets.get(sha256('code:' + user.id + ':' + code));
+  if (!row || row.used || row.user_id !== user.id) throw bad();
+  if (new Date(row.expires_at).getTime() < Date.now()) throw httpErr(400, 'รหัสหมดอายุแล้ว กรุณาขอรหัสใหม่');
+
+  // รหัสถูกต้อง → ออก token สำหรับตั้งรหัสใหม่ (issue จะล้างรหัสเก่าทิ้งให้เอง — ใช้ซ้ำไม่ได้)
+  const token = crypto.randomBytes(32).toString('hex');
+  passwordResets.issue(user.id, sha256(token), new Date(Date.now() + RESET_TOKEN_TTL_MS).toISOString());
+  _codeAttempts.delete(email);
+  return { ok: true, resetToken: token };
+}
+
+/** ตั้งรหัสใหม่ด้วย resetToken (จาก verifyResetCode) — ใช้ครั้งเดียว */
 async function resetPassword({ token, password }) {
-  if (!token) throw httpErr(400, 'ลิงก์ไม่ถูกต้อง');
+  if (!token) throw httpErr(400, 'เซสชันไม่ถูกต้อง กรุณาเริ่มขั้นตอนลืมรหัสผ่านใหม่');
   if (String(password || '').length < 6) throw httpErr(400, 'รหัสผ่านอย่างน้อย 6 ตัว');
 
   const row = passwordResets.get(sha256(String(token)));
-  if (!row || row.used) throw httpErr(400, 'ลิงก์ไม่ถูกต้องหรือถูกใช้ไปแล้ว');
-  if (new Date(row.expires_at).getTime() < Date.now()) throw httpErr(400, 'ลิงก์หมดอายุแล้ว กรุณาขอใหม่');
+  if (!row || row.used) throw httpErr(400, 'เซสชันหมดอายุ กรุณาเริ่มขั้นตอนลืมรหัสผ่านใหม่');
+  if (new Date(row.expires_at).getTime() < Date.now()) throw httpErr(400, 'เซสชันหมดอายุ กรุณาเริ่มขั้นตอนลืมรหัสผ่านใหม่');
 
   const hash = await bcrypt.hash(String(password), 10);
   users.setPassword(row.user_id, hash);
@@ -222,4 +250,4 @@ function httpErr(status, message) {
   return e;
 }
 
-module.exports = { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, sign, httpErr, loginWithGoogle };
+module.exports = { register, login, forgotPassword, verifyResetCode, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, sign, httpErr, loginWithGoogle };

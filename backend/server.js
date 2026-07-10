@@ -19,7 +19,7 @@ const rateLimitPkg = require('express-rate-limit');
 const rateLimit = rateLimitPkg.rateLimit || rateLimitPkg;
 
 const { users, orders, deposits, ledger } = require('./db');
-const { register, login, forgotPassword, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, loginWithGoogle } = require('./auth');
+const { register, login, forgotPassword, verifyResetCode, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, loginWithGoogle } = require('./auth');
 const { CATALOG, priceOrder } = require('./services');
 
 // .trim() กันคีย์ที่วางมาแล้วติด space/ขึ้นบรรทัดใหม่/อักขระซ่อน → กัน ERR_INVALID_CHAR ตอนสร้าง header Authorization
@@ -188,9 +188,11 @@ app.post('/api/auth/login',    loginLimiter,    wrap(async (req, res) => res.jso
 app.post('/api/auth/google', loginLimiter, wrap(async (req, res) => res.json(await loginWithGoogle(req.body))));
 app.get('/api/auth/me', requireAuth, (req, res) => res.json({ user: publicUser(req.user) }));
 
-// ลืมรหัสผ่าน — ส่งลิงก์รีเซ็ตเข้าอีเมล (ตอบ ok เสมอ ไม่บอกว่าอีเมลมีจริงไหม)
-app.post('/api/auth/forgot', forgotLimiter, wrap(async (req, res) => res.json(await forgotPassword(req.body, process.env.FRONTEND_URL))));
-// ตั้งรหัสใหม่ด้วย token จากลิงก์ในอีเมล
+// ลืมรหัสผ่าน — ส่งรหัสยืนยัน 6 หลักเข้าอีเมลที่สมัคร (ตอบ ok เสมอ ไม่บอกว่าอีเมลมีจริงไหม)
+app.post('/api/auth/forgot', forgotLimiter, wrap(async (req, res) => res.json(await forgotPassword(req.body))));
+// ยืนยันรหัส 6 หลัก {email, code} → คืน resetToken สำหรับตั้งรหัสใหม่
+app.post('/api/auth/verify-code', forgotLimiter, wrap(async (req, res) => res.json(verifyResetCode(req.body))));
+// ตั้งรหัสใหม่ด้วย resetToken {token, password}
 app.post('/api/auth/reset',  wrap(async (req, res) => res.json(await resetPassword(req.body))));
 
 // ── 2FA (Google Authenticator) ──
@@ -257,7 +259,7 @@ app.post('/api/payment/settle', optionalAuth, wrap(async (req, res) => {
   const u = uid ? users.byId(uid) : null;
   res.json({ status: pi.status, credits: u ? u.credits : null });
 }));
-app.get('/api/config', (req, res) => res.json({ publishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim() }));
+app.get('/api/config', (req, res) => res.json({ publishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim(), googleClientId: (process.env.GOOGLE_CLIENT_ID || '').trim() }));
 
 /* ═══════════════════════════════════════════════════════════
  * เติมเงิน — TrueMoney Wallet (โอนมือ + แนบสลิป → แอดมินอนุมัติ)
