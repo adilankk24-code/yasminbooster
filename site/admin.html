@@ -446,9 +446,9 @@
           <div>
             <div style="display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,#25e0a8 8%,transparent);border:1px solid color-mix(in srgb,#25e0a8 30%,transparent);border-radius:13px;padding:14px 16px;margin-bottom:18px;">
               <span style="font-size:17px;line-height:1.3;">⚡</span>
-              <div style="font-size:12.5px;color:var(--muted3);line-height:1.65;">การจ่ายผ่าน <b style="color:#25e0a8;">Stripe (พร้อมเพย์ QR + บัตร)</b> เติมเครดิตให้ลูกค้า<b style="color:var(--text);">อัตโนมัติ</b>ทันทีที่เงินเข้า — ไม่ต้องกดอนุมัติเอง<br>เฉพาะการเติมผ่าน <b style="color:var(--text);">TrueMoney Wallet (โอนมือ)</b> เท่านั้น ที่ต้องตรวจสอบสลิปก่อนเติมเครดิต</div>
+              <div style="font-size:12.5px;color:var(--muted3);line-height:1.65;">การจ่ายผ่าน <b style="color:#25e0a8;">Stripe (พร้อมเพย์ QR + บัตร)</b> เติมเครดิตให้ลูกค้า<b style="color:var(--text);">อัตโนมัติ</b>ทันทีที่เงินเข้า — ไม่ต้องกดอนุมัติเอง</div>
             </div>
-            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">รอตรวจสอบ TrueMoney Wallet <span style="color:var(--muted);font-weight:400;font-size:13px;">({{ pendingDepositCount }})</span></div>
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">รายการรอตรวจสอบ <span style="color:var(--muted);font-weight:400;font-size:13px;">({{ pendingDepositCount }})</span></div>
             <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:26px;">
               <sc-for list="{{ pendingDeposits }}" as="d" hint-placeholder-count="2">
                 <div style="display:flex;align-items:center;gap:15px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 17px;">
@@ -560,10 +560,6 @@
                 <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">อีเมลติดต่อ</label>
                 <input value="{{ setEmail }}" onInput="{{ onSetEmail }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
               </div>
-              <div>
-                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">TrueMoney (เบอร์รับเงิน)</label>
-                <input value="{{ setTmn }}" onInput="{{ onSetTmn }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
-              </div>
             </div>
             <button onClick="{{ saveSettings }}" style="margin-top:20px;height:44px;padding:0 22px;border:none;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">บันทึกการตั้งค่า</button>
           </div>
@@ -672,16 +668,36 @@ class Component extends DCLogic {
     payOff: [],
     setLine: 'lin.ee/S35WkT2',
     setEmail: 'yarnan7480@gmail.com',
-    setTmn: '082-XXX-4471',
     userSearch: '',
-    users: [],
+    users: [
+      { id:'u1', name:'คุณสมชาย ใจดี', email:'somchai.j@gmail.com', joined:'สมาชิก 3 เดือน', balance:1250, orders:14, spent:3820, banned:false },
+      { id:'u2', name:'เฟิร์น เมคอัพ', email:'fern.makeup@gmail.com', joined:'สมาชิก 5 เดือน', balance:640, orders:38, spent:9240, banned:false },
+      { id:'u3', name:'น้อง สตูดิโอ', email:'nong.studio@gmail.com', joined:'สมาชิก 1 เดือน', balance:2100, orders:9, spent:2180, banned:false },
+      { id:'u4', name:'ร้าน My Cafe BKK', email:'mycafe.bkk@gmail.com', joined:'สมาชิก 2 เดือน', balance:80, orders:22, spent:5410, banned:false },
+      { id:'u5', name:'ช่อง รีวิวของกิน', email:'foodreview.ch@gmail.com', joined:'สมาชิก 7 เดือน', balance:410, orders:51, spent:14300, banned:true },
+    ],
     deposits: [],
-    depositHistory: [],
+    depositHistory: [
+      { user:'เฟิร์น เมคอัพ', method:'Stripe (บัตร)', amount:1000, time:'วันนี้ 08:03', auto:true },
+      { user:'คุณสมชาย ใจดี', method:'พร้อมเพย์ QR (Stripe)', amount:200, time:'เมื่อวาน 21:40', auto:true },
+      { user:'ช่อง รีวิวของกิน', method:'พร้อมเพย์ QR (Stripe)', amount:2000, time:'เมื่อวาน 18:22', auto:true },
+      { user:'เฟิร์น เมคอัพ', method:'Stripe (บัตร)', amount:500, time:'2 วันก่อน 11:55', auto:true },
+    ],
   };
 
-  DEFAULT_ORDERS = [];
+  DEFAULT_ORDERS = [
+    { id:5821, pf:'tiktok', user:'น้อง สตูดิโอ', service:'ผู้ติดตาม TikTok', link:'@nong_studio', qty:2000, status:'สำเร็จ', progress:100, price:84, time:'วันนี้ 09:12' },
+    { id:5817, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ไลก์ Instagram', link:'instagram.com/p/Cx9...', qty:500, status:'กำลังทำ', progress:64, price:6, time:'วันนี้ 08:40' },
+    { id:5810, pf:'youtube', user:'ช่อง รีวิวของกิน', service:'ยอดวิว YouTube', link:'youtu.be/aB3kd', qty:10000, status:'กำลังทำ', progress:38, price:300, time:'วันนี้ 07:55' },
+    { id:5804, pf:'facebook', user:'ร้าน My Cafe BKK', service:'ถูกใจเพจ Facebook', link:'fb.com/mycafe.bkk', qty:1000, status:'รอดำเนินการ', progress:8, price:45, time:'เมื่อวาน 22:10' },
+    { id:5799, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ผู้ติดตาม Instagram', link:'@fern.makeup', qty:3000, status:'สำเร็จ', progress:100, price:114, time:'เมื่อวาน 19:03' },
+  ];
 
-  DEFAULT_CLIPS = [];
+  DEFAULT_CLIPS = [
+    { id:'C-2043', styles:['cb_hold','lc_live','cb_usage'], structure:'sell', speak:'hardsell', length:16, qty:30, email:'shopfern@gmail.com', note:'เน้นจุดขายราคาถูก ส่งไว เก็บปลายทางได้', total:750, status:'กำลังถ่าย', time:'วันนี้ 10:20' },
+    { id:'C-2041', styles:['cb_hand','lc_wh_hand'], structure:'sell', speak:'normal', length:8, qty:50, email:'warehouse.bkk@gmail.com', note:'', total:500, status:'รอทำ', time:'วันนี้ 08:05' },
+    { id:'C-2038', styles:['cb_pro','lc_studio'], structure:'story', speak:'polite', length:24, qty:10, email:'lux.brand@gmail.com', note:'โทนหรู พูดช้า ไม่เร่งขาย', total:400, status:'ส่งแล้ว', time:'เมื่อวาน 16:30' },
+  ];
 
   PLATFORMS = {
     facebook:  { name:'Facebook',  logo:'assets/facebook.svg',  color:'#1877F2' },
@@ -743,23 +759,18 @@ class Component extends DCLogic {
   };
 
   componentDidMount(){
-    const real = this.state.authToken && this.state.authToken!=='DEMO-TOKEN';
     let o = this._load('ym_orders'); if(!o){ o = this.DEFAULT_ORDERS; this._save('ym_orders', o); }
     let c = this._load('ym_clips'); if(!c){ c = this.DEFAULT_CLIPS; this._save('ym_clips', c); }
     let d = this._load('ym_deposits'); if(!d){ d = this.state.deposits; this._save('ym_deposits', d); }
-    // บัญชีจริง → เริ่มด้วยค่าว่าง แล้วให้ refreshAdmin ดึงข้อมูลจริงจาก backend มาเติม (กันข้อมูลตัวอย่างเก่าโผล่)
-    this.setState({ orders: real?[]:o, clips:c, deposits: real?[]:d });
+    this.setState({ orders:o, clips:c, deposits:d });
     this._knownOrderIds = new Set((o||[]).map(x=>x.id));
     this._knownDepositIds = new Set((d||[]).map(x=>x.id));
     const rr = this._load('ym_rates'); const so = this._load('ym_svcoff'); this.setState({ rates: rr||{}, svcOff: so||[] });
     const stab = this._load('ym_admin_tab'); if(stab) this.setState({ tab:stab });
     this._onStorage = (e)=>{
-      // บัญชีจริง → ออเดอร์/สลิปยึดจาก backend ไม่ให้ localStorage (ข้อมูลตัวอย่าง) ทับ
-      if(!this.isReal()){
-        if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l){ this._detectNew(l, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:l}); } }
-        if(e.key==='ym_deposits'){ const l=this._load('ym_deposits'); if(l){ this._detectNew(l, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:l}); } }
-      }
+      if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l){ this._detectNew(l, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:l}); } }
       if(e.key==='ym_clips'){ const l=this._load('ym_clips'); if(l) this.setState({clips:l}); }
+      if(e.key==='ym_deposits'){ const l=this._load('ym_deposits'); if(l){ this._detectNew(l, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:l}); } }
       if(e.key==='ym_rates'){ const l=this._load('ym_rates'); if(l) this.setState({rates:l}); }
       if(e.key==='ym_svcoff'){ const l=this._load('ym_svcoff'); if(l) this.setState({svcOff:l}); }
     };
@@ -768,17 +779,12 @@ class Component extends DCLogic {
     fetch(this.apiBase()+'/api/health').then(r=>this.setState({backendReachable:r.ok})).catch(()=>this.setState({backendReachable:false}));
     // restore session: มี token อยู่แล้ว → เช็คกับ backend ว่ายังใช้ได้ (ต่อไม่ได้ = เก็บ token ไว้)
     if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
-      this.api('/api/auth/me', null, 'GET').then(r=>{ this.setState({authUser:r.user}); this.refreshAdmin(); }).catch(e=>{ if(!this._netErr(e)) this.logoutAdmin(); });
+      this.api('/api/auth/me', null, 'GET').then(r=>this.setState({authUser:r.user})).catch(e=>{ if(!this._netErr(e)) this.logoutAdmin(); });
     }
-    this._pollN=0;
     this._poll = setInterval(()=>{
       if(document.hidden) return;
-      const c=this._load('ym_clips'); if(c && JSON.stringify(c)!==JSON.stringify(this.state.clips)) this.setState({clips:c});
-      if(this.isReal()){
-        if((this._pollN++ % 3)===0) this.refreshAdmin();   // ดึงข้อมูลจริงจาก backend ทุก ~5.4 วิ
-        return;
-      }
       const o=this._load('ym_orders'); if(o && JSON.stringify(o)!==JSON.stringify(this.state.orders)){ this._detectNew(o, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:o}); }
+      const c=this._load('ym_clips'); if(c && JSON.stringify(c)!==JSON.stringify(this.state.clips)) this.setState({clips:c});
       const d=this._load('ym_deposits'); if(d && JSON.stringify(d)!==JSON.stringify(this.state.deposits)){ this._detectNew(d, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:d}); }
     }, 1800);
   }
@@ -810,7 +816,7 @@ class Component extends DCLogic {
   _netErr(e){ return e instanceof TypeError; }   // fetch ล้มเหลว = ต่อเซิร์ฟเวอร์ไม่ได้
   _demo2FA(){ try{ return localStorage.getItem('ym_admin_2fa_demo')==='1'; }catch(e){ return false; } }
 
-  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }, ()=>this.refreshAdmin()); }
+  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }); }
   logoutAdmin(){ try{ localStorage.removeItem('ym_admin_token'); }catch(e){} this.setState({ authToken:null, authUser:null, authStep:'login', loginEmail:'', loginPassword:'', otpCode:'', authError:'' }); }
 
   demoLoginAdmin(){ this.storeSession('DEMO-TOKEN', { name:'Admin', email:this.DEMO_ADMIN.email, is_admin:true }); this.toast('เข้าสู่ระบบโหมดทดลอง'); }
@@ -871,60 +877,12 @@ class Component extends DCLogic {
   }
 
   fmt(n){ return Number(n).toLocaleString('th-TH', { maximumFractionDigits: 2 }); }
-  fmtWhen(ts){
-    if(!ts) return '';
-    let d=(typeof ts==='number')?new Date(ts):new Date(String(ts).replace(' ','T'));
-    if(isNaN(d.getTime())) return String(ts);
-    try{ return d.toLocaleString('th-TH', { day:'2-digit', month:'short', year:'2-digit', hour:'2-digit', minute:'2-digit' }); }catch(e){ return d.toLocaleString(); }
-  }
-  isReal(){ return !!(this.apiBase() && this.state.authToken && this.state.authToken!=='DEMO-TOKEN'); }
-  // ดึงข้อมูลจริงทั้งหมด (ออเดอร์/สมาชิก/สลิป/สถิติ) จาก backend — แหล่งความจริง
-  async refreshAdmin(){
-    if(!this.isReal()) return;
-    try{
-      const d=await this.api('/api/admin/overview', null, 'GET');
-      const nameOf={}; (d.users||[]).forEach(u=>{ nameOf[u.id]=u.name; });
-      const byUser={}; (d.orders||[]).forEach(o=>{ (byUser[o.user_id]=byUser[o.user_id]||[]).push(o); });
-      const orders=(d.orders||[]).map(o=>({
-        id:o.id, pf:o.platform, user:nameOf[o.user_id]||o.user_id||'—',
-        service:o.service_name, link:o.link, qty:o.qty, status:o.status,
-        progress:o.progress||0, price:o.price, time:this.fmtWhen(o.created_at),
-        ts:Date.parse(String(o.created_at||'').replace(' ','T'))||0,
-      }));
-      const users=(d.users||[]).filter(u=>!u.is_admin).map(u=>({
-        id:u.id, name:u.name, email:u.email, joined:this.fmtWhen(u.created_at),
-        balance:u.credits, orders:(byUser[u.id]||[]).length,
-        spent:(byUser[u.id]||[]).filter(x=>x.status!=='ยกเลิก').reduce((a,x)=>a+x.price,0),
-        banned:!!u.banned,
-      }));
-      const deposits=(d.pendingDeposits||[]).map(x=>({
-        id:x.id, user:nameOf[x.user_id]||x.user_id, method:x.method,
-        methodImg:'assets/truemoney.png', amount:x.amount, time:this.fmtWhen(x.created_at),
-        slip:x.slip_url||'', status:'pending',
-      }));
-      const depositHistory=(d.depositHistory||[]).map(x=>({
-        user:nameOf[x.user_id]||x.user_id, method:x.method, amount:x.amount,
-        time:this.fmtWhen(x.created_at), auto:/stripe|อัตโนมัติ/i.test(x.method||''),
-      }));
-      this._detectNew(orders, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา');
-      this._detectNew(deposits, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ');
-      this.setState({ orders, users, deposits, depositHistory, stats:d.stats||this.state.stats });
-    }catch(e){}
-  }
   toast(msg){ this.setState({ toast: msg }); clearTimeout(this._t); this._t = setTimeout(()=>this.setState({toast:null}), 2600); }
 
   saveOrders(list){ this.setState({orders:list}); this._save('ym_orders', list); }
   saveClips(list){ this.setState({clips:list}); this._save('ym_clips', list); }
 
   toggleDone(id){
-    if(this.isReal()){
-      const o=this.state.orders.find(x=>x.id===id); const wasDone=o&&o.status==='สำเร็จ';
-      const status=wasDone?'กำลังทำ':'สำเร็จ'; const progress=wasDone?60:100;
-      this.api('/api/admin/orders/'+id, { status, progress }, 'PATCH')
-        .then(()=>{ this.refreshAdmin(); this.toast(status==='สำเร็จ'?'ออเดอร์ #'+id+' เสร็จแล้ว · ขึ้นหน้าเว็บลูกค้าแล้ว':'เปิดออเดอร์ #'+id+' กลับมาทำต่อ'); })
-        .catch(e=>this.toast(e.message||'อัปเดตไม่สำเร็จ'));
-      return;
-    }
     const list = this.state.orders.map(o=> o.id===id
       ? { ...o, status: o.status==='สำเร็จ'?'กำลังทำ':'สำเร็จ', progress: o.status==='สำเร็จ'? (o.progress>=100?60:o.progress) : 100 }
       : o );
@@ -933,22 +891,10 @@ class Component extends DCLogic {
     this.toast(now.status==='สำเร็จ' ? 'ออเดอร์ #'+id+' เสร็จแล้ว · ขึ้นหน้าเว็บลูกค้าแล้ว' : 'เปิดออเดอร์ #'+id+' กลับมาทำต่อ');
   }
   startOrder(id){
-    if(this.isReal()){
-      this.api('/api/admin/orders/'+id, { status:'กำลังทำ', progress:15 }, 'PATCH')
-        .then(()=>{ this.refreshAdmin(); this.toast('เริ่มดำเนินการ #'+id); })
-        .catch(e=>this.toast(e.message||'อัปเดตไม่สำเร็จ'));
-      return;
-    }
     const list = this.state.orders.map(o=> o.id===id ? { ...o, status:'กำลังทำ', progress: Math.max(o.progress,15) } : o );
     this.saveOrders(list); this.toast('เริ่มดำเนินการ #'+id);
   }
   refundOrder(id){
-    if(this.isReal()){
-      this.api('/api/admin/orders/'+id+'/refund', {}, 'POST')
-        .then(()=>{ this.refreshAdmin(); this.toast('ยกเลิก & คืนเครดิต #'+id); })
-        .catch(e=>this.toast(e.message||'ยกเลิกไม่สำเร็จ'));
-      return;
-    }
     const list = this.state.orders.map(o=> o.id===id ? { ...o, status:'ยกเลิก', progress:0 } : o );
     this.saveOrders(list); this.toast('ยกเลิก & คืนเครดิต #'+id);
   }
@@ -985,30 +931,9 @@ class Component extends DCLogic {
   toggleSvc(id){ const off=this.state.svcOff.includes(id); const svcOff= off? this.state.svcOff.filter(x=>x!==id) : [...this.state.svcOff, id]; this.setState({svcOff}); this._save('ym_svcoff', svcOff); this.toast(off?'เปิดบริการแล้ว · แสดงบนหน้าเว็บลูกค้า':'ปิดบริการแล้ว · ซ่อนจากหน้าเว็บลูกค้า'); }
 
   addCredit(uid){ const u=this.state.users.find(x=>x.id===uid); this.setState({ creditUser: u?{id:u.id,name:u.name}:null, creditAmount:'' }); }
-  doAddCredit(){ const cu=this.state.creditUser; if(!cu) return; const amt=Number(this.state.creditAmount)||0; if(amt<=0){ this.toast('กรอกจำนวนเครดิตก่อน'); return; }
-    if(this.isReal()){
-      this.api('/api/admin/users/'+cu.id+'/credit', { amount:amt }, 'POST')
-        .then(()=>{ this.setState({ creditUser:null, creditAmount:'' }); this.refreshAdmin(); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดลูกค้าแล้ว'); })
-        .catch(e=>this.toast(e.message||'เติมเครดิตไม่สำเร็จ'));
-      return;
-    }
-    const list=this.state.users.map(u=> u.id===cu.id ? {...u, balance:u.balance+amt} : u); const bal=(this._load('ym_balance')||0)+amt; this._save('ym_balance', bal); this.setState({ users:list, creditUser:null, creditAmount:'' }); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดหน้าเว็บลูกค้าแล้ว'); }
-  toggleBan(uid){
-    if(this.isReal()){
-      const u=this.state.users.find(x=>x.id===uid); const ban=!(u&&u.banned);
-      this.api('/api/admin/users/'+uid+'/ban', { banned:ban }, 'POST')
-        .then(()=>{ this.refreshAdmin(); this.toast(ban?'ระงับบัญชี '+(u?u.name:''):'ปลดระงับ '+(u?u.name:'')); })
-        .catch(e=>this.toast(e.message||'ทำรายการไม่สำเร็จ'));
-      return;
-    }
-    const list=this.state.users.map(u=> u.id===uid ? {...u, banned:!u.banned} : u); this.setState({users:list}); const u=list.find(x=>x.id===uid); this.toast(u.banned?'ระงับบัญชี '+u.name:'ปลดระงับ '+u.name); }
+  doAddCredit(){ const cu=this.state.creditUser; if(!cu) return; const amt=Number(this.state.creditAmount)||0; if(amt<=0){ this.toast('กรอกจำนวนเครดิตก่อน'); return; } const list=this.state.users.map(u=> u.id===cu.id ? {...u, balance:u.balance+amt} : u); const bal=(this._load('ym_balance')||0)+amt; this._save('ym_balance', bal); this.setState({ users:list, creditUser:null, creditAmount:'' }); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดหน้าเว็บลูกค้าแล้ว'); }
+  toggleBan(uid){ const list=this.state.users.map(u=> u.id===uid ? {...u, banned:!u.banned} : u); this.setState({users:list}); const u=list.find(x=>x.id===uid); this.toast(u.banned?'ระงับบัญชี '+u.name:'ปลดระงับ '+u.name); }
   approveDeposit(id){
-    if(this.isReal()){
-      this.api('/api/admin/deposits/'+id+'/approve', {}, 'POST')
-        .then(()=>{ this.refreshAdmin(); this.toast('อนุมัติสลิปแล้ว · เครดิตเข้าลูกค้าแล้ว'); })
-        .catch(e=>this.toast(e.message||'อนุมัติไม่สำเร็จ'));
-      return;
-    }
     const d=this.state.deposits.find(x=>x.id===id);
     const rest=this.state.deposits.filter(x=>x.id!==id);
     this._save('ym_deposits', rest);
@@ -1016,14 +941,7 @@ class Component extends DCLogic {
     this.setState(s=>({ deposits:rest, depositHistory:[{user:d.user,method:d.method,amount:d.amount,time:'เพิ่งอนุมัติ',auto:false}, ...s.depositHistory] }));
     this.toast('อนุมัติ ฿'+this.fmt(d.amount)+' ให้ '+d.user+' · เครดิตเข้าหน้าเว็บแล้ว');
   }
-  rejectDeposit(id){
-    if(this.isReal()){
-      this.api('/api/admin/deposits/'+id+'/reject', {}, 'POST')
-        .then(()=>{ this.refreshAdmin(); this.toast('ปฏิเสธสลิปแล้ว'); })
-        .catch(e=>this.toast(e.message||'ทำรายการไม่สำเร็จ'));
-      return;
-    }
-    const d=this.state.deposits.find(x=>x.id===id); const rest=this.state.deposits.filter(x=>x.id!==id); this._save('ym_deposits', rest); this.setState({deposits:rest}); this.toast('ปฏิเสธสลิปของ '+d.user); }
+  rejectDeposit(id){ const d=this.state.deposits.find(x=>x.id===id); const rest=this.state.deposits.filter(x=>x.id!==id); this._save('ym_deposits', rest); this.setState({deposits:rest}); this.toast('ปฏิเสธสลิปของ '+d.user); }
 
   renderVals(){
     const st=this.state;
@@ -1042,9 +960,7 @@ class Component extends DCLogic {
     let shown = st.orderFilter==='all' ? st.orders.slice() : st.orders.filter(o=>o.status===st.orderFilter);
     const oq = st.orderQuery.trim().toLowerCase();
     if(oq) shown = shown.filter(o=> (''+o.id).includes(oq) || (o.service||'').toLowerCase().includes(oq) || (o.user||'').toLowerCase().includes(oq) || (o.link||'').toLowerCase().includes(oq) );
-    const _num=(x)=>{ const n=Number(x); return Number.isFinite(n)?n:null; };
-    const _idCmp=(a,b)=>{ const na=_num(a.id), nb=_num(b.id); if(na!=null&&nb!=null) return nb-na; return String(b.id).localeCompare(String(a.id)); };
-    const SORTERS = { new:(a,b)=>((b.ts||0)-(a.ts||0))||_idCmp(a,b), old:(a,b)=>((a.ts||0)-(b.ts||0))|| -_idCmp(a,b), priceHi:(a,b)=>b.price-a.price, priceLo:(a,b)=>a.price-b.price };
+    const SORTERS = { new:(a,b)=>b.id-a.id, old:(a,b)=>a.id-b.id, priceHi:(a,b)=>b.price-a.price, priceLo:(a,b)=>a.price-b.price };
     shown.sort(SORTERS[st.orderSort]||SORTERS.new);
 
     const orderRow = (o)=>{
@@ -1273,11 +1189,9 @@ class Component extends DCLogic {
       paySettings: [
         { id:'promptpay', name:'พร้อมเพย์ (PromptPay)', desc:'สแกน QR โอนจากทุกธนาคาร', img:'assets/promptpay.png' },
         { id:'stripe', name:'บัตรเครดิต/เดบิต (Stripe)', desc:'ชำระผ่าน Stripe', img:'assets/stripe.svg' },
-        { id:'truemoney', name:'TrueMoney Wallet', desc:'เติมผ่านวอลเล็ท', img:'assets/truemoney.png' },
       ].map(p=>{ const on=!st.payOff.includes(p.id); return { name:p.name, desc:p.desc, img:p.img, toggleStyle:this.toggleStyle(on), knobStyle:this.knobStyle(on), onToggle:()=>this.setState(s=>({payOff: on?[...s.payOff,p.id]:s.payOff.filter(x=>x!==p.id)})) }; }),
       setLine: st.setLine, onSetLine:(e)=>this.setState({setLine:e.target.value}),
       setEmail: st.setEmail, onSetEmail:(e)=>this.setState({setEmail:e.target.value}),
-      setTmn: st.setTmn, onSetTmn:(e)=>this.setState({setTmn:e.target.value}),
       saveSettings: ()=>this.toast('บันทึกการตั้งค่าเรียบร้อย'),
 
       toast: st.toast,
