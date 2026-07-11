@@ -406,9 +406,6 @@
           <sc-if value="{{ noUserResults }}" hint-placeholder-val="{{ false }}">
             <div style="padding:40px;text-align:center;color:var(--muted);font-size:13.5px;">ไม่พบสมาชิกที่ตรงกับ "{{ userSearch }}"</div>
           </sc-if>
-          <sc-if value="{{ noUsers }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:44px;text-align:center;color:var(--muted);font-size:13.5px;">ยังไม่มีสมาชิกที่สมัครเข้ามา</div>
-          </sc-if>
           </div>
         </div>
         </sc-if>
@@ -425,18 +422,11 @@
               </div>
               <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
                 <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="5">
-                  <div class="ym-srow" style="display:grid;grid-template-columns:1fr 250px 130px 90px;gap:14px;padding:13px 18px;border-bottom:1px solid var(--field);align-items:center;{{ s.dim }}">
+                  <div class="ym-srow" style="display:grid;grid-template-columns:1fr 150px 170px 110px;gap:14px;padding:13px 18px;border-bottom:1px solid var(--field);align-items:center;{{ s.dim }}">
                     <div style="font-size:13.5px;">{{ s.name }}</div>
                     <div style="display:flex;align-items:center;gap:8px;">
-                      <input value="{{ s.rate }}" onInput="{{ s.onRate }}" type="number" style="{{ s.inputStyle }}">
+                      <input value="{{ s.rate }}" onInput="{{ s.onRate }}" type="number" style="width:82px;height:36px;padding:0 11px;background:var(--field);border:1px solid var(--border2);border-radius:9px;color:#fff;font-size:13.5px;font-family:Sora;font-weight:600;">
                       <span style="font-size:11.5px;color:var(--muted);">/1000</span>
-                      <sc-if value="{{ s.dirty }}" hint-placeholder-val="{{ false }}">
-                        <div style="display:flex;align-items:center;gap:6px;margin-left:2px;">
-                          <span style="{{ s.dirPillStyle }}">{{ s.dirLabel }}</span>
-                          <button onClick="{{ s.onConfirm }}" title="ยืนยันการเปลี่ยนราคา" style="{{ s.confirmStyle }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></button>
-                          <button onClick="{{ s.onCancel }}" title="ยกเลิก" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--field);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
-                        </div>
-                      </sc-if>
                     </div>
                     <div style="font-size:12px;color:var(--muted);">ขั้นต่ำ {{ s.minText }} · สูงสุด {{ s.maxText }}</div>
                     <div style="text-align:right;">
@@ -450,10 +440,141 @@
         </div>
         </sc-if>
 
+        <!-- ===== SUPPLIERS ===== -->
+        <sc-if value="{{ tabSuppliers }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:floatUp .4s ease both;display:flex;flex-direction:column;gap:22px;">
+
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+            <div style="font-size:12.5px;color:var(--muted);line-height:1.65;max-width:580px;">ต่อร้านส่ง (ซัพพลายเออร์) ได้หลายเจ้าพร้อมกัน แล้วจับคู่ว่าบริการไหนส่งไปเจ้าไหน — <b style="color:var(--muted3);">TikTok แพงก็สลับไปเจ้าที่ถูกกว่าเฉพาะบริการนั้น</b> เมื่อลูกค้าสั่ง ระบบยิงออเดอร์ไปเจ้าที่เลือกอัตโนมัติ + คืนเครดิตให้เองถ้าเจ้าปฏิเสธ</div>
+            <div style="display:flex;gap:9px;flex-shrink:0;">
+              <button onClick="{{ onReloadSuppliers }}" style="height:38px;padding:0 15px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">รีเฟรช</button>
+              <button onClick="{{ onSyncAll }}" style="height:38px;padding:0 15px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">sync สถานะ</button>
+            </div>
+          </div>
+
+          <!-- การ์ดเครดิตคงเหลือแต่ละเจ้า -->
+          <sc-if value="{{ hasSuppliers }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px;">
+            <sc-for list="{{ providerCards }}" as="p" hint-placeholder-count="2">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                  <div style="font-family:Sora;font-weight:700;font-size:14.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</div>
+                  <div style="font-size:11px;font-weight:800;color:var(--muted3);background:var(--field);border-radius:6px;padding:2px 9px;flex-shrink:0;font-family:Sora;">{{ p.key }}</div>
+                </div>
+                <div style="font-size:11.5px;color:var(--muted);margin:4px 0 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.host }}</div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:2px;">เครดิตคงเหลือกับเจ้านี้</div>
+                <div style="font-family:Sora;font-weight:800;font-size:20px;color:{{ p.valueColor }};">{{ p.balanceText }}</div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <!-- ยังไม่ได้ต่อเจ้าไหน -->
+          <sc-if value="{{ noSuppliers }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--surface);border:1px dashed var(--border2);border-radius:16px;padding:26px 24px;">
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:8px;">ยังไม่ได้ต่อซัพพลายเออร์</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.8;">เพิ่มเจ้าที่ไฟล์ <b style="color:var(--muted3);font-family:Sora;">backend/.env</b> แล้วรีสตาร์ทเซิร์ฟเวอร์:<br>
+              <span style="font-family:Sora;color:var(--accent);">PROVIDER_A_URL</span> = https://เว็บเจ้านั้น/api/v2<br>
+              <span style="font-family:Sora;color:var(--accent);">PROVIDER_A_KEY</span> = คีย์ของคุณบนเว็บเขา<br>
+              เพิ่มเจ้า B, C ก็คัดลอกบล็อกแล้วเปลี่ยน A→B เจ้าที่ต่อแล้วจะโผล่ที่นี่ให้จับคู่บริการได้ทันที
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- ตารางจับคู่บริการ → เจ้า -->
+          <sc-for list="{{ supGroups }}" as="g" hint-placeholder-count="4">
+            <div>
+              <div style="display:flex;align-items:center;gap:11px;margin-bottom:12px;">
+                <div style="width:32px;height:32px;border-radius:9px;background:{{ g.color }};display:flex;align-items:center;justify-content:center;padding:7px;"><img src="{{ g.logo }}" alt="" style="width:100%;height:100%;object-fit:contain;"></div>
+                <div style="font-family:Sora;font-weight:700;font-size:16px;">{{ g.name }}</div>
+              </div>
+              <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+                <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="6">
+                  <div class="ym-maprow" style="display:grid;grid-template-columns:1fr 220px 150px 88px;gap:12px;padding:12px 18px;border-bottom:1px solid var(--field);align-items:center;">
+                    <div style="min-width:0;">
+                      <div style="font-size:13.5px;">{{ s.name }}</div>
+                      <div style="font-size:11px;color:{{ s.statusColor }};margin-top:3px;">{{ s.statusText }}</div>
+                    </div>
+                    <select value="{{ s.sel }}" onChange="{{ s.onSel }}" style="width:100%;height:36px;padding:0 10px;background:var(--field);border:1px solid var(--border2);border-radius:9px;color:#fff;font-size:12.5px;font-family:inherit;cursor:pointer;">
+                      <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+                    </select>
+                    <sc-if value="{{ s.pickerMode }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ s.onOpenPicker }}" title="เลือกจากรายการบริการจริงของเจ้านั้น" style="{{ s.pickedStyle }}">{{ s.pickedLabel }}</button>
+                    </sc-if>
+                    <sc-if value="{{ s.notPicker }}" hint-placeholder-val="{{ true }}">
+                      <div style="height:36px;display:flex;align-items:center;padding:0 11px;color:var(--muted);font-size:12.5px;opacity:.5;">—</div>
+                    </sc-if>
+                    <button onClick="{{ s.onSave }}" style="height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">บันทึก</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+
+          <!-- โมดัลเลือกบริการจริงจากเจ้านั้น (ค้นหาได้) -->
+          <sc-if value="{{ svcPickerOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeSvcPicker }}" style="position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(3px);z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;">
+            <div onClick="{{ stop }}" style="width:100%;max-width:600px;max-height:82vh;display:flex;flex-direction:column;background:var(--raised);border:1px solid var(--border2);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);">
+              <div style="padding:18px 20px;border-bottom:1px solid var(--border);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                  <div style="font-family:Sora;font-weight:700;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ svcPickerTitle }}</div>
+                  <button onClick="{{ closeSvcPicker }}" style="width:32px;height:32px;flex-shrink:0;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:15px;cursor:pointer;">✕</button>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px;">{{ svcPickerCount }} บริการจากเจ้านี้ · ค้นหาชื่อ / หมวด / เลข service</div>
+                <input value="{{ svcSearch }}" onInput="{{ onSvcSearch }}" placeholder="ค้นหา เช่น instagram followers, tiktok…" style="width:100%;height:40px;margin-top:12px;padding:0 13px;background:var(--field);border:1px solid var(--border2);border-radius:10px;color:#fff;font-size:13.5px;">
+              </div>
+              <div class="sc-scroll" style="overflow-y:auto;padding:8px;">
+                <sc-if value="{{ provSvcLoading }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:34px;text-align:center;color:var(--muted);font-size:13px;">กำลังโหลดรายการบริการจากเจ้านั้น…</div>
+                </sc-if>
+                <sc-for list="{{ svcPickerList }}" as="s" hint-placeholder-count="8">
+                  <div onClick="{{ s.onPick }}" style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;cursor:pointer;" style-hover="background:var(--surface2);">
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:13.5px;">{{ s.name }}</div>
+                      <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">#{{ s.service }} · {{ s.minmax }}</div>
+                    </div>
+                    <div style="font-family:Sora;font-weight:700;font-size:12.5px;color:var(--accent);flex-shrink:0;">{{ s.rateText }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+        </sc-if>
+
         <!-- ===== DEPOSITS ===== -->
         <sc-if value="{{ tabDeposits }}" hint-placeholder-val="{{ false }}">
         <div class="ym-cols" style="animation:floatUp .4s ease both;display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
           <div>
+            <div style="display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,#25e0a8 8%,transparent);border:1px solid color-mix(in srgb,#25e0a8 30%,transparent);border-radius:13px;padding:14px 16px;margin-bottom:18px;">
+              <span style="font-size:17px;line-height:1.3;">⚡</span>
+              <div style="font-size:12.5px;color:var(--muted3);line-height:1.65;">การจ่ายผ่าน <b style="color:#25e0a8;">Stripe (พร้อมเพย์ QR + บัตร)</b> เติมเครดิตให้ลูกค้า<b style="color:var(--text);">อัตโนมัติ</b>ทันทีที่เงินเข้า — ไม่ต้องกดอนุมัติเอง<br>เฉพาะการเติมผ่าน <b style="color:var(--text);">TrueMoney Wallet (โอนมือ)</b> เท่านั้น ที่ต้องตรวจสอบสลิปก่อนเติมเครดิต</div>
+            </div>
+            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">รอตรวจสอบ TrueMoney Wallet <span style="color:var(--muted);font-weight:400;font-size:13px;">({{ pendingDepositCount }})</span></div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:26px;">
+              <sc-for list="{{ pendingDeposits }}" as="d" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:15px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 17px;">
+                  <div style="width:52px;height:52px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px;"><img src="{{ d.methodImg }}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:14px;font-weight:600;">{{ d.user }}</div>
+                    <div style="font-size:12px;color:var(--muted);">{{ d.method }} · {{ d.time }}</div>
+                  </div>
+                  <sc-if value="{{ d.hasSlip }}" hint-placeholder-val="{{ false }}">
+                    <a href="{{ d.slip }}" target="_blank" title="เปิดสลิปเต็ม" style="flex-shrink:0;line-height:0;"><img src="{{ d.slip }}" alt="สลิป" style="width:44px;height:58px;border-radius:8px;object-fit:cover;border:1px solid var(--border2);display:block;"></a>
+                  </sc-if>
+                  <div style="font-family:Sora;font-weight:800;font-size:19px;color:var(--accent);flex-shrink:0;">฿{{ d.amount }}</div>
+                  <div style="display:flex;gap:7px;flex-shrink:0;">
+                    <button onClick="{{ d.onApprove }}" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:#25e0a8;color:#06281d;font-size:13px;font-weight:700;cursor:pointer;">อนุมัติ</button>
+                    <button onClick="{{ d.onReject }}" style="height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:13px;cursor:pointer;">ปฏิเสธ</button>
+                  </div>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noPendingDeposits }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:32px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">ไม่มีสลิปรอตรวจสอบ 🎉</div>
+              </sc-if>
+            </div>
+
             <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">ประวัติการเติมเงิน</div>
             <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
               <sc-for list="{{ depositHistory }}" as="d" hint-placeholder-count="5">
@@ -542,6 +663,10 @@
                 <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">อีเมลติดต่อ</label>
                 <input value="{{ setEmail }}" onInput="{{ onSetEmail }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
               </div>
+              <div>
+                <label style="display:block;font-size:12.5px;color:var(--muted3);margin-bottom:7px;">TrueMoney (เบอร์รับเงิน)</label>
+                <input value="{{ setTmn }}" onInput="{{ onSetTmn }}" style="width:100%;height:44px;padding:0 14px;background:var(--field);border:1px solid var(--border2);border-radius:11px;color:#fff;font-size:14px;">
+              </div>
             </div>
             <button onClick="{{ saveSettings }}" style="margin-top:20px;height:44px;padding:0 22px;border:none;border-radius:11px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer;box-shadow:var(--glow);font-family:Sora;">บันทึกการตั้งค่า</button>
           </div>
@@ -627,6 +752,9 @@
 class Component extends DCLogic {
   state = {
     tab: 'overview',
+    // ── ซัพพลายเออร์ SMM (หลายเจ้า) ──
+    suppliers: [], supBalances: [], supMap: {}, mapEdit: {}, supLoading: false, supLoaded: false,
+    provServices: {}, provSvcLoading: false, svcPicker: null, svcSearch: '', svcNames: {},
     // ── auth / login gate ──
     authToken: (()=>{ try { return localStorage.getItem('ym_admin_token'); } catch(e){ return null; } })(),
     authUser: null,
@@ -646,30 +774,20 @@ class Component extends DCLogic {
     loading: false, confirm: null, orderQuery: '', orderSort: 'new', orderDetail: null,
     creditUser: null, creditAmount: '',
     rates: {},
-    rateDraft: {},
     svcOff: [],
     payOff: [],
     setLine: 'lin.ee/S35WkT2',
     setEmail: 'yarnan7480@gmail.com',
+    setTmn: '082-XXX-4471',
     userSearch: '',
     users: [],
     deposits: [],
     depositHistory: [],
   };
 
-  DEFAULT_ORDERS = [
-    { id:5821, pf:'tiktok', user:'น้อง สตูดิโอ', service:'ผู้ติดตาม TikTok', link:'@nong_studio', qty:2000, status:'สำเร็จ', progress:100, price:84, time:'วันนี้ 09:12' },
-    { id:5817, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ไลก์ Instagram', link:'instagram.com/p/Cx9...', qty:500, status:'กำลังทำ', progress:64, price:6, time:'วันนี้ 08:40' },
-    { id:5810, pf:'youtube', user:'ช่อง รีวิวของกิน', service:'ยอดวิว YouTube', link:'youtu.be/aB3kd', qty:10000, status:'กำลังทำ', progress:38, price:300, time:'วันนี้ 07:55' },
-    { id:5804, pf:'facebook', user:'ร้าน My Cafe BKK', service:'ถูกใจเพจ Facebook', link:'fb.com/mycafe.bkk', qty:1000, status:'รอดำเนินการ', progress:8, price:45, time:'เมื่อวาน 22:10' },
-    { id:5799, pf:'instagram', user:'เฟิร์น เมคอัพ', service:'ผู้ติดตาม Instagram', link:'@fern.makeup', qty:3000, status:'สำเร็จ', progress:100, price:114, time:'เมื่อวาน 19:03' },
-  ];
+  DEFAULT_ORDERS = [];
 
-  DEFAULT_CLIPS = [
-    { id:'C-2043', styles:['cb_hold','lc_live','cb_usage'], structure:'sell', speak:'hardsell', length:16, qty:30, email:'shopfern@gmail.com', note:'เน้นจุดขายราคาถูก ส่งไว เก็บปลายทางได้', total:750, status:'กำลังถ่าย', time:'วันนี้ 10:20' },
-    { id:'C-2041', styles:['cb_hand','lc_wh_hand'], structure:'sell', speak:'normal', length:8, qty:50, email:'warehouse.bkk@gmail.com', note:'', total:500, status:'รอทำ', time:'วันนี้ 08:05' },
-    { id:'C-2038', styles:['cb_pro','lc_studio'], structure:'story', speak:'polite', length:24, qty:10, email:'lux.brand@gmail.com', note:'โทนหรู พูดช้า ไม่เร่งขาย', total:400, status:'ส่งแล้ว', time:'เมื่อวาน 16:30' },
-  ];
+  DEFAULT_CLIPS = [];
 
   PLATFORMS = {
     facebook:  { name:'Facebook',  logo:'assets/facebook.svg',  color:'#1877F2' },
@@ -713,12 +831,23 @@ class Component extends DCLogic {
     ],
   };
 
+  // ── ข้อมูลตัวอย่างซัพพลายเออร์ (โชว์ตอนยังไม่ต่อ backend จริง) ──
+  DEMO_PROVIDERS = [
+    { key:'A', name:'FastSMM (ตัวอย่าง)',   url:'https://fastsmm.example/api/v2',   currency:'USD', rateToCredit:35 },
+    { key:'B', name:'CheapPanel (ตัวอย่าง)', url:'https://cheappanel.example/api/v2', currency:'USD', rateToCredit:35 },
+  ];
+  DEMO_BALANCES = [
+    { key:'A', name:'FastSMM (ตัวอย่าง)',   balance:128.44, currency:'USD' },
+    { key:'B', name:'CheapPanel (ตัวอย่าง)', balance:47.10,  currency:'USD' },
+  ];
+
   NAV = [
     { id:'overview', label:'ภาพรวม',        icon:'M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v6h8V3h-8zM3 21h8v-6H3v6z' },
     { id:'orders',   label:'ออเดอร์',        icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 14l2 2 4-4' },
     { id:'clips',    label:'งานคลิป',        icon:'M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M4 6h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z' },
     { id:'users',    label:'สมาชิก',         icon:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' },
     { id:'services', label:'จัดการบริการ',   icon:'M4 6h16M4 12h16M4 18h16' },
+    { id:'suppliers',label:'ซัพพลายเออร์', icon:'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96 12 12.01l8.73-5.05M12 22.08V12' },
     { id:'deposits', label:'การเติมเงิน',    icon:'M3 10h18M7 15h2M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
     { id:'settings', label:'ตั้งค่าระบบ',    icon:'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z' },
   ];
@@ -731,18 +860,23 @@ class Component extends DCLogic {
   };
 
   componentDidMount(){
+    const real = this.state.authToken && this.state.authToken!=='DEMO-TOKEN';
     let o = this._load('ym_orders'); if(!o){ o = this.DEFAULT_ORDERS; this._save('ym_orders', o); }
     let c = this._load('ym_clips'); if(!c){ c = this.DEFAULT_CLIPS; this._save('ym_clips', c); }
     let d = this._load('ym_deposits'); if(!d){ d = this.state.deposits; this._save('ym_deposits', d); }
-    this.setState({ orders:o, clips:c, deposits:d });
+    // บัญชีจริง → เริ่มด้วยค่าว่าง แล้วให้ refreshAdmin ดึงข้อมูลจริงจาก backend มาเติม (กันข้อมูลตัวอย่างเก่าโผล่)
+    this.setState({ orders: real?[]:o, clips:c, deposits: real?[]:d });
     this._knownOrderIds = new Set((o||[]).map(x=>x.id));
     this._knownDepositIds = new Set((d||[]).map(x=>x.id));
     const rr = this._load('ym_rates'); const so = this._load('ym_svcoff'); this.setState({ rates: rr||{}, svcOff: so||[] });
-    const stab = this._load('ym_admin_tab'); if(stab) this.setState({ tab:stab });
+    const stab = this._load('ym_admin_tab'); if(stab) this.setState({ tab:stab }); if(stab==='suppliers') setTimeout(()=>this.loadSuppliers(), 60);
     this._onStorage = (e)=>{
-      if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l){ this._detectNew(l, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:l}); } }
+      // บัญชีจริง → ออเดอร์/สลิปยึดจาก backend ไม่ให้ localStorage (ข้อมูลตัวอย่าง) ทับ
+      if(!this.isReal()){
+        if(e.key==='ym_orders'){ const l=this._load('ym_orders'); if(l){ this._detectNew(l, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:l}); } }
+        if(e.key==='ym_deposits'){ const l=this._load('ym_deposits'); if(l){ this._detectNew(l, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:l}); } }
+      }
       if(e.key==='ym_clips'){ const l=this._load('ym_clips'); if(l) this.setState({clips:l}); }
-      if(e.key==='ym_deposits'){ const l=this._load('ym_deposits'); if(l){ this._detectNew(l, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:l}); } }
       if(e.key==='ym_rates'){ const l=this._load('ym_rates'); if(l) this.setState({rates:l}); }
       if(e.key==='ym_svcoff'){ const l=this._load('ym_svcoff'); if(l) this.setState({svcOff:l}); }
     };
@@ -751,18 +885,21 @@ class Component extends DCLogic {
     fetch(this.apiBase()+'/api/health').then(r=>this.setState({backendReachable:r.ok})).catch(()=>this.setState({backendReachable:false}));
     // restore session: มี token อยู่แล้ว → เช็คกับ backend ว่ายังใช้ได้ (ต่อไม่ได้ = เก็บ token ไว้)
     if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
-      this.api('/api/auth/me', null, 'GET').then(r=>this.setState({authUser:r.user})).catch(e=>{ if(!this._netErr(e)) this.logoutAdmin(); });
-      this.loadOverview();
+      this.api('/api/auth/me', null, 'GET').then(r=>{ this.setState({authUser:r.user}); this.refreshAdmin(); }).catch(e=>{ if(!this._netErr(e)) this.logoutAdmin(); });
     }
-    this._ovPoll = setInterval(()=>{ if(!document.hidden) this.loadOverview(); }, 15000);
+    this._pollN=0;
     this._poll = setInterval(()=>{
       if(document.hidden) return;
-      const o=this._load('ym_orders'); if(o && JSON.stringify(o)!==JSON.stringify(this.state.orders)){ this._detectNew(o, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:o}); }
       const c=this._load('ym_clips'); if(c && JSON.stringify(c)!==JSON.stringify(this.state.clips)) this.setState({clips:c});
+      if(this.isReal()){
+        if((this._pollN++ % 3)===0) this.refreshAdmin();   // ดึงข้อมูลจริงจาก backend ทุก ~5.4 วิ
+        return;
+      }
+      const o=this._load('ym_orders'); if(o && JSON.stringify(o)!==JSON.stringify(this.state.orders)){ this._detectNew(o, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:o}); }
       const d=this._load('ym_deposits'); if(d && JSON.stringify(d)!==JSON.stringify(this.state.deposits)){ this._detectNew(d, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:d}); }
     }, 1800);
   }
-  componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearInterval(this._ovPoll); clearTimeout(this._t); }
+  componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearTimeout(this._t); }
 
   _load(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
   _save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -771,24 +908,6 @@ class Component extends DCLogic {
   copy(text, label){ try{ navigator.clipboard.writeText(String(text||'')); this.toast('คัดลอก'+(label?' '+label:'')+'แล้ว'); }catch(e){ this.toast('คัดลอกไม่สำเร็จ'); } }
   markAllDone(ids){ const set=new Set(ids); const list=this.state.orders.map(o=> set.has(o.id) ? { ...o, status:'สำเร็จ', progress:100 } : o ); this.saveOrders(list); this.toast('✓ ทำเครื่องหมายเสร็จ '+ids.length+' ออเดอร์ · ขึ้นหน้าเว็บแล้ว'); }
   retryConn(){ this.toast('กำลังลองเชื่อมต่อใหม่...'); fetch(this.apiBase()+'/api/health').then(r=>{ this.setState({backendReachable:r.ok}); if(r.ok) this.toast('เชื่อมต่อสำเร็จ'); }).catch(()=>this.setState({backendReachable:false})); }
-
-  /* ดึงรายชื่อสมาชิกจริง + ประวัติเติมเงินจาก backend (แทนข้อมูลตัวอย่าง) */
-  loadOverview(){
-    if(!this.state.authToken || this.state.authToken==='DEMO-TOKEN') return;
-    this.api('/api/admin/overview', null, 'GET').then(d=>{
-      const nameById={}; (d.users||[]).forEach(u=>{ nameById[u.id]=u.name; });
-      const orderCount={}, spentByUser={};
-      (d.orders||[]).forEach(o=>{ orderCount[o.user_id]=(orderCount[o.user_id]||0)+1; if(o.status!=='ยกเลิก') spentByUser[o.user_id]=(spentByUser[o.user_id]||0)+(o.price||0); });
-      const users=(d.users||[]).filter(u=>!u.is_admin).map(u=>({
-        id:u.id, name:u.name, email:u.email, joined:this._joined(u.created_at),
-        balance:u.credits||0, orders:orderCount[u.id]||0, spent:spentByUser[u.id]||0, banned:!!u.banned,
-      }));
-      const depositHistory=(d.depositHistory||[]).map(x=>({ user:nameById[x.user_id]||'—', method:x.method, amount:x.amount, time:this._when(x.created_at), auto:(x.method||'').includes('Stripe') }));
-      this.setState({ users, depositHistory });
-    }).catch(()=>{});
-  }
-  _joined(iso){ if(!iso) return 'สมาชิกใหม่'; const ms=Date.now()-new Date(iso).getTime(); const months=Math.floor(ms/2592000000); const days=Math.floor(ms/86400000); return months>=1?('สมาชิก '+months+' เดือน'):(days>=1?('สมาชิก '+days+' วัน'):'สมาชิกใหม่'); }
-  _when(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
 
   /* ═══════════ auth: login gate + 2FA ═══════════
    * เชื่อมกับ backend จริง (auth.js). ถ้าต่อ backend ไม่ได้ (เช่นเปิดพรีวิว
@@ -808,11 +927,11 @@ class Component extends DCLogic {
   _netErr(e){ return e instanceof TypeError; }   // fetch ล้มเหลว = ต่อเซิร์ฟเวอร์ไม่ได้
   _demo2FA(){ try{ return localStorage.getItem('ym_admin_2fa_demo')==='1'; }catch(e){ return false; } }
 
-  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }); this.loadOverview(); }
+  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }, ()=>this.refreshAdmin()); }
   logoutAdmin(){ try{ localStorage.removeItem('ym_admin_token'); }catch(e){} this.setState({ authToken:null, authUser:null, authStep:'login', loginEmail:'', loginPassword:'', otpCode:'', authError:'' }); }
 
   demoLoginAdmin(){ this.storeSession('DEMO-TOKEN', { name:'Admin', email:this.DEMO_ADMIN.email, is_admin:true }); this.toast('เข้าสู่ระบบโหมดทดลอง'); }
-  go(t){ this.setState({tab:t, loading:true}); this._save('ym_admin_tab', t); clearTimeout(this._ld); this._ld=setTimeout(()=>this.setState({loading:false}),420); }
+  go(t){ this.setState({tab:t, loading:true}); this._save('ym_admin_tab', t); if(t==='suppliers') this.loadSuppliers(); clearTimeout(this._ld); this._ld=setTimeout(()=>this.setState({loading:false}),420); }
   askConfirm(o){ this.setState({confirm:o}); }
   closeConfirm(){ this.setState({confirm:null}); }
   doConfirm(){ const c=this.state.confirm; this.setState({confirm:null}); if(c&&c.action) c.action(); }
@@ -869,12 +988,60 @@ class Component extends DCLogic {
   }
 
   fmt(n){ return Number(n).toLocaleString('th-TH', { maximumFractionDigits: 2 }); }
+  fmtWhen(ts){
+    if(!ts) return '';
+    let d=(typeof ts==='number')?new Date(ts):new Date(String(ts).replace(' ','T'));
+    if(isNaN(d.getTime())) return String(ts);
+    try{ return d.toLocaleString('th-TH', { day:'2-digit', month:'short', year:'2-digit', hour:'2-digit', minute:'2-digit' }); }catch(e){ return d.toLocaleString(); }
+  }
+  isReal(){ return !!(this.apiBase() && this.state.authToken && this.state.authToken!=='DEMO-TOKEN'); }
+  // ดึงข้อมูลจริงทั้งหมด (ออเดอร์/สมาชิก/สลิป/สถิติ) จาก backend — แหล่งความจริง
+  async refreshAdmin(){
+    if(!this.isReal()) return;
+    try{
+      const d=await this.api('/api/admin/overview', null, 'GET');
+      const nameOf={}; (d.users||[]).forEach(u=>{ nameOf[u.id]=u.name; });
+      const byUser={}; (d.orders||[]).forEach(o=>{ (byUser[o.user_id]=byUser[o.user_id]||[]).push(o); });
+      const orders=(d.orders||[]).map(o=>({
+        id:o.id, pf:o.platform, user:nameOf[o.user_id]||o.user_id||'—',
+        service:o.service_name, link:o.link, qty:o.qty, status:o.status,
+        progress:o.progress||0, price:o.price, time:this.fmtWhen(o.created_at),
+        ts:Date.parse(String(o.created_at||'').replace(' ','T'))||0,
+      }));
+      const users=(d.users||[]).filter(u=>!u.is_admin).map(u=>({
+        id:u.id, name:u.name, email:u.email, joined:this.fmtWhen(u.created_at),
+        balance:u.credits, orders:(byUser[u.id]||[]).length,
+        spent:(byUser[u.id]||[]).filter(x=>x.status!=='ยกเลิก').reduce((a,x)=>a+x.price,0),
+        banned:!!u.banned,
+      }));
+      const deposits=(d.pendingDeposits||[]).map(x=>({
+        id:x.id, user:nameOf[x.user_id]||x.user_id, method:x.method,
+        methodImg:'assets/truemoney.png', amount:x.amount, time:this.fmtWhen(x.created_at),
+        slip:x.slip_url||'', status:'pending',
+      }));
+      const depositHistory=(d.depositHistory||[]).map(x=>({
+        user:nameOf[x.user_id]||x.user_id, method:x.method, amount:x.amount,
+        time:this.fmtWhen(x.created_at), auto:/stripe|อัตโนมัติ/i.test(x.method||''),
+      }));
+      this._detectNew(orders, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา');
+      this._detectNew(deposits, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ');
+      this.setState({ orders, users, deposits, depositHistory, stats:d.stats||this.state.stats });
+    }catch(e){}
+  }
   toast(msg){ this.setState({ toast: msg }); clearTimeout(this._t); this._t = setTimeout(()=>this.setState({toast:null}), 2600); }
 
   saveOrders(list){ this.setState({orders:list}); this._save('ym_orders', list); }
   saveClips(list){ this.setState({clips:list}); this._save('ym_clips', list); }
 
   toggleDone(id){
+    if(this.isReal()){
+      const o=this.state.orders.find(x=>x.id===id); const wasDone=o&&o.status==='สำเร็จ';
+      const status=wasDone?'กำลังทำ':'สำเร็จ'; const progress=wasDone?60:100;
+      this.api('/api/admin/orders/'+id, { status, progress }, 'PATCH')
+        .then(()=>{ this.refreshAdmin(); this.toast(status==='สำเร็จ'?'ออเดอร์ #'+id+' เสร็จแล้ว · ขึ้นหน้าเว็บลูกค้าแล้ว':'เปิดออเดอร์ #'+id+' กลับมาทำต่อ'); })
+        .catch(e=>this.toast(e.message||'อัปเดตไม่สำเร็จ'));
+      return;
+    }
     const list = this.state.orders.map(o=> o.id===id
       ? { ...o, status: o.status==='สำเร็จ'?'กำลังทำ':'สำเร็จ', progress: o.status==='สำเร็จ'? (o.progress>=100?60:o.progress) : 100 }
       : o );
@@ -883,10 +1050,22 @@ class Component extends DCLogic {
     this.toast(now.status==='สำเร็จ' ? 'ออเดอร์ #'+id+' เสร็จแล้ว · ขึ้นหน้าเว็บลูกค้าแล้ว' : 'เปิดออเดอร์ #'+id+' กลับมาทำต่อ');
   }
   startOrder(id){
+    if(this.isReal()){
+      this.api('/api/admin/orders/'+id, { status:'กำลังทำ', progress:15 }, 'PATCH')
+        .then(()=>{ this.refreshAdmin(); this.toast('เริ่มดำเนินการ #'+id); })
+        .catch(e=>this.toast(e.message||'อัปเดตไม่สำเร็จ'));
+      return;
+    }
     const list = this.state.orders.map(o=> o.id===id ? { ...o, status:'กำลังทำ', progress: Math.max(o.progress,15) } : o );
     this.saveOrders(list); this.toast('เริ่มดำเนินการ #'+id);
   }
   refundOrder(id){
+    if(this.isReal()){
+      this.api('/api/admin/orders/'+id+'/refund', {}, 'POST')
+        .then(()=>{ this.refreshAdmin(); this.toast('ยกเลิก & คืนเครดิต #'+id); })
+        .catch(e=>this.toast(e.message||'ยกเลิกไม่สำเร็จ'));
+      return;
+    }
     const list = this.state.orders.map(o=> o.id===id ? { ...o, status:'ยกเลิก', progress:0 } : o );
     this.saveOrders(list); this.toast('ยกเลิก & คืนเครดิต #'+id);
   }
@@ -919,25 +1098,34 @@ class Component extends DCLogic {
   }
 
   rateOf(id, def){ return this.state.rates[id] !== undefined ? this.state.rates[id] : def; }
-  setRateDraft(id, v){ const rateDraft={...this.state.rateDraft, [id]: v}; this.setState({rateDraft}); }
-  cancelRate(id){ const rateDraft={...this.state.rateDraft}; delete rateDraft[id]; this.setState({rateDraft}); }
-  commitRate(id){ const v=this.state.rateDraft[id]; if(v===undefined||v==='') return; const rates={...this.state.rates, [id]: v}; const rateDraft={...this.state.rateDraft}; delete rateDraft[id]; this.setState({rates, rateDraft}); this._save('ym_rates', rates); this.toast('ยืนยันแล้ว · อัปเดตราคาขึ้นหน้าเว็บลูกค้า'); }
+  setRate(id, v){ const rates={...this.state.rates, [id]: v}; this.setState({rates}); this._save('ym_rates', rates); clearTimeout(this._rt); this._rt=setTimeout(()=>this.toast('อัปเดตราคาขึ้นหน้าเว็บลูกค้าแล้ว'), 700); }
   toggleSvc(id){ const off=this.state.svcOff.includes(id); const svcOff= off? this.state.svcOff.filter(x=>x!==id) : [...this.state.svcOff, id]; this.setState({svcOff}); this._save('ym_svcoff', svcOff); this.toast(off?'เปิดบริการแล้ว · แสดงบนหน้าเว็บลูกค้า':'ปิดบริการแล้ว · ซ่อนจากหน้าเว็บลูกค้า'); }
 
   addCredit(uid){ const u=this.state.users.find(x=>x.id===uid); this.setState({ creditUser: u?{id:u.id,name:u.name}:null, creditAmount:'' }); }
   doAddCredit(){ const cu=this.state.creditUser; if(!cu) return; const amt=Number(this.state.creditAmount)||0; if(amt<=0){ this.toast('กรอกจำนวนเครดิตก่อน'); return; }
-    if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
-      this.api('/api/admin/users/'+cu.id+'/credit', { amount:amt }).then(()=>{ this.setState({creditUser:null, creditAmount:''}); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' แล้ว'); this.loadOverview(); }).catch(e=>this.toast(e.message));
+    if(this.isReal()){
+      this.api('/api/admin/users/'+cu.id+'/credit', { amount:amt }, 'POST')
+        .then(()=>{ this.setState({ creditUser:null, creditAmount:'' }); this.refreshAdmin(); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดลูกค้าแล้ว'); })
+        .catch(e=>this.toast(e.message||'เติมเครดิตไม่สำเร็จ'));
       return;
     }
     const list=this.state.users.map(u=> u.id===cu.id ? {...u, balance:u.balance+amt} : u); const bal=(this._load('ym_balance')||0)+amt; this._save('ym_balance', bal); this.setState({ users:list, creditUser:null, creditAmount:'' }); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดหน้าเว็บลูกค้าแล้ว'); }
-  toggleBan(uid){ const cur=this.state.users.find(u=>u.id===uid); const next=cur?!cur.banned:true;
-    if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
-      this.api('/api/admin/users/'+uid+'/ban', { banned:next }).then(()=>{ this.toast(next?('ระงับบัญชี '+(cur?cur.name:'')):('ปลดระงับ '+(cur?cur.name:''))); this.loadOverview(); }).catch(e=>this.toast(e.message));
+  toggleBan(uid){
+    if(this.isReal()){
+      const u=this.state.users.find(x=>x.id===uid); const ban=!(u&&u.banned);
+      this.api('/api/admin/users/'+uid+'/ban', { banned:ban }, 'POST')
+        .then(()=>{ this.refreshAdmin(); this.toast(ban?'ระงับบัญชี '+(u?u.name:''):'ปลดระงับ '+(u?u.name:'')); })
+        .catch(e=>this.toast(e.message||'ทำรายการไม่สำเร็จ'));
       return;
     }
     const list=this.state.users.map(u=> u.id===uid ? {...u, banned:!u.banned} : u); this.setState({users:list}); const u=list.find(x=>x.id===uid); this.toast(u.banned?'ระงับบัญชี '+u.name:'ปลดระงับ '+u.name); }
   approveDeposit(id){
+    if(this.isReal()){
+      this.api('/api/admin/deposits/'+id+'/approve', {}, 'POST')
+        .then(()=>{ this.refreshAdmin(); this.toast('อนุมัติสลิปแล้ว · เครดิตเข้าลูกค้าแล้ว'); })
+        .catch(e=>this.toast(e.message||'อนุมัติไม่สำเร็จ'));
+      return;
+    }
     const d=this.state.deposits.find(x=>x.id===id);
     const rest=this.state.deposits.filter(x=>x.id!==id);
     this._save('ym_deposits', rest);
@@ -945,7 +1133,106 @@ class Component extends DCLogic {
     this.setState(s=>({ deposits:rest, depositHistory:[{user:d.user,method:d.method,amount:d.amount,time:'เพิ่งอนุมัติ',auto:false}, ...s.depositHistory] }));
     this.toast('อนุมัติ ฿'+this.fmt(d.amount)+' ให้ '+d.user+' · เครดิตเข้าหน้าเว็บแล้ว');
   }
-  rejectDeposit(id){ const d=this.state.deposits.find(x=>x.id===id); const rest=this.state.deposits.filter(x=>x.id!==id); this._save('ym_deposits', rest); this.setState({deposits:rest}); this.toast('ปฏิเสธสลิปของ '+d.user); }
+  rejectDeposit(id){
+    if(this.isReal()){
+      this.api('/api/admin/deposits/'+id+'/reject', {}, 'POST')
+        .then(()=>{ this.refreshAdmin(); this.toast('ปฏิเสธสลิปแล้ว'); })
+        .catch(e=>this.toast(e.message||'ทำรายการไม่สำเร็จ'));
+      return;
+    }
+    const d=this.state.deposits.find(x=>x.id===id); const rest=this.state.deposits.filter(x=>x.id!==id); this._save('ym_deposits', rest); this.setState({deposits:rest}); this.toast('ปฏิเสธสลิปของ '+d.user); }
+
+  // ═════ ซัพพลายเออร์: โหลด / จับคู่บริการ / sync ═════
+  async loadSuppliers(){
+    if(!this.isReal()){
+      const supMap={};
+      this.setState({ suppliers:this.DEMO_PROVIDERS, supBalances:this.DEMO_BALANCES, supMap, mapEdit:this._buildMapEdit(supMap), supLoaded:true });
+      return;
+    }
+    this.setState({supLoading:true});
+    try{
+      const p = await this.api('/api/admin/providers', null, 'GET');
+      const m = await this.api('/api/admin/service-map', null, 'GET');
+      const supMap={}; (m.map||[]).forEach(r=>{ supMap[r.my_key]=r; });
+      this.setState({ suppliers:p.providers||[], supBalances:p.balances||[], supMap, mapEdit:this._buildMapEdit(supMap), supLoading:false, supLoaded:true });
+    }catch(e){ this.setState({supLoading:false, supLoaded:true}); if(!this._netErr(e)) this.toast(e.message||'โหลดซัพพลายเออร์ไม่สำเร็จ'); }
+  }
+  // สร้าง state แก้ไข mapping จากข้อมูลที่โหลดมา (sel = ''|'auto'|providerKey, svc = service id ของเจ้า)
+  _buildMapEdit(supMap){
+    const e={};
+    Object.keys(this.SERVICES).forEach(pf=> this.SERVICES[pf].forEach(s=>{
+      const key=pf+'/'+s.id; const r=supMap[key];
+      let sel=''; if(r){ if(r.mode==='auto') sel='auto'; else if(r.provider_key) sel=r.provider_key; }
+      e[key]={ sel, svc: (r&&r.provider_service)?String(r.provider_service):'' };
+    }));
+    return e;
+  }
+  setMapSel(key,val){ this.setState({ mapEdit:{...this.state.mapEdit, [key]:{...(this.state.mapEdit[key]||{svc:''}), sel:val}} }); }
+  setMapSvc(key,val){ this.setState({ mapEdit:{...this.state.mapEdit, [key]:{...(this.state.mapEdit[key]||{sel:''}), svc:val}} }); }
+  saveMapping(pf, sid){ const e=this.state.mapEdit[pf+'/'+sid]||{sel:'',svc:''}; this._saveMap(pf, sid, e.sel, e.svc); }
+  _saveMap(pf, sid, sel, svc){
+    let body;
+    if(sel===''){ body={ platform:pf, serviceId:sid, providerKey:null, providerService:null, mode:'manual' }; }
+    else if(sel==='auto'){ body={ platform:pf, serviceId:sid, providerKey:null, providerService:null, mode:'auto' }; }
+    else { if(!String(svc||'').trim()){ this.toast('เลือกบริการของเจ้านั้นก่อน'); return; } body={ platform:pf, serviceId:sid, providerKey:sel, providerService:String(svc).trim(), mode:'manual' }; }
+    const key=pf+'/'+sid;
+    if(!this.isReal()){
+      const supMap={...this.state.supMap, [key]:{ my_key:key, provider_key:body.providerKey, provider_service:body.providerService, mode:body.mode }};
+      this.setState({supMap}); this.toast('บันทึกการจับคู่แล้ว (ตัวอย่าง)'); return;
+    }
+    this.api('/api/admin/service-map', body, 'POST')
+      .then(()=>{ this.toast('บันทึกการจับคู่ '+key+' แล้ว'); this.loadSuppliers(); })
+      .catch(err=>this.toast(err.message||'บันทึกไม่สำเร็จ'));
+  }
+
+  // ── ดึง "รายการบริการทั้งหมด" ของเจ้าหนึ่ง (services) มาให้เลือก ──
+  async loadProvServices(key){
+    if(this.state.provServices[key]) return this.state.provServices[key];
+    if(!this.isReal()){
+      const demo=this._demoProvServices(key);
+      this.setState({ provServices:{...this.state.provServices, [key]:demo} });
+      return demo;
+    }
+    this.setState({provSvcLoading:true});
+    try{
+      const r=await this.api('/api/admin/providers/'+key+'/services', null, 'GET');
+      const list=(r.services||[]).map(s=>({ service:String(s.service), name:s.name||('#'+s.service), category:s.category||'', rate:s.rate, min:s.min, max:s.max }));
+      this.setState({ provServices:{...this.state.provServices, [key]:list}, provSvcLoading:false });
+      return list;
+    }catch(e){ this.setState({provSvcLoading:false}); if(!this._netErr(e)) this.toast(e.message||'ดึงรายการบริการไม่สำเร็จ'); return []; }
+  }
+  openSvcPicker(pf, sid, providerKey){ this.setState({ svcPicker:{ myKey:pf+'/'+sid, pf, sid, providerKey }, svcSearch:'' }); this.loadProvServices(providerKey); }
+  closeSvcPicker(){ this.setState({ svcPicker:null, svcSearch:'' }); }
+  onSvcSearch(v){ this.setState({ svcSearch:v }); }
+  pickProvService(s){
+    const p=this.state.svcPicker; if(!p) return;
+    this.setState({
+      mapEdit:{...this.state.mapEdit, [p.myKey]:{ sel:p.providerKey, svc:String(s.service) }},
+      svcNames:{...this.state.svcNames, [p.myKey]:s.name},
+      svcPicker:null, svcSearch:''
+    });
+    this._saveMap(p.pf, p.sid, p.providerKey, String(s.service));   // จับคู่ + บันทึกให้เลยในคลิกเดียว
+  }
+  // รายการบริการตัวอย่าง (โหมดพรีวิว ยังไม่ต่อ backend จริง) — ให้เห็นหน้าตาการเลือก
+  _demoProvServices(key){
+    const cats=[
+      { p:'Instagram', names:['Followers [Real HQ]','Followers [Cheap]','Likes','Reels Views','Story Views','Comments [Custom]'] },
+      { p:'TikTok',    names:['Followers','Likes','Views','Shares','Live Views','Comments'] },
+      { p:'Facebook',  names:['Page Followers','Post Likes','Video Views','Group Members','Shares'] },
+      { p:'YouTube',   names:['Subscribers','Likes','Views [Long]','Views [Shorts]','Watch Hours'] },
+    ];
+    let id = key==='A' ? 1001 : 2001; const out=[];
+    cats.forEach(c=> c.names.forEach(n=>{ out.push({ service:String(id++), name:c.p+' — '+n, category:c.p, rate:(Math.random()*3+0.3).toFixed(2), min:100, max:1000000 }); }));
+    return out;
+  }
+
+  syncAllOrders(){
+    if(!this.isReal()){ this.toast('sync ได้เมื่อเชื่อมต่อ backend จริง'); return; }
+    this.toast('กำลัง sync สถานะกับซัพพลายเออร์…');
+    this.api('/api/admin/providers/sync-all', {}, 'POST')
+      .then(r=>{ this.refreshAdmin(); this.toast('sync แล้ว '+((r.results||[]).length)+' ออเดอร์'); })
+      .catch(e=>this.toast(e.message||'sync ไม่สำเร็จ'));
+  }
 
   renderVals(){
     const st=this.state;
@@ -957,14 +1244,16 @@ class Component extends DCLogic {
     const done = st.orders.filter(o=>o.status==='สำเร็จ').length;
     const pendClips = st.clips.filter(c=>c.status!=='ส่งแล้ว').length;
 
-    const titles={ overview:['ภาพรวมระบบ','สรุปยอดขาย ออเดอร์ และสิ่งที่ต้องจัดการวันนี้'], orders:['จัดการออเดอร์','ดูออเดอร์ที่เข้ามา ติ๊กเมื่อทำเสร็จ อัปเดตขึ้นหน้าเว็บทันที'], clips:['คิวงานคลิป','งานรับทำคลิปจากลูกค้า อัปเดตสถานะการผลิต'], users:['สมาชิก','จัดการบัญชีผู้ใช้ เครดิต และสถานะ'], services:['จัดการบริการ','แก้เรตราคาและเปิด–ปิดบริการบนหน้าเว็บ'], deposits:['การเติมเงิน','ตรวจสอบสลิป อนุมัติยอดเติม และดูรายได้'], settings:['ตั้งค่าระบบ','ช่องทางชำระเงินและข้อมูลติดต่อ'] };
+    const titles={ overview:['ภาพรวมระบบ','สรุปยอดขาย ออเดอร์ และสิ่งที่ต้องจัดการวันนี้'], orders:['จัดการออเดอร์','ดูออเดอร์ที่เข้ามา ติ๊กเมื่อทำเสร็จ อัปเดตขึ้นหน้าเว็บทันที'], clips:['คิวงานคลิป','งานรับทำคลิปจากลูกค้า อัปเดตสถานะการผลิต'], users:['สมาชิก','จัดการบัญชีผู้ใช้ เครดิต และสถานะ'], services:['จัดการบริการ','แก้เรตราคาและเปิด–ปิดบริการบนหน้าเว็บ'], deposits:['การเติมเงิน','ตรวจสอบสลิป อนุมัติยอดเติม และดูรายได้'], suppliers:['ซัพพลายเออร์ SMM','ต่อร้านส่งหลายเจ้า จับคู่บริการ และดูเครดิตคงเหลือ'], settings:['ตั้งค่าระบบ','ช่องทางชำระเงินและข้อมูลติดต่อ'] };
 
     // orders filter
     const filterMap = { all:null, 'รอดำเนินการ':'รอดำเนินการ', 'กำลังทำ':'กำลังทำ', 'สำเร็จ':'สำเร็จ' };
     let shown = st.orderFilter==='all' ? st.orders.slice() : st.orders.filter(o=>o.status===st.orderFilter);
     const oq = st.orderQuery.trim().toLowerCase();
     if(oq) shown = shown.filter(o=> (''+o.id).includes(oq) || (o.service||'').toLowerCase().includes(oq) || (o.user||'').toLowerCase().includes(oq) || (o.link||'').toLowerCase().includes(oq) );
-    const SORTERS = { new:(a,b)=>b.id-a.id, old:(a,b)=>a.id-b.id, priceHi:(a,b)=>b.price-a.price, priceLo:(a,b)=>a.price-b.price };
+    const _num=(x)=>{ const n=Number(x); return Number.isFinite(n)?n:null; };
+    const _idCmp=(a,b)=>{ const na=_num(a.id), nb=_num(b.id); if(na!=null&&nb!=null) return nb-na; return String(b.id).localeCompare(String(a.id)); };
+    const SORTERS = { new:(a,b)=>((b.ts||0)-(a.ts||0))||_idCmp(a,b), old:(a,b)=>((a.ts||0)-(b.ts||0))|| -_idCmp(a,b), priceHi:(a,b)=>b.price-a.price, priceLo:(a,b)=>a.price-b.price };
     shown.sort(SORTERS[st.orderSort]||SORTERS.new);
 
     const orderRow = (o)=>{
@@ -1015,7 +1304,7 @@ class Component extends DCLogic {
       onTwoFACode:(e)=>this.setState({twoFACode:e.target.value.replace(/\D/g,'').slice(0,6)}),
       start2FA:()=>this.start2FA(), confirm2FA:()=>this.confirm2FA(), disable2FA:()=>this.disable2FA(),
       navItems: this.NAV.map(n=>{
-        let badge=''; if(n.id==='orders'&&(pending+working)>0) badge=pending+working; if(n.id==='clips'&&pendClips>0) badge=pendClips;
+        let badge=''; if(n.id==='orders'&&(pending+working)>0) badge=pending+working; if(n.id==='clips'&&pendClips>0) badge=pendClips; if(n.id==='deposits'&&st.deposits.length>0) badge=st.deposits.length;
         return { label:n.label, icon:n.icon, badge, style:this.navStyle(st.tab===n.id), onClick:()=>this.go(n.id) };
       }),
       pageTitle: titles[st.tab][0], pageSub: titles[st.tab][1],
@@ -1029,6 +1318,7 @@ class Component extends DCLogic {
         { label:'ออเดอร์ทั้งหมด', value:st.orders.length, delta:working+pending+' กำลังดำเนินการ', color:accent, icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2', onClick:()=>this.setState({tab:'orders', orderFilter:'all'}) },
         { label:'สมาชิก', value:st.users.length, delta:'ใช้งานอยู่ '+st.users.filter(u=>!u.banned).length, color:'#2f7bff', icon:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', onClick:()=>this.setState({tab:'users'}) },
         { label:'ออเดอร์ค้าง', value:pending, delta:'รอดำเนินการ', color:'#e0a825', icon:'M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z', onClick:()=>this.setState({tab:'orders', orderFilter:'รอดำเนินการ'}) },
+        { label:'สลิป Wallet รออนุมัติ', value:st.deposits.length, delta:'รอตรวจสอบยอดโอน', color:'#ff8a3c', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15h6M9 11h2', onClick:()=>this.setState({tab:'deposits'}) },
         { label:'งานคลิปค้าง', value:pendClips, delta:'ถ่าย/ตัดต่อ/ส่งงาน', color:'#a855f7', icon:'M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M4 6h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z', onClick:()=>this.setState({tab:'clips', clipFilter:'pending'}) },
       ].map(k=>({ ...k, clickStyle: k.onClick ? 'cursor:pointer;' : '' })),
       chartRanges: [
@@ -1060,10 +1350,75 @@ class Component extends DCLogic {
       })(),
       actionQueue: [
         { count:pending, label:'ออเดอร์รอดำเนินการ', sub:'กดเพื่อเริ่มทำ', color:'#e0a825', onClick:()=>this.setState({tab:'orders', orderFilter:'รอดำเนินการ'}) },
+        { count:st.deposits.length, label:'สลิปรอตรวจสอบ', sub:'อนุมัติการเติมเงิน', color:accent, onClick:()=>this.setState({tab:'deposits'}) },
         { count:pendClips, label:'งานคลิปในคิว', sub:'ถ่าย/ตัดต่อ/ส่งงาน', color:'#2f7bff', onClick:()=>this.setState({tab:'clips', clipFilter:'pending'}) },
       ],
       recentOrders: st.orders.slice(0,5).map(o=>{ const p=this.PLATFORMS[o.pf]; return { id:o.id, service:o.service, user:o.user||'—', logo:p.logo, color:p.color, priceText:this.fmt(o.price), status:o.status, statusStyle:this.statusStyle(o.status) }; }),
       goOrders: ()=>this.setState({tab:'orders'}),
+
+      // suppliers (ซัพพลายเออร์ SMM หลายเจ้า)
+      tabSuppliers: st.tab==='suppliers',
+      supLoading: st.supLoading,
+      hasSuppliers: (st.suppliers||[]).length>0,
+      noSuppliers: st.supLoaded && (st.suppliers||[]).length===0,
+      onReloadSuppliers: ()=>this.loadSuppliers(),
+      onSyncAll: ()=>this.syncAllOrders(),
+      stop:(e)=>e.stopPropagation(),
+      closeSvcPicker: ()=>this.closeSvcPicker(),
+      onSvcSearch:(e)=>this.onSvcSearch(e.target.value),
+      svcSearch: st.svcSearch,
+      provSvcLoading: st.provSvcLoading,
+      svcPickerOpen: !!st.svcPicker,
+      svcPickerTitle: st.svcPicker ? ('เลือกบริการจากเจ้า '+(((st.suppliers||[]).find(p=>p.key===st.svcPicker.providerKey)||{}).name || st.svcPicker.providerKey)) : '',
+      svcPickerCount: st.svcPicker ? (st.provServices[st.svcPicker.providerKey]||[]).length : 0,
+      svcPickerList: (()=>{
+        if(!st.svcPicker) return [];
+        const all=st.provServices[st.svcPicker.providerKey]||[];
+        const q=(st.svcSearch||'').trim().toLowerCase();
+        const f = q ? all.filter(s=> (s.name+' '+s.category+' '+s.service).toLowerCase().includes(q)) : all;
+        return f.slice(0,300).map(s=>({
+          name:s.name, service:s.service,
+          rateText: s.rate!=null ? ('เรต '+s.rate) : '',
+          minmax: 'ขั้นต่ำ '+Number(s.min||0).toLocaleString()+' · สูงสุด '+Number(s.max||0).toLocaleString(),
+          onPick:()=>this.pickProvService(s),
+        }));
+      })(),
+      providerCards: (st.supBalances||[]).map(b=>{
+        const p=(st.suppliers||[]).find(x=>x.key===b.key)||{};
+        let host=p.url||''; try{ host=new URL(p.url).host; }catch(e){}
+        const err=!!b.error;
+        return {
+          key:b.key, name:b.name||p.name||b.key, host, err,
+          balanceText: err ? b.error : (b.balance!=null ? Number(b.balance).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+(b.currency||'') : '—'),
+          valueColor: err ? '#ff6b7a' : '#25e0a8',
+        };
+      }),
+      supGroups: Object.keys(this.PLATFORMS).map(pf=>({
+        name:this.PLATFORMS[pf].name, logo:this.PLATFORMS[pf].logo, color:this.PLATFORMS[pf].color,
+        items: this.SERVICES[pf].map(s=>{
+          const key=pf+'/'+s.id; const e=st.mapEdit[key]||{sel:'',svc:''};
+          const isProvider = e.sel && e.sel!=='auto';
+          const opts=[{value:'',label:'— ทำมือ (แอดมินทำเอง) —'},{value:'auto',label:'⚡ auto · เลือกเจ้าถูกสุด'}]
+            .concat((st.suppliers||[]).map(p=>({value:p.key,label:'→ '+(p.name||p.key)})));
+          let statusText, statusColor;
+          if(e.sel===''){ statusText='ยังไม่จับคู่ · ทำมือ'; statusColor='var(--muted)'; }
+          else if(e.sel==='auto'){ statusText='auto · เลือกเจ้าถูกสุด'; statusColor='#2f7bff'; }
+          else { statusText='ส่งไปเจ้า '+e.sel+(e.svc?(' · service #'+e.svc):''); statusColor='#25e0a8'; }
+          const base='width:100%;height:36px;padding:0 11px;background:var(--field);border:1px solid var(--border2);border-radius:9px;color:#fff;font-size:13px;font-family:Sora;font-weight:600;';
+          return {
+            myKey:key, name:s.name, sel:e.sel, svc:e.svc,
+            options:opts,
+            statusText, statusColor,
+            pickerMode: isProvider,
+            notPicker: !isProvider,
+            pickedLabel: st.svcNames[key] ? st.svcNames[key] : (e.svc ? ('service #'+e.svc) : 'เลือกบริการ…'),
+            pickedStyle: 'height:36px;width:100%;padding:0 11px;border-radius:9px;border:1px solid var(--border2);background:var(--field);color:'+(e.svc?'#fff':'var(--muted2)')+';font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+            onSel:(ev)=>this.setMapSel(key, ev.target.value),
+            onOpenPicker:()=>this.openSvcPicker(pf, s.id, e.sel),
+            onSave:()=>this.saveMapping(pf, s.id),
+          };
+        }),
+      })),
 
       // orders
       orderFilters: [
@@ -1143,7 +1498,6 @@ class Component extends DCLogic {
         const q=st.userSearch.trim().toLowerCase();
         return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q);
       }),
-      noUsers: st.userSearch.trim().length===0 && st.users.length===0,
       userRows: st.users.filter(u=>{
         const q=st.userSearch.trim().toLowerCase();
         if(!q) return true;
@@ -1162,25 +1516,10 @@ class Component extends DCLogic {
         name:this.PLATFORMS[pf].name, logo:this.PLATFORMS[pf].logo, color:this.PLATFORMS[pf].color,
         items:this.SERVICES[pf].map(s=>{
           const off=st.svcOff.includes(s.id);
-          const committed=this.rateOf(s.id, s.rate);
-          const draftRaw=st.rateDraft[s.id];
-          const hasDraft=draftRaw!==undefined;
-          const dnum=Number(draftRaw), cnum=Number(committed);
-          const dirty=hasDraft && draftRaw!=='' && !isNaN(dnum) && dnum!==cnum;
-          const up=dnum>cnum;
-          const dirColor=up?'#25e0a8':'#f5a524';
-          const inputBorder=dirty?dirColor:'var(--border2)';
           return {
-            name:s.name, rate:hasDraft?draftRaw:committed, minText:this.fmt(s.min), maxText:this.fmt(s.max),
+            name:s.name, rate:this.rateOf(s.id, s.rate), minText:this.fmt(s.min), maxText:this.fmt(s.max),
             dim: off?'opacity:.45;':'',
-            dirty,
-            dirLabel:(up?'▲ +':'▼ −')+this.fmt(Math.abs(dnum-cnum)),
-            dirPillStyle:'font-size:11px;font-family:Sora;font-weight:700;color:'+dirColor+';background:color-mix(in srgb, '+dirColor+' 14%, transparent);padding:3px 8px;border-radius:6px;white-space:nowrap;',
-            confirmStyle:'width:30px;height:30px;border-radius:8px;border:1px solid '+dirColor+';background:'+dirColor+';color:#0b0e14;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;',
-            inputStyle:'width:82px;height:36px;padding:0 11px;background:var(--field);border:1px solid '+inputBorder+';border-radius:9px;color:#fff;font-size:13.5px;font-family:Sora;font-weight:600;',
-            onRate:(e)=>this.setRateDraft(s.id, e.target.value),
-            onConfirm:()=>this.commitRate(s.id),
-            onCancel:()=>this.cancelRate(s.id),
+            onRate:(e)=>this.setRate(s.id, e.target.value),
             onToggle:()=>this.toggleSvc(s.id),
             toggleStyle:this.toggleStyle(!off), knobStyle:this.knobStyle(!off),
           };
@@ -1188,6 +1527,9 @@ class Component extends DCLogic {
       })),
 
       // deposits
+      pendingDeposits: st.deposits.map(d=>({ user:d.user, method:d.method, methodImg:d.methodImg, amount:this.fmt(d.amount), time:d.time, slip:d.slip||'', hasSlip:!!d.slip, onApprove:()=>this.approveDeposit(d.id), onReject:()=>this.askConfirm({title:'ปฏิเสธสลิปนี้?', message:'ยอดเติมของ '+d.user+' จะไม่ถูกเพิ่มเข้าระบบ', confirmLabel:'ปฏิเสธสลิป', danger:true, action:()=>this.rejectDeposit(d.id)}) })),
+      pendingDepositCount: st.deposits.length,
+      noPendingDeposits: st.deposits.length===0,
       depositHistory: st.depositHistory.map(d=>({
         user:d.user, method:d.method, amount:this.fmt(d.amount), time:d.time,
         badge: d.auto ? 'อัตโนมัติ' : 'อนุมัติเอง',
@@ -1196,6 +1538,7 @@ class Component extends DCLogic {
       financeSummary: [
         { label:'รายได้วันนี้', value:'฿'+this.fmt(2250), color:'#25e0a8' },
         { label:'รายได้สัปดาห์นี้', value:'฿'+this.fmt(12840), color:'var(--text)' },
+        { label:'เติมรอตรวจสอบ', value:'฿'+this.fmt(st.deposits.reduce((a,d)=>a+d.amount,0)), color:'#e0a825' },
         { label:'เครดิตหมุนเวียน', value:'฿'+this.fmt(st.users.reduce((a,u)=>a+u.balance,0)), color:accent },
       ],
 
@@ -1203,9 +1546,11 @@ class Component extends DCLogic {
       paySettings: [
         { id:'promptpay', name:'พร้อมเพย์ (PromptPay)', desc:'สแกน QR โอนจากทุกธนาคาร', img:'assets/promptpay.png' },
         { id:'stripe', name:'บัตรเครดิต/เดบิต (Stripe)', desc:'ชำระผ่าน Stripe', img:'assets/stripe.svg' },
+        { id:'truemoney', name:'TrueMoney Wallet', desc:'เติมผ่านวอลเล็ท', img:'assets/truemoney.png' },
       ].map(p=>{ const on=!st.payOff.includes(p.id); return { name:p.name, desc:p.desc, img:p.img, toggleStyle:this.toggleStyle(on), knobStyle:this.knobStyle(on), onToggle:()=>this.setState(s=>({payOff: on?[...s.payOff,p.id]:s.payOff.filter(x=>x!==p.id)})) }; }),
       setLine: st.setLine, onSetLine:(e)=>this.setState({setLine:e.target.value}),
       setEmail: st.setEmail, onSetEmail:(e)=>this.setState({setEmail:e.target.value}),
+      setTmn: st.setTmn, onSetTmn:(e)=>this.setState({setTmn:e.target.value}),
       saveSettings: ()=>this.toast('บันทึกการตั้งค่าเรียบร้อย'),
 
       toast: st.toast,
