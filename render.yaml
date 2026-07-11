@@ -38,6 +38,14 @@ services:
         sync: false           # อีเมลแอดมินตัวแรก — สร้างบัญชีแอดมินตอน boot
       - key: ADMIN_PASSWORD
         sync: false           # ⚠️ รหัสแอดมินที่แข็งแรง — เปลี่ยน + เปิด 2FA ทันทีหลังล็อกอินครั้งแรก
+      # ── ซัพพลายเออร์ SMM (ต่อได้หลายเจ้า — กรอกเองใน Dashboard) ──
+      # เพิ่มเจ้า B, C ได้โดยเพิ่ม PROVIDER_B_URL/KEY, PROVIDER_C_URL/KEY ตามรูปแบบเดียวกัน
+      - key: PROVIDER_A_NAME
+        sync: false
+      - key: PROVIDER_A_URL
+        sync: false           # endpoint API v2 ของเจ้านั้น เช่น https://xxx/api/v2
+      - key: PROVIDER_A_KEY
+        sync: false           # API key ของบัญชีคุณกับเจ้านั้น (ความลับ)
 
   # ── หน้าเว็บ (static) — ลูกค้า: / , แอดมิน: /admin.html ──
   - type: web
