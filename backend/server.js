@@ -21,6 +21,7 @@ const rateLimit = rateLimitPkg.rateLimit || rateLimitPkg;
 const { users, orders, deposits, ledger } = require('./db');
 const { register, login, forgotPassword, verifyResetCode, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, loginWithGoogle } = require('./auth');
 const { CATALOG, priceOrder } = require('./services');
+const providers = require('./providers');   // ต่อซัพพลายเออร์ SMM หลายเจ้า (dispatch/status/balance)
 
 // .trim() กันคีย์ที่วางมาแล้วติด space/ขึ้นบรรทัดใหม่/อักขระซ่อน → กัน ERR_INVALID_CHAR ตอนสร้าง header Authorization
 const stripe = Stripe((process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder').trim());
@@ -213,8 +214,26 @@ app.get('/api/services', (req, res) => res.json({ catalog: CATALOG }));
 // สั่งซื้อ — ตัดเครดิตจากบัญชีของ "ผู้ใช้ที่ล็อกอิน" (ไม่ใช่ค่าจาก body)
 app.post('/api/orders', requireAuth, wrap(async (req, res) => {
   const priced = priceOrder(req.body);        // คำนวณราคาที่เซิร์ฟเวอร์ + validate
-  const order = orders.create(req.user.id, priced);   // atomic: เครดิตไม่พอ = throw
-  res.json({ order, balance: users.byId(req.user.id).credits });
+  const order = orders.create(req.user.id, priced);   // atomic: ตัดเครดิตก่อน (เครดิตไม่พอ = throw)
+
+  // → ส่งต่อไปซัพพลายเออร์จริง (ถ้าตั้ง provider + map ไว้) — มี fallback ข้ามเจ้าในตัว
+  // ถ้ายังไม่ได้ตั้งซัพพลายเออร์ → dispatch คืน null → ออเดอร์ค้างไว้ให้แอดมินทำมือ (พฤติกรรมเดิม)
+  try {
+    const dispatched = await providers.dispatch({
+      platform: priced.platform, serviceId: priced.service_id, link: priced.link, quantity: priced.qty,
+    });
+    if (dispatched) {
+      providers.attachToOrder(order.id, dispatched);
+      orders.setStatus(order.id, 'กำลังดำเนินการ', order.progress);
+    }
+  } catch (e) {
+    // ซัพพลายเออร์ปฏิเสธทุกเจ้า → คืนเครดิตลูกค้าเต็มจำนวน + ยกเลิกออเดอร์
+    console.error('dispatch ล้มเหลว → คืนเครดิต:', e.message);
+    try { orders.refund(order.id); } catch (_) {}
+    return res.status(502).json({ error: 'สั่งซื้อไม่สำเร็จ (ซัพพลายเออร์ไม่ตอบรับ) — คืนเครดิตให้แล้ว', detail: e.message, balance: users.byId(req.user.id).credits });
+  }
+
+  res.json({ order: orders.byId(order.id), balance: users.byId(req.user.id).credits });
 }));
 
 app.get('/api/orders', requireAuth, (req, res) => res.json({ orders: orders.forUser(req.user.id) }));
@@ -335,6 +354,44 @@ app.post('/api/admin/deposits/:id/reject', requireAuth, requireAdmin, wrap(async
   res.json({ deposit: deposits.reject(req.params.id) });
 }));
 
+/* ═══════════════════════════════════════════════════════════
+ * ADMIN — ซัพพลายเออร์ (หลายเจ้า) + จับคู่บริการ + sync สถานะ
+ * ═══════════════════════════════════════════════════════════ */
+// รายชื่อเจ้าที่ต่อไว้ + เครดิตคงเหลือแต่ละเจ้า (ไม่ส่ง apiKey ออก)
+app.get('/api/admin/providers', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ providers: providers.listProviders(), balances: await providers.balances() });
+}));
+
+// ดึงแคตตาล็อกบริการของเจ้าหนึ่ง (ไว้หา service id มา map) — ?force=1 เพื่อล้าง cache
+app.get('/api/admin/providers/:key/services', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const list = await providers.getServices(req.params.key, { force: req.query.force === '1' });
+  res.json({ services: list });
+}));
+
+// ตาราง map ปัจจุบัน (บริการเรา → เจ้าไหน + service id เจ้านั้น)
+app.get('/api/admin/service-map', requireAuth, requireAdmin, (req, res) => {
+  res.json({ map: providers.serviceMap.all() });
+});
+
+// ตั้ง/แก้ mapping ของบริการหนึ่ง {platform, serviceId, providerKey, providerService, mode}
+app.post('/api/admin/service-map', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const { platform, serviceId, providerKey, providerService, mode } = req.body;
+  if (!CATALOG[platform] || !CATALOG[platform][serviceId]) return res.status(400).json({ error: 'ไม่พบบริการนี้ในแคตตาล็อก' });
+  res.json({ map: providers.serviceMap.set({ platform, serviceId, providerKey, providerService, mode }) });
+}));
+
+// sync สถานะออเดอร์เดียวจากซัพพลายเออร์ทันที
+app.post('/api/admin/orders/:id/sync', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const o = orders.byId(req.params.id);
+  if (!o) return res.status(404).json({ error: 'ไม่พบออเดอร์' });
+  res.json({ result: await providers.syncOrder(o), order: orders.byId(req.params.id) });
+}));
+
+// sync สถานะออเดอร์ที่ยังไม่จบทั้งหมด
+app.post('/api/admin/providers/sync-all', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ results: await providers.syncAll() });
+}));
+
 app.get('/api/health', (req, res) => {
   // ── ตัวเช็คหลัง deploy: เปิด URL นี้ในเบราว์เซอร์แล้วดูค่า ──
   const dbPath = process.env.DB_PATH || '(ไม่ได้ตั้ง → ใช้ที่ตั้งชั่วคราวในเครื่อง)';
@@ -344,11 +401,12 @@ app.get('/api/health', (req, res) => {
   try { ledgerCount = ledger.recent(100000).length; } catch (e) {}
   res.json({
     ok: true,
-    version: '2026-07-06-settle',   // ⭐ ถ้าเห็นค่านี้ = server.js เวอร์ชันใหม่ขึ้นแล้ว
+    version: '2026-07-12-providers',   // ⭐ เห็นค่านี้ = เวอร์ชันหลายซัพพลายเออร์ขึ้นแล้ว
     dbPath,
     persistentDisk: persistent,     // ⭐ true = ข้อมูลไม่หายหลัง redeploy | false = ต้องตั้งดิสก์ + DB_PATH
     userCount,                      // จำนวนบัญชีในฐานข้อมูลตอนนี้
     ledgerCount,                    // จำนวนรายการเคลื่อนไหวเครดิตทั้งหมด
+    providers: providers.listProviders().map((p) => ({ key: p.key, name: p.name })),  // ⭐ ซัพพลายเออร์ที่ต่อติดแล้ว (ไม่ส่ง key ลับ)
   });
 });
 
@@ -373,6 +431,13 @@ function checkEnv() {
   if ((process.env.ADMIN_PASSWORD || 'admin1234') === 'admin1234')
     warn.push('ADMIN_PASSWORD — ยังเป็นรหัส default "admin1234" เปลี่ยนด่วน + เปิด 2FA');
 
+  // ── สถานะซัพพลายเออร์ SMM (ไม่บังคับ — ไม่ตั้งก็เปิดเว็บได้ แค่ออเดอร์จะค้างให้แอดมินทำมือ) ──
+  const provList = providers.listProviders();
+  if (provList.length === 0)
+    warn.push('PROVIDER_* — ยังไม่ได้ต่อซัพพลายเออร์เจ้าไหนเลย — ออเดอร์จะรอให้แอดมินทำมือ (ใส่ PROVIDER_A_URL/KEY ใน .env)');
+  else
+    console.log(`📦 ต่อซัพพลายเออร์แล้ว ${provList.length} เจ้า: ${provList.map((p) => p.key + '=' + p.name).join(', ')}`);
+
   if (warn.length || fatal.length) {
     console.warn('\n⚠️  ตรวจ ENV ก่อนเปิดจริง:');
     fatal.forEach((m) => console.warn('   🔴 ' + m));
@@ -391,3 +456,7 @@ checkEnv();
 
 const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => console.log(`🚀 BoostHub backend ทำงานที่พอร์ต ${PORT}`));
+
+// เริ่ม poller sync สถานะออเดอร์กับซัพพลายเออร์ (เฉพาะเมื่อมีอย่างน้อย 1 เจ้าใน .env)
+// ตั้งจังหวะด้วย PROVIDER_POLL_MS (ค่าเริ่มต้น 60 วินาที)
+providers.startPolling(Number(process.env.PROVIDER_POLL_MS) || 60000);
