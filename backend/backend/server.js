@@ -1,0 +1,462 @@
+/**
+ * BoostHub SMM Panel — Backend
+ * ────────────────────────────────────────────────────────────
+ * รากฐานระบบหลังบ้าน (ของจริง ใช้งานได้):
+ *   • ฐานข้อมูล SQLite จริง (db.js) — เครดิต/ออเดอร์/ledger ไม่หายเมื่อรีสตาร์ท
+ *   • Auth: สมัคร/ล็อกอิน/JWT (auth.js) — ไม่เชื่อ userId จาก client
+ *   • สั่งซื้อ: ตัดเครดิตแบบ atomic + คำนวณราคาที่เซิร์ฟเวอร์ (services.js)
+ *   • เติมเงิน: Stripe (PromptPay/บัตร) อัตโนมัติ + TrueMoney (แอดมินอนุมัติสลิป)
+ *   • ledger: บันทึกเครดิตเข้า-ออกทุกครั้ง
+ *
+ * รันจริง:  cp .env.example .env → ใส่คีย์ → npm install → npm start
+ */
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const Stripe = require('stripe');
+const rateLimitPkg = require('express-rate-limit');
+// express-rate-limit v7: ตัวฟังก์ชันหลักอยู่ทั้งเป็น default และ named export 'rateLimit'
+const rateLimit = rateLimitPkg.rateLimit || rateLimitPkg;
+
+const { users, orders, deposits, ledger } = require('./db');
+const { register, login, forgotPassword, verifyResetCode, resetPassword, verify2fa, setup2fa, enable2fa, disable2fa, requireAuth, requireAdmin, optionalAuth, publicUser, loginWithGoogle } = require('./auth');
+const { CATALOG, priceOrder } = require('./services');
+const providers = require('./providers');   // ต่อซัพพลายเออร์ SMM หลายเจ้า (dispatch/status/balance)
+
+// .trim() กันคีย์ที่วางมาแล้วติด space/ขึ้นบรรทัดใหม่/อักขระซ่อน → กัน ERR_INVALID_CHAR ตอนสร้าง header Authorization
+const stripe = Stripe((process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder').trim());
+
+// ── สร้างบัญชีแอดมินตัวแรกอัตโนมัติตอนเริ่มระบบ (เผื่อ deploy บนที่ที่รัน `npm run seed` เองไม่ได้ เช่น Render free tier) ──
+// ตั้งอีเมล/รหัสผ่านผ่าน ADMIN_EMAIL / ADMIN_PASSWORD ใน .env — ถ้ามีแอดมินอยู่แล้วจะข้ามไปเฉยๆ ไม่ทำอะไรซ้ำ
+(async () => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const email = (process.env.ADMIN_EMAIL || 'admin@boosthub.local').toLowerCase();
+    const password = process.env.ADMIN_PASSWORD || 'admin1234';
+    const existing = users.byEmail(email);
+    if (!existing) {
+      const password_hash = await bcrypt.hash(password, 10);
+      users.create({ email, password_hash, name: 'Admin', is_admin: 1 });
+      console.log('✅ สร้างบัญชีแอดมินอัตโนมัติ:', email, '(เปลี่ยนรหัสผ่านทันทีหลังล็อกอินครั้งแรก)');
+    } else if (process.env.ADMIN_PASSWORD && String(process.env.ADMIN_RESET_PASSWORD || '').trim() !== 'off') {
+      // บัญชีแอดมินมีอยู่แล้ว (DB อยู่บนดิสก์ถาวร) → รหัสใน DB อาจไม่ตรงกับ ADMIN_PASSWORD ปัจจุบัน
+      // จึง sync รหัส + สิทธิ์แอดมินให้ตรงกับ env ทุก boot เพื่อให้ล็อกอินได้เสมอหลัง redeploy
+      // ถ้าไม่ต้องการพฤติกรรมนี้ (เช่นเปลี่ยนรหัสในระบบเองแล้ว) ตั้ง ADMIN_RESET_PASSWORD=off
+      const password_hash = await bcrypt.hash(password, 10);
+      users.setPassword(existing.id, password_hash);
+      if (!existing.is_admin) require('./db').db.prepare('UPDATE users SET is_admin = 1 WHERE id = ?').run(existing.id);
+      console.log('🔑 อัปเดตรหัสแอดมินให้ตรงกับ ADMIN_PASSWORD:', email);
+    }
+  } catch (e) {
+    console.error('ตั้งค่าแอดมินอัตโนมัติล้มเหลว:', e.message);
+  }
+})();
+
+const app = express();
+
+// ⭐ อยู่หลัง reverse proxy ของ Render — ต้องเชื่อ header X-Forwarded-For
+// เพื่อให้ req.ip เป็น IP จริงของลูกค้า ไม่ใช่ IP ของ proxy
+// (ถ้าไม่ตั้ง: rate limit จะเห็นลูกค้าทุกคนเป็น IP เดียว → ล็อกทั้งเว็บพร้อมกัน)
+// ตั้งเป็น 1 = เชื่อ proxy ชั้นเดียว (ของ Render) — อย่าตั้ง true ซึ่งเปิดกว้างเกินไป
+app.set('trust proxy', 1);
+
+// ── CORS: อนุญาตเฉพาะโดเมนหน้าเว็บจริงเท่านั้น ──
+// FRONTEND_ORIGIN ใส่ได้หลายโดเมนคั่นด้วย comma เช่น
+//   https://boosthub.com,https://www.boosthub.com
+// ค่าเริ่มต้น '*' = เปิดทุกโดเมน (ใช้ได้ตอน dev แต่ห้ามใช้ตอนเปิดจริง — checkEnv จะเตือน)
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '*';
+const allowedOrigins = FRONTEND_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean);
+const corsOptions = {
+  origin(origin, cb) {
+    // ไม่มี header origin = เรียกจาก server/มือถือ/curl/health check → ปล่อยผ่าน
+    if (!origin) return cb(null, true);
+    const ok = allowedOrigins.includes('*') || allowedOrigins.includes(origin);
+    cb(null, ok);   // ไม่ผ่าน → ไม่ใส่ CORS header เบราว์เซอร์จะบล็อกเอง
+  },
+};
+app.use(cors(corsOptions));
+
+// helper ส่ง error ให้เป็นรูปแบบเดียวกัน
+const wrap = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
+  console.error(e);
+  res.status(e.status || 500).json({ error: e.message || 'เกิดข้อผิดพลาด' });
+});
+
+/* ═══════════════════════════════════════════════════════════
+ * WEBHOOK — ต้องอ่าน raw body ก่อน express.json()
+ * เงินเข้า Stripe สำเร็จจริง → เติมเครดิตผ่าน DB (จุดที่เชื่อถือได้สุด)
+ * ═══════════════════════════════════════════════════════════ */
+app.post('/api/webhook', express.raw({ type: 'application/json', limit: '1mb' }), (req, res) => {
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.body, req.headers['stripe-signature'], (process.env.STRIPE_WEBHOOK_SECRET || '').trim()
+    );
+  } catch (err) {
+    console.error('❌ ตรวจสอบลายเซ็น webhook ไม่ผ่าน:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'payment_intent.succeeded') {
+    settlePaymentIntent(event.data.object);
+  }
+  res.json({ received: true });
+});
+
+// เติมเครดิตเข้า DB จาก PaymentIntent ที่จ่ายสำเร็จ — กันซ้ำด้วย pi.id (idempotent)
+// เรียกได้ทั้งจาก webhook และจากตอนหน้าเว็บ poll สถานะ → เครดิตไม่หายแม้ webhook ไม่ทำงาน
+function settlePaymentIntent(pi) {
+  if (!pi || pi.status !== 'succeeded') return null;
+  const userId = pi.metadata.userId;
+  const credits = Number(pi.metadata.credits || 0);
+  const email = pi.metadata.email || '';
+  const method = pi.payment_method_types?.[0] === 'promptpay' ? 'พร้อมเพย์ QR (Stripe)' : 'บัตร (Stripe)';
+  if (!userId || !credits) return null;
+  try {
+    const dep = deposits.creditFromStripe(userId, credits, pi.id, method, email);   // กันซ้ำในตัว + สร้าง guest ถ้ายังไม่มี
+    if (dep) console.log(`✅ เติมเครดิต: user=${userId} +${credits} (pi=${pi.id})`);
+    return dep;
+  } catch (e) {
+    console.error('เติมเครดิตล้มเหลว:', e.message);
+    return null;
+  }
+}
+
+// จำกัดขนาด body 1MB — พอสำหรับสลิปที่ย่อแล้ว (~200KB) แต่กันคนยัด payload ก้อนโตถล่ม DB/หน่วยความจำ
+app.use(express.json({ limit: '1mb' }));
+
+/* ═══════════════════════════════════════════════════════════
+ * RATE LIMITING — กัน brute-force รหัสผ่าน / โค้ด 2FA / สแปมอีเมลรีเซ็ต
+ * ────────────────────────────────────────────────────────────
+ * ใช้ express-rate-limit เก็บตัวนับใน memory (ต่อ 1 instance)
+ * ⚠️ ถ้าสเกลเป็นหลาย instance ทีหลัง ให้เปลี่ยน store เป็น Redis
+ * ⚠️ ต้องมี app.set('trust proxy', 1) ด้านบน ไม่งั้นนับ IP ผิด
+ * ═══════════════════════════════════════════════════════════ */
+// โรงงานสร้าง limiter — ตอบ 429 เป็น JSON ภาษาไทยให้หน้าเว็บอ่านง่าย
+function makeLimiter({ windowMs, limit, message, keyGenerator, skipSuccessfulRequests = false }) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: 'draft-7',   // ส่ง header RateLimit-* บอกโควตาคงเหลือให้ client
+    legacyHeaders: false,
+    skipSuccessfulRequests,       // true = นับเฉพาะครั้งที่ "พลาด"
+    ...(keyGenerator ? { keyGenerator } : {}),
+    handler: (req, res) => res.status(429).json({ error: message }),
+  });
+}
+
+// ── ล็อกอิน: 8 ครั้งพลาด / 15 นาที ต่อ IP ──
+// ใช้ keyGenerator ค่าเริ่มต้นของ library (นับต่อ IP + รองรับ IPv6 ในตัว)
+// ครั้งที่ล็อกอิน "สำเร็จ" ไม่กินโควตา (skipSuccessfulRequests)
+const loginLimiter = makeLimiter({
+  windowMs: 15 * 60 * 1000, limit: 8, skipSuccessfulRequests: true,
+  message: 'พยายามเข้าสู่ระบบผิดบ่อยเกินไป กรุณารอ 15 นาทีแล้วลองใหม่',
+});
+
+// ── ยืนยันโค้ด 2FA 6 หลัก: 6 ครั้งพลาด / 15 นาที ต่อ IP ──
+// โค้ดมีแค่ 1,000,000 ชุด ต้องล็อกแน่นเป็นพิเศษกัน brute-force
+const twofaLimiter = makeLimiter({
+  windowMs: 15 * 60 * 1000, limit: 6, skipSuccessfulRequests: true,
+  message: 'ยืนยันรหัส 2FA ผิดบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่',
+});
+
+// ── สมัครสมาชิก: 5 บัญชี / ชม. ต่อ IP ── กันสร้างบัญชีรัว ๆ / สแปม
+const registerLimiter = makeLimiter({
+  windowMs: 60 * 60 * 1000, limit: 5,
+  message: 'สมัครสมาชิกบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่',
+});
+
+// ── ลืมรหัสผ่าน: 5 ครั้ง / ชม. ต่อ IP ── กันยิงอีเมลรีเซ็ตถล่มคนอื่น (email bombing)
+const forgotLimiter = makeLimiter({
+  windowMs: 60 * 60 * 1000, limit: 5,
+  message: 'ขอลิงก์รีเซ็ตบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่',
+});
+
+// ── โควตารวมทุก endpoint: 120 req / นาที ต่อ IP ── กันยิงถล่มทั่วไป (DoS เบา ๆ)
+// วางไว้ "ใต้" webhook ของ Stripe จึงไม่กระทบ webhook (Stripe retry ได้ตามปกติ)
+const apiLimiter = makeLimiter({
+  windowMs: 60 * 1000, limit: 120,
+  message: 'มีคำขอเข้ามาถี่เกินไป กรุณาชะลอสักครู่',
+});
+app.use('/api/', apiLimiter);
+
+/* ═══════════════════════════════════════════════════════════
+ * AUTH
+ * ═══════════════════════════════════════════════════════════ */
+app.post('/api/auth/register', registerLimiter, wrap(async (req, res) => res.json(await register(req.body))));
+app.post('/api/auth/login',    loginLimiter,    wrap(async (req, res) => res.json(await login(req.body))));
+// เข้าสู่ระบบด้วย Google (Gmail) — รับ credential (ID token) จากฝั่งหน้า
+app.post('/api/auth/google', loginLimiter, wrap(async (req, res) => res.json(await loginWithGoogle(req.body))));
+app.get('/api/auth/me', requireAuth, (req, res) => res.json({ user: publicUser(req.user) }));
+
+// ลืมรหัสผ่าน — ส่งรหัสยืนยัน 6 หลักเข้าอีเมลที่สมัคร (ตอบ ok เสมอ ไม่บอกว่าอีเมลมีจริงไหม)
+app.post('/api/auth/forgot', forgotLimiter, wrap(async (req, res) => res.json(await forgotPassword(req.body))));
+// ยืนยันรหัส 6 หลัก {email, code} → คืน resetToken สำหรับตั้งรหัสใหม่
+app.post('/api/auth/verify-code', forgotLimiter, wrap(async (req, res) => res.json(verifyResetCode(req.body))));
+// ตั้งรหัสใหม่ด้วย resetToken {token, password}
+app.post('/api/auth/reset',  wrap(async (req, res) => res.json(await resetPassword(req.body))));
+
+// ── 2FA (Google Authenticator) ──
+// ขั้นที่ 2 ของล็อกอิน: ยืนยันรหัส 6 หลัก {tempToken, code}
+app.post('/api/auth/2fa/verify', twofaLimiter, wrap(async (req, res) => res.json(verify2fa(req.body))));
+// เริ่มตั้งค่า 2FA (ต้องล็อกอินอยู่) → คืน QR ให้สแกน
+app.post('/api/auth/2fa/setup',  requireAuth, wrap(async (req, res) => res.json(await setup2fa(req.user))));
+// ยืนยันโค้ดเพื่อเปิด 2FA จริง {code}
+app.post('/api/auth/2fa/enable', requireAuth, wrap(async (req, res) => res.json(enable2fa(req.user, req.body.code))));
+// ปิด 2FA — ยืนยันด้วยรหัสผ่าน {password}
+app.post('/api/auth/2fa/disable', requireAuth, wrap(async (req, res) => res.json(await disable2fa(req.user, req.body.password))));
+
+/* ═══════════════════════════════════════════════════════════
+ * บริการ + สั่งซื้อ (ลูกค้า)
+ * ═══════════════════════════════════════════════════════════ */
+app.get('/api/services', (req, res) => res.json({ catalog: CATALOG }));
+
+// สั่งซื้อ — ตัดเครดิตจากบัญชีของ "ผู้ใช้ที่ล็อกอิน" (ไม่ใช่ค่าจาก body)
+app.post('/api/orders', requireAuth, wrap(async (req, res) => {
+  const priced = priceOrder(req.body);        // คำนวณราคาที่เซิร์ฟเวอร์ + validate
+  const order = orders.create(req.user.id, priced);   // atomic: ตัดเครดิตก่อน (เครดิตไม่พอ = throw)
+
+  // → ส่งต่อไปซัพพลายเออร์จริง (ถ้าตั้ง provider + map ไว้) — มี fallback ข้ามเจ้าในตัว
+  // ถ้ายังไม่ได้ตั้งซัพพลายเออร์ → dispatch คืน null → ออเดอร์ค้างไว้ให้แอดมินทำมือ (พฤติกรรมเดิม)
+  try {
+    const dispatched = await providers.dispatch({
+      platform: priced.platform, serviceId: priced.service_id, link: priced.link, quantity: priced.qty,
+    });
+    if (dispatched) {
+      providers.attachToOrder(order.id, dispatched);
+      orders.setStatus(order.id, 'กำลังดำเนินการ', order.progress);
+    }
+  } catch (e) {
+    // ซัพพลายเออร์ปฏิเสธทุกเจ้า → คืนเครดิตลูกค้าเต็มจำนวน + ยกเลิกออเดอร์
+    console.error('dispatch ล้มเหลว → คืนเครดิต:', e.message);
+    try { orders.refund(order.id); } catch (_) {}
+    return res.status(502).json({ error: 'สั่งซื้อไม่สำเร็จ (ซัพพลายเออร์ไม่ตอบรับ) — คืนเครดิตให้แล้ว', detail: e.message, balance: users.byId(req.user.id).credits });
+  }
+
+  res.json({ order: orders.byId(order.id), balance: users.byId(req.user.id).credits });
+}));
+
+app.get('/api/orders', requireAuth, (req, res) => res.json({ orders: orders.forUser(req.user.id) }));
+app.get('/api/ledger', requireAuth, (req, res) => res.json({ ledger: ledger.forUser(req.user.id) }));
+app.get('/api/balance', requireAuth, (req, res) => res.json({ credits: req.user.credits }));
+
+/* ═══════════════════════════════════════════════════════════
+ * เติมเงิน — Stripe PromptPay / บัตร (คืน clientSecret ให้หน้าเว็บ)
+ * userId มาจาก token (requireAuth) ไม่ใช่จาก body
+ * ═══════════════════════════════════════════════════════════ */
+async function createIntent(req, res, method) {
+  const amountBaht = Number(req.body.amountBaht);
+  const amount = Math.round(amountBaht * 100);         // สตางค์
+  if (!amount || amount < 2000) return res.status(400).json({ error: 'ยอดขั้นต่ำ 20 บาท' });
+
+  // ลูกค้าที่ล็อกอินแล้ว → ผูกกับบัญชีจริง / ยังไม่ล็อกอิน → ใช้ id ที่ส่งมา (guest)
+  const userId = req.user ? req.user.id : String(req.body.userId || '').trim();
+  if (!userId) return res.status(400).json({ error: 'ไม่พบผู้ใช้' });
+  const email = req.user ? req.user.email : (req.body.email || '');
+
+  const intent = await stripe.paymentIntents.create({
+    amount, currency: 'thb', payment_method_types: [method],
+    metadata: { userId, email, credits: String(Math.round(amountBaht)) },  // 1 บาท = 1 เครดิต
+  });
+  res.json({ clientSecret: intent.client_secret, paymentIntentId: intent.id, publishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim() });
+}
+app.post('/api/promptpay/create',  optionalAuth, wrap((req, res) => createIntent(req, res, 'promptpay')));
+app.post('/api/card/create-intent', optionalAuth, wrap((req, res) => createIntent(req, res, 'card')));
+app.get('/api/promptpay/status/:id', wrap(async (req, res) => {
+  const pi = await stripe.paymentIntents.retrieve(req.params.id);
+  if (pi.status === 'succeeded') settlePaymentIntent(pi);   // เติมเครดิตทันทีไม่ต้องรอ webhook (กันซ้ำด้วย pi.id)
+  res.json({ status: pi.status });
+}));
+
+// หน้าเว็บเรียกหลังจ่ายบัตร/พร้อมเพย์สำเร็จ เพื่อยืนยันเครดิตเข้า DB แล้วส่งยอดล่าสุดกลับ
+app.post('/api/payment/settle', optionalAuth, wrap(async (req, res) => {
+  const id = String(req.body.paymentIntentId || '').trim();
+  if (!id) return res.status(400).json({ error: 'ไม่พบรายการ' });
+  const pi = await stripe.paymentIntents.retrieve(id);
+  settlePaymentIntent(pi);
+  const uid = req.user ? req.user.id : pi.metadata.userId;
+  const u = uid ? users.byId(uid) : null;
+  res.json({ status: pi.status, credits: u ? u.credits : null });
+}));
+app.get('/api/config', (req, res) => res.json({ publishableKey: (process.env.STRIPE_PUBLISHABLE_KEY || '').trim(), googleClientId: (process.env.GOOGLE_CLIENT_ID || '').trim() }));
+
+/* ═══════════════════════════════════════════════════════════
+ * เติมเงิน — TrueMoney Wallet (โอนมือ + แนบสลิป → แอดมินอนุมัติ)
+ * ═══════════════════════════════════════════════════════════ */
+app.post('/api/deposits/truemoney', requireAuth, wrap(async (req, res) => {
+  const amount = Math.floor(Number(req.body.amount));
+  if (!amount || amount < 20) return res.status(400).json({ error: 'ยอดขั้นต่ำ 20 บาท' });
+  // กรองสลิป — รับเฉพาะรูป data:image/ หรือลิงก์ https เท่านั้น
+  // กัน scheme อันตราย (javascript:) ที่ถูกนำไป render เป็น href ในหน้าแอดมิน → stored XSS
+  let slip_url = req.body.slipUrl || null;
+  if (slip_url != null) {
+    slip_url = String(slip_url);
+    const okSlip = /^data:image\/(png|jpe?g|webp|gif);base64,/i.test(slip_url) || /^https:\/\/[^\s]+$/i.test(slip_url);
+    if (!okSlip) return res.status(400).json({ error: 'สลิปไม่ถูกต้อง (ต้องเป็นรูปภาพ)' });
+    if (slip_url.length > 1_500_000) return res.status(400).json({ error: 'สลิปใหญ่เกินไป กรุณาย่อรูปก่อน' });
+  }
+  const dep = deposits.create({ user_id: req.user.id, method: 'TrueMoney Wallet', amount, slip_url });
+  res.json({ deposit: dep });
+}));
+
+/* ═══════════════════════════════════════════════════════════
+ * ADMIN — ต้อง is_admin
+ * ═══════════════════════════════════════════════════════════ */
+app.get('/api/admin/overview', requireAuth, requireAdmin, (req, res) => {
+  const allUsers = users.all();
+  const allOrders = orders.all();
+  res.json({
+    users: allUsers.map(publicUser),
+    orders: allOrders,
+    pendingDeposits: deposits.pending(),
+    depositHistory: deposits.history(),
+    recentLedger: ledger.recent(50),
+    stats: {
+      revenueToday: allOrders.filter(o => o.status !== 'ยกเลิก').reduce((a, o) => a + o.price, 0),
+      totalUsers: allUsers.length,
+      pendingOrders: allOrders.filter(o => o.status === 'รอดำเนินการ').length,
+      circulatingCredits: allUsers.reduce((a, u) => a + u.credits, 0),
+    },
+  });
+});
+
+// อัปเดตสถานะออเดอร์ (เริ่มทำ / เสร็จ / ฯลฯ)
+app.patch('/api/admin/orders/:id', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const { status, progress } = req.body;
+  res.json({ order: orders.setStatus(req.params.id, status, progress) });
+}));
+
+// ยกเลิก + คืนเครดิต (atomic, กันคืนซ้ำ)
+app.post('/api/admin/orders/:id/refund', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ order: orders.refund(req.params.id) });
+}));
+
+// เติมเครดิตให้ผู้ใช้ (แอดมิน) — บันทึก ledger type 'admin'
+app.post('/api/admin/users/:id/credit', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const { adminAdjust } = require('./db');
+  const amount = Math.floor(Number(req.body.amount));
+  if (!amount) return res.status(400).json({ error: 'จำนวนไม่ถูกต้อง' });
+  const bal = adminAdjust(req.params.id, amount, 'แอดมินปรับเครดิต');   // atomic: update + ledger ใน transaction เดียว
+  res.json({ user: publicUser(users.byId(req.params.id)), balance: bal });
+}));
+
+// ระงับ / ปลดระงับ
+app.post('/api/admin/users/:id/ban', requireAuth, requireAdmin, wrap(async (req, res) => {
+  users.setBanned(req.params.id, !!req.body.banned);
+  res.json({ user: publicUser(users.byId(req.params.id)) });
+}));
+
+// อนุมัติ / ปฏิเสธ สลิป TrueMoney
+app.post('/api/admin/deposits/:id/approve', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ deposit: deposits.approve(req.params.id) });
+}));
+app.post('/api/admin/deposits/:id/reject', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ deposit: deposits.reject(req.params.id) });
+}));
+
+/* ═══════════════════════════════════════════════════════════
+ * ADMIN — ซัพพลายเออร์ (หลายเจ้า) + จับคู่บริการ + sync สถานะ
+ * ═══════════════════════════════════════════════════════════ */
+// รายชื่อเจ้าที่ต่อไว้ + เครดิตคงเหลือแต่ละเจ้า (ไม่ส่ง apiKey ออก)
+app.get('/api/admin/providers', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ providers: providers.listProviders(), balances: await providers.balances() });
+}));
+
+// ดึงแคตตาล็อกบริการของเจ้าหนึ่ง (ไว้หา service id มา map) — ?force=1 เพื่อล้าง cache
+app.get('/api/admin/providers/:key/services', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const list = await providers.getServices(req.params.key, { force: req.query.force === '1' });
+  res.json({ services: list });
+}));
+
+// ตาราง map ปัจจุบัน (บริการเรา → เจ้าไหน + service id เจ้านั้น)
+app.get('/api/admin/service-map', requireAuth, requireAdmin, (req, res) => {
+  res.json({ map: providers.serviceMap.all() });
+});
+
+// ตั้ง/แก้ mapping ของบริการหนึ่ง {platform, serviceId, providerKey, providerService, mode}
+app.post('/api/admin/service-map', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const { platform, serviceId, providerKey, providerService, mode } = req.body;
+  if (!CATALOG[platform] || !CATALOG[platform][serviceId]) return res.status(400).json({ error: 'ไม่พบบริการนี้ในแคตตาล็อก' });
+  res.json({ map: providers.serviceMap.set({ platform, serviceId, providerKey, providerService, mode }) });
+}));
+
+// sync สถานะออเดอร์เดียวจากซัพพลายเออร์ทันที
+app.post('/api/admin/orders/:id/sync', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const o = orders.byId(req.params.id);
+  if (!o) return res.status(404).json({ error: 'ไม่พบออเดอร์' });
+  res.json({ result: await providers.syncOrder(o), order: orders.byId(req.params.id) });
+}));
+
+// sync สถานะออเดอร์ที่ยังไม่จบทั้งหมด
+app.post('/api/admin/providers/sync-all', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.json({ results: await providers.syncAll() });
+}));
+
+app.get('/api/health', (req, res) => {
+  // ── ตัวเช็คหลัง deploy: เปิด URL นี้ในเบราว์เซอร์แล้วดูค่า ──
+  const dbPath = process.env.DB_PATH || '(ไม่ได้ตั้ง → ใช้ที่ตั้งชั่วคราวในเครื่อง)';
+  const persistent = /^\/data(\/|$)/.test(process.env.DB_PATH || '');   // ถาวรก็ต่อเมื่อ DB อยู่บนดิสก์ /data
+  let userCount = null, ledgerCount = null;
+  try { userCount = users.all().length; } catch (e) {}
+  try { ledgerCount = ledger.recent(100000).length; } catch (e) {}
+  res.json({
+    ok: true,
+    version: '2026-07-12-providers',   // ⭐ เห็นค่านี้ = เวอร์ชันหลายซัพพลายเออร์ขึ้นแล้ว
+    dbPath,
+    persistentDisk: persistent,     // ⭐ true = ข้อมูลไม่หายหลัง redeploy | false = ต้องตั้งดิสก์ + DB_PATH
+    userCount,                      // จำนวนบัญชีในฐานข้อมูลตอนนี้
+    ledgerCount,                    // จำนวนรายการเคลื่อนไหวเครดิตทั้งหมด
+    providers: providers.listProviders().map((p) => ({ key: p.key, name: p.name })),  // ⭐ ซัพพลายเออร์ที่ต่อติดแล้ว (ไม่ส่ง key ลับ)
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+ * ตรวจ ENV ก่อนเปิดใช้งาน — เตือนของที่ยังไม่ปลอดภัย
+ * บน production (NODE_ENV=production) ถ้าขาดของคอขาดใจ → หยุดทำงาน
+ * กันเปิดเว็บแบบ token เดาได้ / เติมเครดิตไม่ได้ โดยไม่รู้ตัว
+ * ═══════════════════════════════════════════════════════════ */
+function checkEnv() {
+  const isProd = process.env.NODE_ENV === 'production';
+  const warn = [];   // เตือนเฉย ๆ
+  const fatal = [];  // ร้ายแรง — บน production ต้องหยุด
+
+  if (!process.env.JWT_SECRET)
+    fatal.push('JWT_SECRET — ยังใช้ค่า dev ที่เดาได้ ใครก็ปลอม token เป็นแอดมินได้ (สุ่ม: openssl rand -hex 32)');
+  if (!process.env.STRIPE_WEBHOOK_SECRET)
+    fatal.push('STRIPE_WEBHOOK_SECRET — จุดเดียวที่เติมเครดิตจริง ถ้าไม่ตั้ง เงินเข้าแต่เครดิตไม่เข้า!');
+  if (!process.env.STRIPE_SECRET_KEY)
+    warn.push('STRIPE_SECRET_KEY — ยังไม่ตั้ง ระบบเติมเงิน Stripe จะใช้ไม่ได้');
+  if (allowedOrigins.includes('*'))
+    warn.push('FRONTEND_ORIGIN — ยังเปิด CORS ทุกโดเมน (*) ควรตั้งเป็นโดเมนเว็บจริง');
+  if ((process.env.ADMIN_PASSWORD || 'admin1234') === 'admin1234')
+    warn.push('ADMIN_PASSWORD — ยังเป็นรหัส default "admin1234" เปลี่ยนด่วน + เปิด 2FA');
+
+  // ── สถานะซัพพลายเออร์ SMM (ไม่บังคับ — ไม่ตั้งก็เปิดเว็บได้ แค่ออเดอร์จะค้างให้แอดมินทำมือ) ──
+  const provList = providers.listProviders();
+  if (provList.length === 0)
+    warn.push('PROVIDER_* — ยังไม่ได้ต่อซัพพลายเออร์เจ้าไหนเลย — ออเดอร์จะรอให้แอดมินทำมือ (ใส่ PROVIDER_A_URL/KEY ใน .env)');
+  else
+    console.log(`📦 ต่อซัพพลายเออร์แล้ว ${provList.length} เจ้า: ${provList.map((p) => p.key + '=' + p.name).join(', ')}`);
+
+  if (warn.length || fatal.length) {
+    console.warn('\n⚠️  ตรวจ ENV ก่อนเปิดจริง:');
+    fatal.forEach((m) => console.warn('   🔴 ' + m));
+    warn.forEach((m) => console.warn('   🟠 ' + m));
+    console.warn('');
+  } else {
+    console.log('✅ ENV ครบถ้วน พร้อมเปิดใช้งาน');
+  }
+
+  if (isProd && fatal.length) {
+    console.error('❌ NODE_ENV=production แต่ขาด ENV สำคัญข้างบน — หยุดทำงานเพื่อความปลอดภัย');
+    process.exit(1);
+  }
+}
+checkEnv();
+
+const PORT = process.env.PORT || 4242;
+app.listen(PORT, () => console.log(`🚀 BoostHub backend ทำงานที่พอร์ต ${PORT}`));
+
+// เริ่ม poller sync สถานะออเดอร์กับซัพพลายเออร์ (เฉพาะเมื่อมีอย่างน้อย 1 เจ้าใน .env)
+// ตั้งจังหวะด้วย PROVIDER_POLL_MS (ค่าเริ่มต้น 60 วินาที)
+providers.startPolling(Number(process.env.PROVIDER_POLL_MS) || 60000);

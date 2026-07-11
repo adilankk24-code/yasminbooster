@@ -1,0 +1,101 @@
+# BoostHub Backend — SQLite + Auth + Orders + Stripe
+
+ระบบหลังบ้านจริงของเว็บ SMM: ฐานข้อมูล SQLite, สมัคร/ล็อกอิน (JWT), สั่งซื้อตัดเครดิตแบบ atomic, บันทึก ledger ทุกการเคลื่อนไหว, และรับเงินผ่าน Stripe (PromptPay/บัตร) + TrueMoney (อนุมัติสลิปเอง)
+
+## ติดตั้ง
+
+```bash
+cd backend
+cp .env.example .env      # ใส่คีย์จริง + JWT_SECRET
+npm install
+npm run seed             # สร้างบัญชีแอดมินตัวแรก
+npm start                # http://localhost:4242
+```
+
+## สถาปัตยกรรม
+
+| ไฟล์ | หน้าที่ |
+|---|---|
+| `db.js` | ฐานข้อมูล SQLite — users, orders, ledger, deposits + ทุกการเคลื่อนไหวเครดิตแบบ transaction |
+| `auth.js` | สมัคร/ล็อกอิน, hash รหัสด้วย bcrypt, ออก JWT, middleware `requireAuth` / `requireAdmin` |
+| `services.js` | แคตตาล็อกบริการ + เรตราคา → คำนวณราคาที่เซิร์ฟเวอร์ (ไม่เชื่อราคาจาก client) |
+| `providers.js` | ต่อซัพพลายเออร์ SMM **หลายเจ้า** (API v2) — ส่งออเดอร์จริง + เลือกเจ้าถูกสุด + fallback + sync สถานะ |
+| `server.js` | รวม API ทั้งหมด |
+| `seed.js` | สร้างแอดมินตัวแรก |
+
+## Endpoints
+
+### Auth
+| Method | Path | |
+|---|---|---|
+| POST | `/api/auth/register` | สมัคร → คืน `{token, user}` |
+| POST | `/api/auth/login` | ล็อกอิน → คืน `{token, user}` |
+| POST | `/api/auth/forgot` | ลืมรหัส → ส่งลิงก์รีเซ็ตเข้าอีเมล `{email}` (ตอบ ok เสมอ) |
+| POST | `/api/auth/reset` | ตั้งรหัสใหม่ `{token, password}` → ล็อกอินให้เลย |
+| GET | `/api/auth/me` | ข้อมูลตัวเอง (ต้องมี token) |
+
+แนบ token ทุก request ที่ต้องล็อกอิน: `Authorization: Bearer <token>`
+
+### ลูกค้า (ต้องล็อกอิน)
+| Method | Path | |
+|---|---|---|
+| GET | `/api/services` | แคตตาล็อก + เรตราคา |
+| POST | `/api/orders` | สั่งซื้อ `{platform, serviceId, qty, link}` → ตัดเครดิต atomic |
+| GET | `/api/orders` | ออเดอร์ของตัวเอง |
+| GET | `/api/ledger` | ประวัติเครดิตเข้า-ออก |
+| GET | `/api/balance` | ยอดเครดิตคงเหลือ |
+
+### เติมเงิน (ล็อกอินหรือ guest ก็ได้)
+ลูกค้าที่ล็อกอินแล้ว (แนบ token) เครดิตจะผูกกับบัญชีจริง — ถ้ายังไม่ได้ต่อระบบล็อกอิน จะใช้ id ที่หน้าเว็บส่งมา (guest) และระบบสร้าง user row ให้อัตโนมัติเมื่อเงินเข้า
+| Method | Path | |
+|---|---|---|
+| POST | `/api/promptpay/create` | สร้าง PaymentIntent พร้อมเพย์ QR `{amountBaht, userId?, email?}` |
+| POST | `/api/card/create-intent` | สร้าง PaymentIntent บัตรเครดิต/เดบิต `{amountBaht, userId?, email?}` |
+| GET | `/api/promptpay/status/:id` | poll สถานะ |
+| POST | `/api/deposits/truemoney` | แจ้งโอน TrueMoney + สลิป → เข้าคิวรออนุมัติ (ต้องล็อกอิน) |
+| POST | `/api/webhook` | Stripe ยิงมาเมื่อจ่ายสำเร็จ → เติมเครดิตอัตโนมัติ (กันซ้ำด้วย pi_id) |
+
+### แอดมิน (ต้อง `is_admin`)
+| Method | Path | |
+|---|---|---|
+| GET | `/api/admin/overview` | สมาชิก + ออเดอร์ + สลิป + สถิติ |
+| PATCH | `/api/admin/orders/:id` | อัปเดตสถานะ `{status, progress}` |
+| POST | `/api/admin/orders/:id/refund` | ยกเลิก + คืนเครดิต |
+| POST | `/api/admin/users/:id/credit` | เติมเครดิตให้ผู้ใช้ `{amount}` |
+| POST | `/api/admin/users/:id/ban` | ระงับ/ปลด `{banned}` |
+| POST | `/api/admin/deposits/:id/approve` | อนุมัติสลิป TrueMoney |
+| POST | `/api/admin/deposits/:id/reject` | ปฏิเสธสลิป |
+
+### ซัพพลายเออร์ SMM หลายเจ้า (ต้อง `is_admin`)
+| Method | Path | |
+|---|---|---|
+| GET | `/api/admin/providers` | รายชื่อเจ้าที่ต่อไว้ + เครดิตคงเหลือแต่ละเจ้า (ไม่ส่ง apiKey ออก) |
+| GET | `/api/admin/providers/:key/services` | ดึงแคตตาล็อกของเจ้านั้น (ไว้หา service id มา map) `?force=1` ล้าง cache |
+| GET | `/api/admin/service-map` | ตาราง map บริการเรา → เจ้า + service id |
+| POST | `/api/admin/service-map` | ตั้ง/แก้ mapping `{platform, serviceId, providerKey, providerService, mode}` |
+| POST | `/api/admin/orders/:id/sync` | ดึงสถานะออเดอร์เดียวจากซัพพลายเออร์ทันที |
+| POST | `/api/admin/providers/sync-all` | sync ทุกออเดอร์ที่ยังไม่จบ |
+
+**วิธีต่อซัพพลายเออร์ (สั้น ๆ):**
+1. ใส่ `PROVIDER_A_URL` + `PROVIDER_A_KEY` (+ เจ้าอื่น B, C, …) ใน `.env`
+2. เปิด `GET /api/admin/providers/A/services` เพื่อดูเลข service ของเจ้านั้น
+3. `POST /api/admin/service-map` จับคู่บริการเรา → เจ้า + เลข service (โหมด `manual`) เช่น
+   TikTok ให้ชี้เจ้าที่ถูก, Instagram ชี้อีกเจ้า
+4. ลูกค้าสั่งซื้อ → ระบบส่งไปเจ้าที่ map ให้อัตโนมัติ + คืนเครดิตเองถ้าเจ้านั้นปฏิเสธ
+
+โหมด `auto` (เลือกเจ้าถูกสุดเอง): ตั้ง `PROVIDER_x_MAP` + `PROVIDER_x_RATE_TO_CREDIT` ใน `.env` แล้วตั้ง mapping เป็น `mode=auto`
+
+## ที่ยังต้องทำต่อ (เฟสถัดไป)
+
+- **เช็คสลิปอัตโนมัติ** (SlipOK/EasySlip) กันสลิปปลอม
+- **Realtime** (WebSocket/SSE) แจ้งหน้าเว็บเมื่อเครดิต/ออเดอร์เปลี่ยน
+- **แจ้งเตือน** อีเมล/LINE, **คูปอง/โปรโมชั่น**, **affiliate/referral**
+- ขึ้น production: ตั้ง `FRONTEND_ORIGIN` เป็นโดเมนจริง, `JWT_SECRET` สุ่มยาว, พิจารณาย้าย SQLite → Postgres เมื่อโตขึ้น
+
+## Stripe Webhook (จุดที่เติมเครดิตจริง)
+
+```bash
+stripe listen --forward-to localhost:4242/api/webhook
+stripe trigger payment_intent.succeeded
+```
+Dashboard → Webhooks → Add endpoint → event `payment_intent.succeeded` → เอา `whsec_...` ใส่ `.env`
