@@ -406,6 +406,9 @@
           <sc-if value="{{ noUserResults }}" hint-placeholder-val="{{ false }}">
             <div style="padding:40px;text-align:center;color:var(--muted);font-size:13.5px;">ไม่พบสมาชิกที่ตรงกับ "{{ userSearch }}"</div>
           </sc-if>
+          <sc-if value="{{ noUsers }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:44px;text-align:center;color:var(--muted);font-size:13.5px;">ยังไม่มีสมาชิกที่สมัครเข้ามา</div>
+          </sc-if>
           </div>
         </div>
         </sc-if>
@@ -422,11 +425,18 @@
               </div>
               <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
                 <sc-for list="{{ g.items }}" as="s" hint-placeholder-count="5">
-                  <div class="ym-srow" style="display:grid;grid-template-columns:1fr 150px 170px 110px;gap:14px;padding:13px 18px;border-bottom:1px solid var(--field);align-items:center;{{ s.dim }}">
+                  <div class="ym-srow" style="display:grid;grid-template-columns:1fr 250px 130px 90px;gap:14px;padding:13px 18px;border-bottom:1px solid var(--field);align-items:center;{{ s.dim }}">
                     <div style="font-size:13.5px;">{{ s.name }}</div>
                     <div style="display:flex;align-items:center;gap:8px;">
-                      <input value="{{ s.rate }}" onInput="{{ s.onRate }}" type="number" style="width:82px;height:36px;padding:0 11px;background:var(--field);border:1px solid var(--border2);border-radius:9px;color:#fff;font-size:13.5px;font-family:Sora;font-weight:600;">
+                      <input value="{{ s.rate }}" onInput="{{ s.onRate }}" type="number" style="{{ s.inputStyle }}">
                       <span style="font-size:11.5px;color:var(--muted);">/1000</span>
+                      <sc-if value="{{ s.dirty }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;align-items:center;gap:6px;margin-left:2px;">
+                          <span style="{{ s.dirPillStyle }}">{{ s.dirLabel }}</span>
+                          <button onClick="{{ s.onConfirm }}" title="ยืนยันการเปลี่ยนราคา" style="{{ s.confirmStyle }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></button>
+                          <button onClick="{{ s.onCancel }}" title="ยกเลิก" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--field);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+                        </div>
+                      </sc-if>
                     </div>
                     <div style="font-size:12px;color:var(--muted);">ขั้นต่ำ {{ s.minText }} · สูงสุด {{ s.maxText }}</div>
                     <div style="text-align:right;">
@@ -444,34 +454,6 @@
         <sc-if value="{{ tabDeposits }}" hint-placeholder-val="{{ false }}">
         <div class="ym-cols" style="animation:floatUp .4s ease both;display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
           <div>
-            <div style="display:flex;gap:11px;align-items:flex-start;background:color-mix(in srgb,#25e0a8 8%,transparent);border:1px solid color-mix(in srgb,#25e0a8 30%,transparent);border-radius:13px;padding:14px 16px;margin-bottom:18px;">
-              <span style="font-size:17px;line-height:1.3;">⚡</span>
-              <div style="font-size:12.5px;color:var(--muted3);line-height:1.65;">การจ่ายผ่าน <b style="color:#25e0a8;">Stripe (พร้อมเพย์ QR + บัตร)</b> เติมเครดิตให้ลูกค้า<b style="color:var(--text);">อัตโนมัติ</b>ทันทีที่เงินเข้า — ไม่ต้องกดอนุมัติเอง</div>
-            </div>
-            <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">รายการรอตรวจสอบ <span style="color:var(--muted);font-weight:400;font-size:13px;">({{ pendingDepositCount }})</span></div>
-            <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:26px;">
-              <sc-for list="{{ pendingDeposits }}" as="d" hint-placeholder-count="2">
-                <div style="display:flex;align-items:center;gap:15px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 17px;">
-                  <div style="width:52px;height:52px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px;"><img src="{{ d.methodImg }}" alt="" style="max-width:100%;max-height:100%;object-fit:contain;"></div>
-                  <div style="flex:1;min-width:0;">
-                    <div style="font-size:14px;font-weight:600;">{{ d.user }}</div>
-                    <div style="font-size:12px;color:var(--muted);">{{ d.method }} · {{ d.time }}</div>
-                  </div>
-                  <sc-if value="{{ d.hasSlip }}" hint-placeholder-val="{{ false }}">
-                    <a href="{{ d.slip }}" target="_blank" title="เปิดสลิปเต็ม" style="flex-shrink:0;line-height:0;"><img src="{{ d.slip }}" alt="สลิป" style="width:44px;height:58px;border-radius:8px;object-fit:cover;border:1px solid var(--border2);display:block;"></a>
-                  </sc-if>
-                  <div style="font-family:Sora;font-weight:800;font-size:19px;color:var(--accent);flex-shrink:0;">฿{{ d.amount }}</div>
-                  <div style="display:flex;gap:7px;flex-shrink:0;">
-                    <button onClick="{{ d.onApprove }}" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:#25e0a8;color:#06281d;font-size:13px;font-weight:700;cursor:pointer;">อนุมัติ</button>
-                    <button onClick="{{ d.onReject }}" style="height:36px;padding:0 12px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:13px;cursor:pointer;">ปฏิเสธ</button>
-                  </div>
-                </div>
-              </sc-for>
-              <sc-if value="{{ noPendingDeposits }}" hint-placeholder-val="{{ false }}">
-                <div style="padding:32px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">ไม่มีสลิปรอตรวจสอบ 🎉</div>
-              </sc-if>
-            </div>
-
             <div style="font-family:Sora;font-weight:700;font-size:15px;margin-bottom:13px;">ประวัติการเติมเงิน</div>
             <div class="ym-table" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
               <sc-for list="{{ depositHistory }}" as="d" hint-placeholder-count="5">
@@ -664,25 +646,15 @@ class Component extends DCLogic {
     loading: false, confirm: null, orderQuery: '', orderSort: 'new', orderDetail: null,
     creditUser: null, creditAmount: '',
     rates: {},
+    rateDraft: {},
     svcOff: [],
     payOff: [],
     setLine: 'lin.ee/S35WkT2',
     setEmail: 'yarnan7480@gmail.com',
     userSearch: '',
-    users: [
-      { id:'u1', name:'คุณสมชาย ใจดี', email:'somchai.j@gmail.com', joined:'สมาชิก 3 เดือน', balance:1250, orders:14, spent:3820, banned:false },
-      { id:'u2', name:'เฟิร์น เมคอัพ', email:'fern.makeup@gmail.com', joined:'สมาชิก 5 เดือน', balance:640, orders:38, spent:9240, banned:false },
-      { id:'u3', name:'น้อง สตูดิโอ', email:'nong.studio@gmail.com', joined:'สมาชิก 1 เดือน', balance:2100, orders:9, spent:2180, banned:false },
-      { id:'u4', name:'ร้าน My Cafe BKK', email:'mycafe.bkk@gmail.com', joined:'สมาชิก 2 เดือน', balance:80, orders:22, spent:5410, banned:false },
-      { id:'u5', name:'ช่อง รีวิวของกิน', email:'foodreview.ch@gmail.com', joined:'สมาชิก 7 เดือน', balance:410, orders:51, spent:14300, banned:true },
-    ],
+    users: [],
     deposits: [],
-    depositHistory: [
-      { user:'เฟิร์น เมคอัพ', method:'Stripe (บัตร)', amount:1000, time:'วันนี้ 08:03', auto:true },
-      { user:'คุณสมชาย ใจดี', method:'พร้อมเพย์ QR (Stripe)', amount:200, time:'เมื่อวาน 21:40', auto:true },
-      { user:'ช่อง รีวิวของกิน', method:'พร้อมเพย์ QR (Stripe)', amount:2000, time:'เมื่อวาน 18:22', auto:true },
-      { user:'เฟิร์น เมคอัพ', method:'Stripe (บัตร)', amount:500, time:'2 วันก่อน 11:55', auto:true },
-    ],
+    depositHistory: [],
   };
 
   DEFAULT_ORDERS = [
@@ -780,7 +752,9 @@ class Component extends DCLogic {
     // restore session: มี token อยู่แล้ว → เช็คกับ backend ว่ายังใช้ได้ (ต่อไม่ได้ = เก็บ token ไว้)
     if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
       this.api('/api/auth/me', null, 'GET').then(r=>this.setState({authUser:r.user})).catch(e=>{ if(!this._netErr(e)) this.logoutAdmin(); });
+      this.loadOverview();
     }
+    this._ovPoll = setInterval(()=>{ if(!document.hidden) this.loadOverview(); }, 15000);
     this._poll = setInterval(()=>{
       if(document.hidden) return;
       const o=this._load('ym_orders'); if(o && JSON.stringify(o)!==JSON.stringify(this.state.orders)){ this._detectNew(o, this._knownOrderIds, '📦 มีออเดอร์ใหม่เข้ามา'); this.setState({orders:o}); }
@@ -788,7 +762,7 @@ class Component extends DCLogic {
       const d=this._load('ym_deposits'); if(d && JSON.stringify(d)!==JSON.stringify(this.state.deposits)){ this._detectNew(d, this._knownDepositIds, '💸 มีสลิปเติมเงินใหม่รอตรวจ'); this.setState({deposits:d}); }
     }, 1800);
   }
-  componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearTimeout(this._t); }
+  componentWillUnmount(){ window.removeEventListener('storage', this._onStorage); clearInterval(this._poll); clearInterval(this._ovPoll); clearTimeout(this._t); }
 
   _load(k){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } }
   _save(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -797,6 +771,24 @@ class Component extends DCLogic {
   copy(text, label){ try{ navigator.clipboard.writeText(String(text||'')); this.toast('คัดลอก'+(label?' '+label:'')+'แล้ว'); }catch(e){ this.toast('คัดลอกไม่สำเร็จ'); } }
   markAllDone(ids){ const set=new Set(ids); const list=this.state.orders.map(o=> set.has(o.id) ? { ...o, status:'สำเร็จ', progress:100 } : o ); this.saveOrders(list); this.toast('✓ ทำเครื่องหมายเสร็จ '+ids.length+' ออเดอร์ · ขึ้นหน้าเว็บแล้ว'); }
   retryConn(){ this.toast('กำลังลองเชื่อมต่อใหม่...'); fetch(this.apiBase()+'/api/health').then(r=>{ this.setState({backendReachable:r.ok}); if(r.ok) this.toast('เชื่อมต่อสำเร็จ'); }).catch(()=>this.setState({backendReachable:false})); }
+
+  /* ดึงรายชื่อสมาชิกจริง + ประวัติเติมเงินจาก backend (แทนข้อมูลตัวอย่าง) */
+  loadOverview(){
+    if(!this.state.authToken || this.state.authToken==='DEMO-TOKEN') return;
+    this.api('/api/admin/overview', null, 'GET').then(d=>{
+      const nameById={}; (d.users||[]).forEach(u=>{ nameById[u.id]=u.name; });
+      const orderCount={}, spentByUser={};
+      (d.orders||[]).forEach(o=>{ orderCount[o.user_id]=(orderCount[o.user_id]||0)+1; if(o.status!=='ยกเลิก') spentByUser[o.user_id]=(spentByUser[o.user_id]||0)+(o.price||0); });
+      const users=(d.users||[]).filter(u=>!u.is_admin).map(u=>({
+        id:u.id, name:u.name, email:u.email, joined:this._joined(u.created_at),
+        balance:u.credits||0, orders:orderCount[u.id]||0, spent:spentByUser[u.id]||0, banned:!!u.banned,
+      }));
+      const depositHistory=(d.depositHistory||[]).map(x=>({ user:nameById[x.user_id]||'—', method:x.method, amount:x.amount, time:this._when(x.created_at), auto:(x.method||'').includes('Stripe') }));
+      this.setState({ users, depositHistory });
+    }).catch(()=>{});
+  }
+  _joined(iso){ if(!iso) return 'สมาชิกใหม่'; const ms=Date.now()-new Date(iso).getTime(); const months=Math.floor(ms/2592000000); const days=Math.floor(ms/86400000); return months>=1?('สมาชิก '+months+' เดือน'):(days>=1?('สมาชิก '+days+' วัน'):'สมาชิกใหม่'); }
+  _when(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
 
   /* ═══════════ auth: login gate + 2FA ═══════════
    * เชื่อมกับ backend จริง (auth.js). ถ้าต่อ backend ไม่ได้ (เช่นเปิดพรีวิว
@@ -816,7 +808,7 @@ class Component extends DCLogic {
   _netErr(e){ return e instanceof TypeError; }   // fetch ล้มเหลว = ต่อเซิร์ฟเวอร์ไม่ได้
   _demo2FA(){ try{ return localStorage.getItem('ym_admin_2fa_demo')==='1'; }catch(e){ return false; } }
 
-  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }); }
+  storeSession(token, user){ try{ localStorage.setItem('ym_admin_token', token); }catch(e){} this.setState({ authToken:token, authUser:user||null, authStep:'login', loginPassword:'', otpCode:'', tempToken:null, authError:'', authBusy:false }); this.loadOverview(); }
   logoutAdmin(){ try{ localStorage.removeItem('ym_admin_token'); }catch(e){} this.setState({ authToken:null, authUser:null, authStep:'login', loginEmail:'', loginPassword:'', otpCode:'', authError:'' }); }
 
   demoLoginAdmin(){ this.storeSession('DEMO-TOKEN', { name:'Admin', email:this.DEMO_ADMIN.email, is_admin:true }); this.toast('เข้าสู่ระบบโหมดทดลอง'); }
@@ -927,12 +919,24 @@ class Component extends DCLogic {
   }
 
   rateOf(id, def){ return this.state.rates[id] !== undefined ? this.state.rates[id] : def; }
-  setRate(id, v){ const rates={...this.state.rates, [id]: v}; this.setState({rates}); this._save('ym_rates', rates); clearTimeout(this._rt); this._rt=setTimeout(()=>this.toast('อัปเดตราคาขึ้นหน้าเว็บลูกค้าแล้ว'), 700); }
+  setRateDraft(id, v){ const rateDraft={...this.state.rateDraft, [id]: v}; this.setState({rateDraft}); }
+  cancelRate(id){ const rateDraft={...this.state.rateDraft}; delete rateDraft[id]; this.setState({rateDraft}); }
+  commitRate(id){ const v=this.state.rateDraft[id]; if(v===undefined||v==='') return; const rates={...this.state.rates, [id]: v}; const rateDraft={...this.state.rateDraft}; delete rateDraft[id]; this.setState({rates, rateDraft}); this._save('ym_rates', rates); this.toast('ยืนยันแล้ว · อัปเดตราคาขึ้นหน้าเว็บลูกค้า'); }
   toggleSvc(id){ const off=this.state.svcOff.includes(id); const svcOff= off? this.state.svcOff.filter(x=>x!==id) : [...this.state.svcOff, id]; this.setState({svcOff}); this._save('ym_svcoff', svcOff); this.toast(off?'เปิดบริการแล้ว · แสดงบนหน้าเว็บลูกค้า':'ปิดบริการแล้ว · ซ่อนจากหน้าเว็บลูกค้า'); }
 
   addCredit(uid){ const u=this.state.users.find(x=>x.id===uid); this.setState({ creditUser: u?{id:u.id,name:u.name}:null, creditAmount:'' }); }
-  doAddCredit(){ const cu=this.state.creditUser; if(!cu) return; const amt=Number(this.state.creditAmount)||0; if(amt<=0){ this.toast('กรอกจำนวนเครดิตก่อน'); return; } const list=this.state.users.map(u=> u.id===cu.id ? {...u, balance:u.balance+amt} : u); const bal=(this._load('ym_balance')||0)+amt; this._save('ym_balance', bal); this.setState({ users:list, creditUser:null, creditAmount:'' }); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดหน้าเว็บลูกค้าแล้ว'); }
-  toggleBan(uid){ const list=this.state.users.map(u=> u.id===uid ? {...u, banned:!u.banned} : u); this.setState({users:list}); const u=list.find(x=>x.id===uid); this.toast(u.banned?'ระงับบัญชี '+u.name:'ปลดระงับ '+u.name); }
+  doAddCredit(){ const cu=this.state.creditUser; if(!cu) return; const amt=Number(this.state.creditAmount)||0; if(amt<=0){ this.toast('กรอกจำนวนเครดิตก่อน'); return; }
+    if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
+      this.api('/api/admin/users/'+cu.id+'/credit', { amount:amt }).then(()=>{ this.setState({creditUser:null, creditAmount:''}); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' แล้ว'); this.loadOverview(); }).catch(e=>this.toast(e.message));
+      return;
+    }
+    const list=this.state.users.map(u=> u.id===cu.id ? {...u, balance:u.balance+amt} : u); const bal=(this._load('ym_balance')||0)+amt; this._save('ym_balance', bal); this.setState({ users:list, creditUser:null, creditAmount:'' }); this.toast('เติม '+this.fmt(amt)+' เครดิตให้ '+cu.name+' · เข้ายอดหน้าเว็บลูกค้าแล้ว'); }
+  toggleBan(uid){ const cur=this.state.users.find(u=>u.id===uid); const next=cur?!cur.banned:true;
+    if(this.state.authToken && this.state.authToken!=='DEMO-TOKEN'){
+      this.api('/api/admin/users/'+uid+'/ban', { banned:next }).then(()=>{ this.toast(next?('ระงับบัญชี '+(cur?cur.name:'')):('ปลดระงับ '+(cur?cur.name:''))); this.loadOverview(); }).catch(e=>this.toast(e.message));
+      return;
+    }
+    const list=this.state.users.map(u=> u.id===uid ? {...u, banned:!u.banned} : u); this.setState({users:list}); const u=list.find(x=>x.id===uid); this.toast(u.banned?'ระงับบัญชี '+u.name:'ปลดระงับ '+u.name); }
   approveDeposit(id){
     const d=this.state.deposits.find(x=>x.id===id);
     const rest=this.state.deposits.filter(x=>x.id!==id);
@@ -1011,7 +1015,7 @@ class Component extends DCLogic {
       onTwoFACode:(e)=>this.setState({twoFACode:e.target.value.replace(/\D/g,'').slice(0,6)}),
       start2FA:()=>this.start2FA(), confirm2FA:()=>this.confirm2FA(), disable2FA:()=>this.disable2FA(),
       navItems: this.NAV.map(n=>{
-        let badge=''; if(n.id==='orders'&&(pending+working)>0) badge=pending+working; if(n.id==='clips'&&pendClips>0) badge=pendClips; if(n.id==='deposits'&&st.deposits.length>0) badge=st.deposits.length;
+        let badge=''; if(n.id==='orders'&&(pending+working)>0) badge=pending+working; if(n.id==='clips'&&pendClips>0) badge=pendClips;
         return { label:n.label, icon:n.icon, badge, style:this.navStyle(st.tab===n.id), onClick:()=>this.go(n.id) };
       }),
       pageTitle: titles[st.tab][0], pageSub: titles[st.tab][1],
@@ -1025,7 +1029,6 @@ class Component extends DCLogic {
         { label:'ออเดอร์ทั้งหมด', value:st.orders.length, delta:working+pending+' กำลังดำเนินการ', color:accent, icon:'M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2', onClick:()=>this.setState({tab:'orders', orderFilter:'all'}) },
         { label:'สมาชิก', value:st.users.length, delta:'ใช้งานอยู่ '+st.users.filter(u=>!u.banned).length, color:'#2f7bff', icon:'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', onClick:()=>this.setState({tab:'users'}) },
         { label:'ออเดอร์ค้าง', value:pending, delta:'รอดำเนินการ', color:'#e0a825', icon:'M12 8v4l3 3M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z', onClick:()=>this.setState({tab:'orders', orderFilter:'รอดำเนินการ'}) },
-        { label:'สลิป Wallet รออนุมัติ', value:st.deposits.length, delta:'รอตรวจสอบยอดโอน', color:'#ff8a3c', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 15h6M9 11h2', onClick:()=>this.setState({tab:'deposits'}) },
         { label:'งานคลิปค้าง', value:pendClips, delta:'ถ่าย/ตัดต่อ/ส่งงาน', color:'#a855f7', icon:'M15 10l4.55-2.28A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.9L15 14M4 6h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z', onClick:()=>this.setState({tab:'clips', clipFilter:'pending'}) },
       ].map(k=>({ ...k, clickStyle: k.onClick ? 'cursor:pointer;' : '' })),
       chartRanges: [
@@ -1057,7 +1060,6 @@ class Component extends DCLogic {
       })(),
       actionQueue: [
         { count:pending, label:'ออเดอร์รอดำเนินการ', sub:'กดเพื่อเริ่มทำ', color:'#e0a825', onClick:()=>this.setState({tab:'orders', orderFilter:'รอดำเนินการ'}) },
-        { count:st.deposits.length, label:'สลิปรอตรวจสอบ', sub:'อนุมัติการเติมเงิน', color:accent, onClick:()=>this.setState({tab:'deposits'}) },
         { count:pendClips, label:'งานคลิปในคิว', sub:'ถ่าย/ตัดต่อ/ส่งงาน', color:'#2f7bff', onClick:()=>this.setState({tab:'clips', clipFilter:'pending'}) },
       ],
       recentOrders: st.orders.slice(0,5).map(o=>{ const p=this.PLATFORMS[o.pf]; return { id:o.id, service:o.service, user:o.user||'—', logo:p.logo, color:p.color, priceText:this.fmt(o.price), status:o.status, statusStyle:this.statusStyle(o.status) }; }),
@@ -1141,6 +1143,7 @@ class Component extends DCLogic {
         const q=st.userSearch.trim().toLowerCase();
         return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.id.toLowerCase().includes(q);
       }),
+      noUsers: st.userSearch.trim().length===0 && st.users.length===0,
       userRows: st.users.filter(u=>{
         const q=st.userSearch.trim().toLowerCase();
         if(!q) return true;
@@ -1159,10 +1162,25 @@ class Component extends DCLogic {
         name:this.PLATFORMS[pf].name, logo:this.PLATFORMS[pf].logo, color:this.PLATFORMS[pf].color,
         items:this.SERVICES[pf].map(s=>{
           const off=st.svcOff.includes(s.id);
+          const committed=this.rateOf(s.id, s.rate);
+          const draftRaw=st.rateDraft[s.id];
+          const hasDraft=draftRaw!==undefined;
+          const dnum=Number(draftRaw), cnum=Number(committed);
+          const dirty=hasDraft && draftRaw!=='' && !isNaN(dnum) && dnum!==cnum;
+          const up=dnum>cnum;
+          const dirColor=up?'#25e0a8':'#f5a524';
+          const inputBorder=dirty?dirColor:'var(--border2)';
           return {
-            name:s.name, rate:this.rateOf(s.id, s.rate), minText:this.fmt(s.min), maxText:this.fmt(s.max),
+            name:s.name, rate:hasDraft?draftRaw:committed, minText:this.fmt(s.min), maxText:this.fmt(s.max),
             dim: off?'opacity:.45;':'',
-            onRate:(e)=>this.setRate(s.id, e.target.value),
+            dirty,
+            dirLabel:(up?'▲ +':'▼ −')+this.fmt(Math.abs(dnum-cnum)),
+            dirPillStyle:'font-size:11px;font-family:Sora;font-weight:700;color:'+dirColor+';background:color-mix(in srgb, '+dirColor+' 14%, transparent);padding:3px 8px;border-radius:6px;white-space:nowrap;',
+            confirmStyle:'width:30px;height:30px;border-radius:8px;border:1px solid '+dirColor+';background:'+dirColor+';color:#0b0e14;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0;',
+            inputStyle:'width:82px;height:36px;padding:0 11px;background:var(--field);border:1px solid '+inputBorder+';border-radius:9px;color:#fff;font-size:13.5px;font-family:Sora;font-weight:600;',
+            onRate:(e)=>this.setRateDraft(s.id, e.target.value),
+            onConfirm:()=>this.commitRate(s.id),
+            onCancel:()=>this.cancelRate(s.id),
             onToggle:()=>this.toggleSvc(s.id),
             toggleStyle:this.toggleStyle(!off), knobStyle:this.knobStyle(!off),
           };
@@ -1170,9 +1188,6 @@ class Component extends DCLogic {
       })),
 
       // deposits
-      pendingDeposits: st.deposits.map(d=>({ user:d.user, method:d.method, methodImg:d.methodImg, amount:this.fmt(d.amount), time:d.time, slip:d.slip||'', hasSlip:!!d.slip, onApprove:()=>this.approveDeposit(d.id), onReject:()=>this.askConfirm({title:'ปฏิเสธสลิปนี้?', message:'ยอดเติมของ '+d.user+' จะไม่ถูกเพิ่มเข้าระบบ', confirmLabel:'ปฏิเสธสลิป', danger:true, action:()=>this.rejectDeposit(d.id)}) })),
-      pendingDepositCount: st.deposits.length,
-      noPendingDeposits: st.deposits.length===0,
       depositHistory: st.depositHistory.map(d=>({
         user:d.user, method:d.method, amount:this.fmt(d.amount), time:d.time,
         badge: d.auto ? 'อัตโนมัติ' : 'อนุมัติเอง',
@@ -1181,7 +1196,6 @@ class Component extends DCLogic {
       financeSummary: [
         { label:'รายได้วันนี้', value:'฿'+this.fmt(2250), color:'#25e0a8' },
         { label:'รายได้สัปดาห์นี้', value:'฿'+this.fmt(12840), color:'var(--text)' },
-        { label:'เติมรอตรวจสอบ', value:'฿'+this.fmt(st.deposits.reduce((a,d)=>a+d.amount,0)), color:'#e0a825' },
         { label:'เครดิตหมุนเวียน', value:'฿'+this.fmt(st.users.reduce((a,u)=>a+u.balance,0)), color:accent },
       ],
 
